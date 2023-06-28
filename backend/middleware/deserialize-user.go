@@ -38,10 +38,17 @@ func DeserializeUser() gin.HandlerFunc {
 		}
 
 		var user models.User
-		result := initializers.DB.First(&user, "id = ?", fmt.Sprint(sub))
-		if result.Error != nil {
+
+		rows, err := utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1;", fmt.Sprint(sub))
+
+		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "the user belonging to this token no logger exists"})
 			return
+		}
+
+		for rows.Next() {
+			rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
+			break
 		}
 
 		ctx.Set("currentUser", user)

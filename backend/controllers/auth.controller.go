@@ -33,12 +33,16 @@ func SignUpUser(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	result := initializers.DB.Create(&newUser)
+	rows, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
 
-	if result.Error != nil && strings.Contains(result.Error.Error(), "UNIQUE constraint failed: users.email") {
+	for rows.Next() {
+		rows.Scan(&newUser.ID)
+	}
+
+	if err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.email") {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists"})
 		return
-	} else if result.Error != nil {
+	} else if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": "Something bad happened"})
 		return
 	}
@@ -56,10 +60,16 @@ func SignInUser(ctx *gin.Context) {
 	}
 
 	var user models.User
-	result := initializers.DB.First(&user, "email = ?", strings.ToLower(payload.Email))
-	if result.Error != nil {
+
+	rows, err := utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
+	}
+
+	for rows.Next() {
+		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
+		break
 	}
 
 	config, _ := initializers.LoadConfig(".")
@@ -124,16 +134,34 @@ func GoogleOAuth(ctx *gin.Context) {
 
 	spew.Dump(user_data)
 
-	output := initializers.DB.Create(&user_data)
-	fmt.Println(output.Error)
-	fmt.Println(output.RowsAffected)
+	rows, err := utils.RunSQLSecureOne("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;`", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
 
-	if initializers.DB.Model(&user_data).Where("email = ?", email).Updates(&user_data).RowsAffected == 0 {
-		initializers.DB.Create(&user_data)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	if rows.Next() {
+		// initializers.DB.Create(&user_data)
+		_, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
 	}
 
 	var user models.User
-	initializers.DB.First(&user, "email = ?", email)
+	rows, err = utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	// initializers.DB.First(&user, "email = ?", email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+	for rows.Next() {
+		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
+		break
+	}
 
 	config, _ := initializers.LoadConfig(".")
 

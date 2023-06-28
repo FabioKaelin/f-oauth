@@ -41,16 +41,16 @@ func RunSQLRow(sqlStatement string) *sql.Row {
 	return row
 }
 
-func RunSQLSecureOne(sqlStatement string, parameters ...any) *sql.Rows {
+func RunSQLSecureOne(sqlStatement string, parameters ...any) (*sql.Rows, error) {
 	db := getDBconnection()
 	fmt.Println("run sql")
 	rows, err := db.Query(sqlStatement, parameters...)
 	defer db.Close()
 	if err != nil {
-		fmt.Println(err.Error())
+		return new(sql.Rows), err
 	}
 	// defer rows.Close()
-	return rows
+	return rows, nil
 }
 
 func RunSQLSecureMultible(sqlstatements [][]string) {

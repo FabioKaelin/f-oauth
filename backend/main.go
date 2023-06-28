@@ -35,7 +35,7 @@ func main() {
 	})
 
 	auth_router := router.Group("/auth")
-	auth_router.POST("/register", controllers.SignUpUser)
+	auth_router.POST("/register", controllers.SignUpUser) // Migrated to sql
 	auth_router.POST("/login", controllers.SignInUser)
 	auth_router.GET("/logout", middleware.DeserializeUser(), controllers.LogoutUser)
 
