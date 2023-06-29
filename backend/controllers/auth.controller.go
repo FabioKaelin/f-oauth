@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -17,7 +18,9 @@ func SignUpUser(ctx *gin.Context) {
 	var payload *models.RegisterUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		fmt.Println("1", err)
+		spew.Dump(payload)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "1message": err.Error()})
 		return
 	}
 
@@ -39,10 +42,11 @@ func SignUpUser(ctx *gin.Context) {
 	}
 
 	if err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.email") {
-		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists"})
+
+		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "2message": "User with that email already exists"})
 		return
 	} else if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": "Something bad happened"})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "3message": "Something bad happened"})
 		return
 	}
 
@@ -54,6 +58,8 @@ func SignInUser(ctx *gin.Context) {
 	var payload *models.LoginUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		spew.Dump(payload)
+		fmt.Println("1", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
