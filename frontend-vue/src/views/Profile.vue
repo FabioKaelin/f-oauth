@@ -48,11 +48,12 @@ export default defineComponent({
     mounted() {
         axios.request(getAxiosConfig("/users/me"))
             .then((response: any) => {
-                // console.log(JSON.parse(JSON.stringify(response.data)));
                 let me = response.data;
                 this.me = me;
-                console.log(me);
-            })
+            }).catch((error: any) => {
+                console.log(error);
+                this.$router.push({ name: 'login' });
+            });
     }
 })
 
