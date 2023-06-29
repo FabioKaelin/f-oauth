@@ -30,6 +30,7 @@ func SignUpUser(ctx *gin.Context) {
 		Email:     strings.ToLower(payload.Email),
 		Password:  payload.Password,
 		Role:      "user",
+		Provider:  "local",
 		Verified:  true,
 		CreatedAt: now,
 		UpdatedAt: now,

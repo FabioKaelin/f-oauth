@@ -43,6 +43,17 @@ export default defineComponent({
                 default:
                     return "Unbekannt";
             }
+        },
+        getRealableProvider(){
+            let provider = this.me.provider;
+            switch (provider) {
+                case "local":
+                    return "Benutzername und Passwort";
+                case "google":
+                    return "Google";
+                default:
+                    return "Unbekannt";
+            }
         }
     },
     mounted() {
