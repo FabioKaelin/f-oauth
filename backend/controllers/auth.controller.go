@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -132,21 +131,21 @@ func GoogleOAuth(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	spew.Dump(user_data)
-
-	rows, err := utils.RunSQLSecureOne("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;`", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
+	rows, err := utils.RunSQLSecureOne("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
 		return
 	}
 
-	if rows.Next() {
+	ifExist := rows.Next()
+
+	if !ifExist {
 		// initializers.DB.Create(&user_data)
 		_, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
 			return
 		}
 	}
@@ -155,7 +154,7 @@ func GoogleOAuth(ctx *gin.Context) {
 	rows, err = utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	// initializers.DB.First(&user, "email = ?", email)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
 	}
 	for rows.Next() {
@@ -167,7 +166,7 @@ func GoogleOAuth(ctx *gin.Context) {
 
 	token, err := utils.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message4": err.Error()})
 		return
 	}
 
@@ -192,14 +191,14 @@ func GitHubOAuth(ctx *gin.Context) {
 	tokenRes, err := utils.GetGitHubOauthToken(code)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message5": err.Error()})
 		return
 	}
 
 	github_user, err := utils.GetGitHubUser(tokenRes.Access_token)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message6": err.Error()})
 		return
 	}
 
@@ -218,13 +217,34 @@ func GitHubOAuth(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	if initializers.DB.Model(&user_data).Where("email = ?", email).Updates(&user_data).RowsAffected == 0 {
-		initializers.DB.Create(&user_data)
+	rows, err := utils.RunSQLSecureOne("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	if !rows.Next() {
+		// initializers.DB.Create(&user_data)
+		_, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
 	}
 
 	var user models.User
-	initializers.DB.First(&user, "email = ?", email)
-
+	rows, err = utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	// initializers.DB.First(&user, "email = ?", email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+	for rows.Next() {
+		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
+		break
+	}
 	config, _ := initializers.LoadConfig(".")
 
 	token, err := utils.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)

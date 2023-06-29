@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -50,6 +51,8 @@ func DeserializeUser() gin.HandlerFunc {
 			rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 			break
 		}
+
+		spew.Dump(user)
 
 		ctx.Set("currentUser", user)
 		ctx.Next()
