@@ -1,6 +1,6 @@
 <template>
     <div>
-        HOME {{ count }}
+        Login {{ count }}
     </div>
 </template>
 
@@ -9,7 +9,7 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-    name: 'Home',
+    name: 'Login',
     // props: {
     //     name: String,
     //     msg: { type: String, required: true }

@@ -11,13 +11,20 @@ export default createRouter({
             name: 'Home',
             component: Home,
         },
-        // {
-        //     path: '/about',
-        //     component: () => import('@/views/About.vue'),
-        // },
-        // {
-        //     path: '/contact',
-        //     component: () => import('@/views/Contact.vue'),
-        // },
+        {
+            path: '/profile',
+            name: 'Profile',
+            component: () => import('./views/Profile.vue'),
+        },
+        {
+            path: '/login',
+            name: 'login',
+            component: () => import('./views/Login.vue'),
+        },
+        {
+            path: '/register',
+            name: 'register',
+            component: () => import('./views/Register.vue'),
+        },
     ],
 })
