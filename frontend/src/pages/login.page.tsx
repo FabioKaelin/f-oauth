@@ -159,7 +159,9 @@ const LoginPage = () => {
                         <div className="flex items-center my-4 before:flex-1 before:border-t before:border-gray-300 before:mt-0.5 after:flex-1 after:border-t after:border-gray-300 after:mt-0.5">
                             <p className="text-center font-semibold mx-4 mb-0">OR</p>
                         </div>
-
+                        <br /><br /><br />
+                        <hr />
+                        <br /><br /><br />
                         <a
                             className="px-7 py-2 text-white font-medium text-sm leading-snug uppercase rounded shadow-md hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out w-full flex justify-center items-center mb-3"
                             style={{ backgroundColor: "#3b5998" }}
@@ -176,6 +178,9 @@ const LoginPage = () => {
                             />
                             Continue with Google
                         </a>
+                        <br /><br /><br />
+                        <hr />
+                        <br /><br /><br />
                         <a
                             className="px-7 py-2 text-white font-medium text-sm leading-snug uppercase rounded shadow-md hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out w-full flex justify-center items-center"
                             style={{ backgroundColor: "#55acee" }}

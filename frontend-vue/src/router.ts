@@ -20,6 +20,9 @@ export default createRouter({
             path: '/login',
             name: 'login',
             component: () => import('./views/Login.vue'),
+            // query: {
+            //     from: '',
+            // }
         },
         {
             path: '/register',

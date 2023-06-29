@@ -1,6 +1,7 @@
 <template>
     <div>
-        HOME {{ count }}
+        Google OAuth2
+        <!-- HOME {{ count }} -->
     </div>
 </template>
 

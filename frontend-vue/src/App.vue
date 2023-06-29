@@ -2,6 +2,7 @@
 
 <template>
     <!-- <div>
+import Layout from './components/layout.vue';
         <a href="https://vitejs.dev" target="_blank">
             <img src="/vite.svg" class="logo" alt="Vite logo" />
         </a>
@@ -11,7 +12,8 @@
     </div>
     <HelloWorld msg="Vite + Vue" /> -->
 
-    <div>asdf</div>
+    <layout></layout>
+    <hr>
 
     <router-view />
 
@@ -21,8 +23,10 @@
 
 import { defineComponent } from 'vue'
 
+import Layout from './components/layout.vue';
 export default defineComponent({
-    name: 'App'
+    name: "App",
+    components: { Layout }
 })
 // import HelloWorld from './components/HelloWorld.vue'
 </script>

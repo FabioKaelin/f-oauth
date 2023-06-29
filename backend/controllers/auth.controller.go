@@ -98,7 +98,9 @@ func GoogleOAuth(ctx *gin.Context) {
 	}
 
 	if code == "" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Authorization code not provided!"})
+		fmt.Println(`CODE == ""`)
+		ctx.JSON(http.StatusUnauthorized, `"status": "fail", "message": "Authorization code not provided!"`)
+		// ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Authorization code not provided!"})
 		return
 	}
 
@@ -171,8 +173,15 @@ func GoogleOAuth(ctx *gin.Context) {
 	}
 
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	redirectUrl := ""
+	// if pathUrl not begin with http or https
+	if !strings.HasPrefix(pathUrl, "http") {
+		redirectUrl = fmt.Sprint(config.FrontEndOrigin, pathUrl)
+	} else {
+		redirectUrl = pathUrl
+	}
 
-	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
+	ctx.Redirect(http.StatusTemporaryRedirect, redirectUrl)
 }
 
 func GitHubOAuth(ctx *gin.Context) {
