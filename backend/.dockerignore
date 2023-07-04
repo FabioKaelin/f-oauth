@@ -1,1 +1,4 @@
+resources/*
 app.env
+example.env
+Makefile

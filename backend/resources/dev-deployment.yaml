@@ -5,7 +5,7 @@ metadata:
   # name: testapplication-backend
 spec:
   path: "/api"
-  replicas: 2
+  replicas: 1
   port: 8080
   tag: "latest"
   resources:
@@ -32,8 +32,8 @@ spec:
       value: 755737563752-u021il7839sit5gt4k11ag3poa9opu84.apps.googleusercontent.com
     - name: GOOGLE_OAUTH_REDIRECT_URL
       value: https://oauth.fabkli.ch/api/sessions/oauth/google
-    - name: GITHUB_OAUTH_CLIENT_ID
-      value: ""
+    # - name: GITHUB_OAUTH_CLIENT_ID
+    #   value: ""
     - name: GITHUB_OAUTH_REDIRECT_URL
       value: https://oauth.fabkli.ch/api/sessions/oauth/github
     - name: DATABASE_HOST

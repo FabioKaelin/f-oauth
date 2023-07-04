@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mariadb-pv-claim
+  name: mariadb-pv-claim-1
   labels:
     app: mariadb
 spec:
@@ -53,10 +53,16 @@ spec: # specification for deployment resource
         - name: MARIADB_DATABASE
           value: oauth
         - name: MARIADB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: DATABASE_PASSWORD
+          value: mypassword
+        - name: PUID
+          value: "0"
+        - name: PGID
+          value: "0"
+        # - name: MARIADB_ROOT_PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: oauth-secrets
+        #       key: DATABASE_PASSWORD
 
         resources:
           requests: # minimum (ensured)
@@ -75,7 +81,7 @@ spec: # specification for deployment resource
           runAsGroup: 1001
 
         volumeMounts:
-        - name: mariadb-pv
+        - name: mariadb-pv-1
           mountPath: /var/lib/mysql
           readOnly: false
           mountPropagation: None
@@ -83,9 +89,9 @@ spec: # specification for deployment resource
 
         # command: ["sh", "-c", "ls -la /var/lib/mysql"]
       volumes:
-      - name: mariadb-pv
+      - name: mariadb-pv-1
         persistentVolumeClaim:
-          claimName: mariadb-pv-claim
+          claimName: mariadb-pv-claim-1
 
       tolerations:
       - effect: NoSchedule

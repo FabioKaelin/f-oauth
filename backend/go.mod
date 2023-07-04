@@ -3,13 +3,14 @@ module github.com/wpcodevo/google-github-oath2-golang
 go 1.19
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.2
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.14.0
 	gorm.io/driver/mysql v1.5.1
-	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.25.1
 )
 
@@ -19,7 +20,6 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
-	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -28,7 +28,6 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
-	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
