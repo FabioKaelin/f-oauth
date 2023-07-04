@@ -1,9 +1,11 @@
 package initializers
 
 import (
+	"os"
+	"strconv"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -30,17 +32,41 @@ type Config struct {
 var StartConfig Config
 
 func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigType("env")
-	viper.SetConfigName("app")
+	// viper.AddConfigPath(path)
+	// viper.SetConfigType("env")
+	// viper.SetConfigName("app")
 
-	viper.AutomaticEnv()
+	// viper.AutomaticEnv()
 
-	err = viper.ReadInConfig()
+	// err = viper.ReadInConfig()
+	// if err != nil {
+	// return
+	// }
+
+	// err = viper.Unmarshal(&config)
+	godotenv.Load("app.env")
+	TokenExpiresIn, _ := time.ParseDuration(os.Getenv("TOKEN_EXPIRED_IN"))
+	marks, err := strconv.Atoi(os.Getenv("TOKEN_MAXAGE"))
 	if err != nil {
-		return
+		marks = 0
 	}
 
-	err = viper.Unmarshal(&config)
+	config = Config{
+		FrontEndOrigin:         os.Getenv("FRONTEND_ORIGIN"),
+		JWTTokenSecret:         os.Getenv("JWT_SECRET"),
+		TokenExpiresIn:         TokenExpiresIn,
+		TokenMaxAge:            marks,
+		GoogleClientID:         os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
+		GoogleClientSecret:     os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+		GoogleOAuthRedirectUrl: os.Getenv("GOOGLE_OAUTH_REDIRECT_URL"),
+		GitHubClientID:         os.Getenv("GITHUB_OAUTH_CLIENT_ID"),
+		GitHubClientSecret:     os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
+		GitHubOAuthRedirectUrl: os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
+		DatabaseHost:           os.Getenv("DATABASE_HOST"),
+		DatabaseUser:           os.Getenv("DATABASE_USER"),
+		DatabasePassword:       os.Getenv("DATABASE_PASSWORD"),
+		DatabasePort:           os.Getenv("DATABASE_PORT"),
+	}
+
 	return
 }

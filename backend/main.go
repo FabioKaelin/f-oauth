@@ -21,7 +21,7 @@ func init() {
 		fmt.Println("Error", err)
 	}
 
-	initializers.ConnectDB()
+	// initializers.ConnectDB()
 
 	server = gin.Default()
 
@@ -56,6 +56,9 @@ func main() {
 	server.Use(cors.New(corsConfig))
 
 	router := server.Group("/api")
+	router.GET("", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, "This is the backend of the authentication server for F-Products")
+	})
 	router.GET("/healthchecker", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Implement Google OAuth2 in Golang"})
 	})
