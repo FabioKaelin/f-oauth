@@ -1,0 +1,56 @@
+apiVersion: k8s.fabkli.ch/v1
+kind: Fdeployment
+metadata:
+  name: oauth-backend
+  # name: testapplication-backend
+spec:
+  path: "/api"
+  replicas: 2
+  port: 8080
+  tag: "latest"
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1024Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  healthCheck:
+    livenessProbe:
+      path: "/api/healthchecker"
+    readinessProbe:
+      path: "/api/healthchecker"
+  host: "oauth.fabkli.ch"
+  env:
+    - name: FRONTEND_ORIGIN
+      value: https://oauth.fabkli.ch
+    - name: TOKEN_EXPIRED_IN
+      value: 10080m
+    - name: TOKEN_MAXAGE
+      value: "10080"
+    - name: GOOGLE_OAUTH_CLIENT_ID
+      value: 755737563752-u021il7839sit5gt4k11ag3poa9opu84.apps.googleusercontent.com
+    - name: GOOGLE_OAUTH_REDIRECT_URL
+      value: https://oauth.fabkli.ch/api/sessions/oauth/google
+    - name: GITHUB_OAUTH_CLIENT_ID
+      value: ""
+    - name: GITHUB_OAUTH_REDIRECT_URL
+      value: https://oauth.fabkli.ch/api/sessions/oauth/github
+    - name: DATABASE_HOST
+      value: mariadb-internal-service.test.svc.cluster.local
+    - name: DATABASE_USER
+      value: root
+    - name: DATABASE_PORT
+      value: "3306"
+    - name: GOOGLE_OAUTH_CLIENT_SECRET
+      fromSecret:
+        name: oauth-secrets
+        key: GOOGLE_OAUTH_CLIENT_SECRET
+    - name: GITHUB_OAUTH_CLIENT_SECRET
+      fromSecret:
+        name: oauth-secrets
+        key: GITHUB_OAUTH_CLIENT_SECRET
+    - name: JWT_SECRET
+      fromSecret:
+        name: oauth-secrets
+        key: JWT_SECRET

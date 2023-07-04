@@ -6,6 +6,8 @@
         Email: {{ me.email }} <br>
         Loginmethode: {{ me.provider }} <br>
         Rolle: {{ getReadableRole() }} <br>
+        Image: <img :src="me.photo" alt="Profilbild" width="100px" height="100px"> <br>
+        Image: {{ me.photo }} <br>
     </div>
 </template>
 

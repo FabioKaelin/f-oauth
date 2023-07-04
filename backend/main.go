@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -14,10 +15,18 @@ import (
 var server *gin.Engine
 
 func init() {
+	startconfig, err := initializers.LoadConfig(".")
+	initializers.StartConfig = startconfig
+	if err != nil {
+		fmt.Println("Error", err)
+	}
+
 	initializers.ConnectDB()
 
 	server = gin.Default()
+
 	// server.Use(CORSMiddleware())
+
 }
 
 func CORSMiddleware() gin.HandlerFunc {

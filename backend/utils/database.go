@@ -6,11 +6,13 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 )
 
 func getDBconnection() *sql.DB {
 	// fmt.Println("connect to Database")
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", "root", "secretpass", "db.fabkli.ch", "38487", "oauth"))
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", initializers.StartConfig.DatabaseUser, initializers.StartConfig.DatabasePassword, initializers.StartConfig.DatabaseHost, initializers.StartConfig.DatabasePort, "oauth"))
+	// db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", "root", "secretpass", "db.fabkli.ch", "38487", "oauth"))
 	// db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", DB_Username, DB_Password, DB_Host, DB_Port, DB_Name))
 	if err != nil {
 		fmt.Println(err.Error())

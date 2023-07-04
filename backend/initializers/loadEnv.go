@@ -20,7 +20,14 @@ type Config struct {
 	GitHubClientID         string `mapstructure:"GITHUB_OAUTH_CLIENT_ID"`
 	GitHubClientSecret     string `mapstructure:"GITHUB_OAUTH_CLIENT_SECRET"`
 	GitHubOAuthRedirectUrl string `mapstructure:"GITHUB_OAUTH_REDIRECT_URL"`
+
+	DatabaseHost     string `mapstructure:"DATABASE_HOST"`
+	DatabaseUser     string `mapstructure:"DATABASE_USER"`
+	DatabasePassword string `mapstructure:"DATABASE_PASSWORD"`
+	DatabasePort     string `mapstructure:"DATABASE_PORT"`
 }
+
+var StartConfig Config
 
 func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
