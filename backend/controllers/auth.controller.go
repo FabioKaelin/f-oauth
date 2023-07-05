@@ -86,13 +86,13 @@ func SignInUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
 func LogoutUser(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
+	ctx.SetCookie("token", "", -1, "/", "localhost", false, true) // TODO: lh
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
@@ -179,14 +179,16 @@ func GoogleOAuth(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 	redirectUrl := ""
 	// if pathUrl not begin with http or https
-	if !strings.HasPrefix(pathUrl, "http") {
+	fmt.Println("pathUrl", pathUrl)
+	if !strings.HasPrefix(pathUrl, "http") && !strings.HasPrefix(pathUrl, "https") {
 		redirectUrl = fmt.Sprint(config.FrontEndOrigin, pathUrl)
 	} else {
 		redirectUrl = pathUrl
 	}
+	fmt.Println("redirectUrl", redirectUrl)
 
 	ctx.Redirect(http.StatusTemporaryRedirect, redirectUrl)
 }
@@ -269,7 +271,7 @@ func GitHubOAuth(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 
 	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
 }

@@ -52,7 +52,8 @@ export default defineComponent({
     mounted() {
         let fromDirect = this.$route.query.from
         if (fromDirect == undefined || fromDirect == null) {
-            fromDirect = "http://localhost:5173/profile"
+            fromDirect = "" // TODO: lh
+            // fromDirect = "http://localhost:5173/profile" // TODO: lh
         }
         this.from = fromDirect.toString()
         console.log(this.from)
