@@ -22,6 +22,8 @@ spec:
       path: "/api/healthchecker"
   host: "oauth.fabkli.ch"
   env:
+    - name: GIN_MODE
+      value: release
     - name: FRONTEND_ORIGIN
       value: https://oauth.fabkli.ch
     - name: TOKEN_EXPIRED_IN
