@@ -14,6 +14,7 @@ type Config struct {
 	JWTTokenSecret string        `mapstructure:"JWT_SECRET"`
 	TokenExpiresIn time.Duration `mapstructure:"TOKEN_EXPIRED_IN"`
 	TokenMaxAge    int           `mapstructure:"TOKEN_MAXAGE"`
+	TokenURL       string        `mapstructure:"TOKEN_URL"`
 
 	GoogleClientID         string `mapstructure:"GOOGLE_OAUTH_CLIENT_ID"`
 	GoogleClientSecret     string `mapstructure:"GOOGLE_OAUTH_CLIENT_SECRET"`
@@ -56,6 +57,7 @@ func LoadConfig(path string) (config Config, err error) {
 		JWTTokenSecret:         os.Getenv("JWT_SECRET"),
 		TokenExpiresIn:         TokenExpiresIn,
 		TokenMaxAge:            marks,
+		TokenURL:               os.Getenv("TOKEN_URL"),
 		GoogleClientID:         os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
 		GoogleClientSecret:     os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
 		GoogleOAuthRedirectUrl: os.Getenv("GOOGLE_OAUTH_REDIRECT_URL"),

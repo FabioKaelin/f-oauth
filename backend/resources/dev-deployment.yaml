@@ -28,6 +28,8 @@ spec:
       value: 10080m
     - name: TOKEN_MAXAGE
       value: "10080"
+    - name: TOKEN_URL
+      value: "fabkli.ch"
     - name: GOOGLE_OAUTH_CLIENT_ID
       value: 755737563752-u021il7839sit5gt4k11ag3poa9opu84.apps.googleusercontent.com
     - name: GOOGLE_OAUTH_REDIRECT_URL

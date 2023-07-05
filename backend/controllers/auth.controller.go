@@ -86,13 +86,15 @@ func SignInUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
+	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", initializers.StartConfig.TokenURL, false, true) // TODO: lh
+	// ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
 func LogoutUser(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", "localhost", false, true) // TODO: lh
+	ctx.SetCookie("token", "", -1, "/", initializers.StartConfig.TokenURL, false, true)
+	// ctx.SetCookie("token", "", -1, "/", "localhost", false, true) // TODO: lh
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
@@ -179,7 +181,8 @@ func GoogleOAuth(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
+	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", initializers.StartConfig.TokenURL, false, true)
+	// ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 	redirectUrl := ""
 	// if pathUrl not begin with http or https
 	fmt.Println("pathUrl", pathUrl)
