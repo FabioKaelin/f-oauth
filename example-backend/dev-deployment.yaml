@@ -1,0 +1,22 @@
+apiVersion: k8s.fabkli.ch/v1
+kind: Fdeployment
+metadata:
+  name: test-oauth
+spec:
+  path: "/"
+  replicas: 1
+  port: 8000
+  tag: "latest"
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1024Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  healthCheck:
+    livenessProbe:
+      path: "/api"
+    readinessProbe:
+      path: "/api"
+  host: "test-oauth.fabkli.ch"
