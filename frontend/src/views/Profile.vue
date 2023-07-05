@@ -1,13 +1,28 @@
 <template>
     <div>
-        Profile
-        <hr>
-        Name: {{ me.name }} <br>
-        Email: {{ me.email }} <br>
-        Loginmethode: {{ me.provider }} <br>
-        Rolle: {{ getReadableRole() }} <br>
-        Image: <img :src="me.photo" alt="Profilbild" width="100px" height="100px"> <br>
-        Image: {{ me.photo }} <br>
+        <h1>Profile</h1>
+        <span>
+            <img :src="me.photo" alt="Profilbild" width="100" height="100"> <br>
+        </span>
+        <table>
+            <tr>
+                <td>Name</td>
+                <td>{{ me.name }}</td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ me.email }}</td>
+            </tr>
+            <tr>
+                <td>Loginmethode</td>
+                <td>{{ getRealableProvider() }}</td>
+            </tr>
+            <tr>
+                <td>Rolle</td>
+                <td>{{ getReadableRole() }}</td>
+            </tr>
+
+        </table>
     </div>
 </template>
 
@@ -27,13 +42,16 @@ export default defineComponent({
     data() {
         return {
             count: 1,
-            me : {} as user
+            me: {} as user,
+            readableRole: "",
+            readableProvider: ""
         }
     },
     methods: {
         getReadableRole() {
             let role = this.me.role;
-            switch (role) {
+            if (role == undefined) return "Unbekannt";
+            switch (role.toLowerCase()) {
                 case "admin":
                     return "Administrator";
                 case "test-admin":
@@ -46,9 +64,10 @@ export default defineComponent({
                     return "Unbekannt";
             }
         },
-        getRealableProvider(){
+        getRealableProvider() {
             let provider = this.me.provider;
-            switch (provider) {
+            if (provider == undefined) return "Unbekannt";
+            switch (provider.toLowerCase()) {
                 case "local":
                     return "Benutzername und Passwort";
                 case "google":
@@ -71,3 +90,23 @@ export default defineComponent({
 })
 
 </script>
+
+<style scoped>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    /* width: 100%; */
+    margin:auto;
+}
+
+td,
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd1f;
+}
+</style>

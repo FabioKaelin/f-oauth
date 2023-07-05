@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import Home from '@/views/Home.vue'
-import Home from './views/Home.vue'
-// import Home from '@/views/Home.vue'
+// import Home from './views/Home.vue'
 
 export default createRouter({
     history: createWebHistory(),
@@ -9,8 +7,13 @@ export default createRouter({
         {
             path: '/',
             name: 'Home',
-            component: Home,
+            component: () => import('./views/Profile.vue'),
         },
+        // {
+        //     path: '/',
+        //     name: 'Home',
+        //     component: Home,
+        // },
         {
             path: '/profile',
             name: 'Profile',
