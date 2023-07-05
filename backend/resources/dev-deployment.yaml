@@ -37,9 +37,9 @@ spec:
     - name: GITHUB_OAUTH_REDIRECT_URL
       value: https://oauth.fabkli.ch/api/sessions/oauth/github
     - name: DATABASE_HOST
-      value: mariadb-internal-service.test.svc.cluster.local
+      value: mariadb-internal-service.oauth.svc.cluster.local
     - name: DATABASE_USER
-      value: root
+      value: oauthuser
     - name: DATABASE_PORT
       value: "3306"
     - name: GOOGLE_OAUTH_CLIENT_SECRET
