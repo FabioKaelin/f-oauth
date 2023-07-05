@@ -68,11 +68,11 @@ spec: # specification for deployment resource
         - name: MARIADB_USER
           value: oauthuser
         - name: MARIADB_PASSWORD
-          value: oauthpass
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: oauth-secrets
-          #     key: DATABASE_PASSWORD
+          # value: oauthpass
+          valueFrom:
+            secretKeyRef:
+              name: oauth-secrets
+              key: DATABASE_PASSWORD
 
         resources:
           requests: # minimum (ensured)

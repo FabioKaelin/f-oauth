@@ -42,6 +42,10 @@ spec:
       value: oauthuser
     - name: DATABASE_PORT
       value: "3306"
+    - name: DATABASE_PASSWORD
+      fromSecret:
+        name: oauth-secrets
+        key: DATABASE_PASSWORD
     - name: GOOGLE_OAUTH_CLIENT_SECRET
       fromSecret:
         name: oauth-secrets
