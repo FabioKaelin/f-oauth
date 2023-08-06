@@ -77,5 +77,5 @@ func main() {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Route Not Found"})
 	})
 
-	log.Fatal(server.Run(":" + "8000"))
+	log.Fatal(server.Run(":" + "8001"))
 }

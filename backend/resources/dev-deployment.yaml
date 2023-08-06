@@ -6,7 +6,7 @@ metadata:
 spec:
   path: "/api"
   replicas: 1
-  port: 8000
+  port: 8001
   tag: "latest"
   resources:
     limits:
