@@ -1,6 +1,6 @@
 <template>
-    <div>
-        Register
+    <div class="register">
+        <h2>Register</h2>
         <br>
         <input type="text" placeholder="Name" v-model="name">
         <br>
@@ -11,6 +11,12 @@
         <input type="password" placeholder="Password confirm"  v-model="passwordConfirm">
         <br>
         <button @click="register">Register</button>
+        <br>
+        <span>
+            <span>if you have a account you can login <router-link to="/login">here</router-link></span>
+            <br>
+            <span>you can even login without an account with google <router-link to="/login">here</router-link></span>
+        </span>
     </div>
 </template>
 

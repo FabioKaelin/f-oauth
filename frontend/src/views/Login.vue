@@ -6,13 +6,17 @@
             Sign in with Google
         </button>
         <br>
-        <span>or</span>
+        <span>you can even login without an account with google</span>
+        <br>
+        <span><b>or</b></span>
         <br>
         <input type="email" placeholder="Email" v-model="email">
         <br>
         <input type="password" placeholder="Password" v-model="password">
         <br>
         <button v-if="password != '' && email != ''" @click="login">Login</button>
+        <br>
+        <span>if you don't have an account you can create one <router-link to="/register">here</router-link></span>
     </div>
 </template>
 
