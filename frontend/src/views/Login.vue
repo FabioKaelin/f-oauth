@@ -1,6 +1,5 @@
 <template>
     <div class="login<">
-        <!-- Login {{ count }} -->
         <h1>Login</h1>
         <button @click="goToGoogle" type="button" class="login-with-google-button">
             Sign in with Google
@@ -26,6 +25,7 @@ import { defineComponent } from 'vue'
 import { getGoogleUrl } from "../helper/getGoogleUrl"
 import axios from 'axios'
 import { getAxiosConfigMethod } from '../helper/request'
+import { getLoggedin } from '../helper/userStatus'
 
 export default defineComponent({
     name: 'Login',
@@ -45,6 +45,9 @@ export default defineComponent({
         getGoogleUrl() {
             return getGoogleUrl(this.from)
         },
+        getLoggedin() {
+            return getLoggedin()
+        },
         goToGoogle() {
             window.location.href = this.getGoogleUrl()
         },
@@ -54,6 +57,10 @@ export default defineComponent({
                 password: this.password
             })).then((res) => {
                 console.log(res)
+                if (res.status == 200) {
+                    console.log("success")
+                    this.$router.push(this.from)
+                }
             }).catch((err) => {
                 console.error(err)
             })
@@ -62,14 +69,14 @@ export default defineComponent({
     mounted() {
         let fromDirect = this.$route.query.from
         if (fromDirect == undefined || fromDirect == null) {
-            fromDirect = "" // TODO: lh
+            fromDirect = window.location.origin
             // fromDirect = "http://localhost:5173/profile" // TODO: lh
         }
         this.from = fromDirect.toString()
         console.log(this.from)
-        //     this.name // type: string | undefined
-        //     this.msg // type: string
-        //     this.count // type: number
+        if (this.getLoggedin()) {
+            this.$router.push(window.location.origin + this.from)
+        }
     }
 })
 
