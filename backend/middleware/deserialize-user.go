@@ -43,7 +43,7 @@ func DeserializeUser() gin.HandlerFunc {
 
 		var user models.User
 
-		rows, err := utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1;", fmt.Sprint(sub))
+		rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1;", fmt.Sprint(sub))
 
 		if err != nil {
 			fmt.Println("the user belonging to this token no logger exists 3")

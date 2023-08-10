@@ -36,7 +36,7 @@ func SignUpUser(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
+	rows, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
 
 	for rows.Next() {
 		rows.Scan(&newUser.ID)
@@ -67,7 +67,7 @@ func SignInUser(ctx *gin.Context) {
 
 	var user models.User
 
-	rows, err := utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
@@ -144,7 +144,7 @@ func GoogleOAuth(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := utils.RunSQLSecureOne("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
+	rows, err := utils.RunSQL("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
@@ -155,7 +155,7 @@ func GoogleOAuth(ctx *gin.Context) {
 
 	if !ifExist {
 		// initializers.DB.Create(&user_data)
-		_, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+		_, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
@@ -164,7 +164,7 @@ func GoogleOAuth(ctx *gin.Context) {
 	}
 
 	var user models.User
-	rows, err = utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	// initializers.DB.First(&user, "email = ?", email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
@@ -241,7 +241,7 @@ func GitHubOAuth(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := utils.RunSQLSecureOne("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
+	rows, err := utils.RunSQL("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
@@ -250,7 +250,7 @@ func GitHubOAuth(ctx *gin.Context) {
 
 	if !rows.Next() {
 		// initializers.DB.Create(&user_data)
-		_, err := utils.RunSQLSecureOne("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+		_, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
@@ -259,7 +259,7 @@ func GitHubOAuth(ctx *gin.Context) {
 	}
 
 	var user models.User
-	rows, err = utils.RunSQLSecureOne("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	// initializers.DB.First(&user, "email = ?", email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})

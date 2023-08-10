@@ -10,6 +10,7 @@ import (
 	"github.com/wpcodevo/google-github-oath2-golang/controllers"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/middleware"
+	"github.com/wpcodevo/google-github-oath2-golang/utils"
 )
 
 var server *gin.Engine
@@ -24,6 +25,7 @@ func init() {
 	// initializers.ConnectDB()
 
 	server = gin.Default()
+	utils.UpdateDBConnection()
 
 	// server.Use(CORSMiddleware())
 

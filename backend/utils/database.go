@@ -22,7 +22,7 @@ func getDBconnection() *sql.DB {
 	return db
 }
 
-func RunSQL(sqlStatement string) *sql.Rows {
+func RunSQL_OLD(sqlStatement string) *sql.Rows {
 	db := getDBconnection()
 	fmt.Println("run sql")
 	rows, err := db.Query(sqlStatement)
