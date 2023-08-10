@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/controllers"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
@@ -37,11 +36,14 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Content-Type", "application/json")
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		origin := c.Request.Header.Get("Origin")
+		fmt.Println("Origin", origin)
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://localhost:3000,http://localhost:5173")
+		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://localhost:3000,http://localhost:8000,http://localhost:5173")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, access-control-allow-origin, Cookie, caches, Pragma, Expires")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+		// Vary: Origin
+		c.Writer.Header().Set("Vary", "Origin")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -53,9 +55,9 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
-	corsConfig.AllowCredentials = true
+	// corsConfig := cors.DefaultConfig()
+	// corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
+	// corsConfig.AllowCredentials = true
 
 	err := utils.UpdateDBConnection()
 	if err != nil {
@@ -63,7 +65,8 @@ func main() {
 		fmt.Println(newErr)
 	}
 
-	server.Use(cors.New(corsConfig))
+	// server.Use(cors.New(corsConfig))
+	server.Use(CORSMiddleware())
 
 	router := server.Group("/api")
 	router.GET("", func(ctx *gin.Context) {
