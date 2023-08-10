@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,7 +36,8 @@ func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "application/json")
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		origin := c.Request.Header.Get("Origin")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://localhost:3000,http://localhost:5173")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, access-control-allow-origin, Cookie, caches, Pragma, Expires")
@@ -54,6 +56,12 @@ func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
 	corsConfig.AllowCredentials = true
+
+	err := utils.UpdateDBConnection()
+	if err != nil {
+		newErr := errors.Join(errors.New("error durring updating db connection"), err)
+		fmt.Println(newErr)
+	}
 
 	server.Use(cors.New(corsConfig))
 
