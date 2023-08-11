@@ -53,26 +53,15 @@ spec: # specification for deployment resource
         - name: MARIADB_DATABASE
           value: oauth
         - name: MARIADB_ROOT_PASSWORD
-          # value: asdf
           valueFrom:
             secretKeyRef:
               name: oauth-secrets
               key: DATABASE_ROOT_PASSWORD
         - name: MARIADB_ROOT_HOST
           value: "localhost"
-        # - name: PUID
-        #   value: "0"
-        # - name: PGID
-        #   value: "0"
-        # - name: MYSQL_ROOT_PASSWORD
-        #   valueFrom:
-        #     secretKeyRef:
-        #       name: oauth-secrets
-        #       key: DATABASE_ROOT_PASSWORD
         - name: MARIADB_USER
           value: oauthuser
         - name: MARIADB_PASSWORD
-          # value: oauthpass
           valueFrom:
             secretKeyRef:
               name: oauth-secrets
