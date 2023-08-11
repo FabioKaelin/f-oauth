@@ -29,30 +29,27 @@ SET
 --
 -- Table structure for table `users`
 --
-
 CREATE DATABASE `oauth`;
 
 USE `oauth`;
 
 CREATE TABLE
     `users` (
-        `id` varchar(64) NOT NULL DEFAULT uuid (),
+        `id` varchar(64) NOT NULL,
         `name` varchar(64) DEFAULT NULL,
         `password` varchar(512) NOT NULL,
         `email` varchar(64) DEFAULT NULL,
         `role` varchar(64) DEFAULT NULL,
         `provider` varchar(64) DEFAULT NULL,
         `photo` varchar(512) DEFAULT NULL,
-        `verified` varchar(64) NOT NULL,
-        `created_at` date NOT NULL DEFAULT current_timestamp(),
-        `updated_at` date NOT NULL DEFAULT current_timestamp()
+        `verified` tinyint (1) DEFAULT 0,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
-
-
 --
 -- Indexes for dumped tables
 --
