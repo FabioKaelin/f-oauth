@@ -36,7 +36,6 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Content-Type", "application/json")
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		origin := c.Request.Header.Get("Origin")
-		fmt.Println("Origin", origin)
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://localhost:3000,http://localhost:8000,http://localhost:5173")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
