@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"net/http"
 	"strings"
@@ -24,11 +25,17 @@ func SignUpUser(ctx *gin.Context) {
 		return
 	}
 
+	hashpassword := sha256.New()
+
+	hashpassword.Write([]byte(payload.Password))
+
+	hashpasswordValue := string(hashpassword.Sum(nil)[:])
+
 	now := time.Now()
 	newUser := models.User{
 		Name:      payload.Name,
 		Email:     strings.ToLower(payload.Email),
-		Password:  payload.Password,
+		Password:  hashpasswordValue,
 		Role:      "user",
 		Provider:  "local",
 		Verified:  true,
@@ -76,6 +83,17 @@ func SignInUser(ctx *gin.Context) {
 	for rows.Next() {
 		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 		break
+	}
+
+	hashpassword := sha256.New()
+
+	hashpassword.Write([]byte(payload.Password))
+
+	hashpasswordValue := string(hashpassword.Sum(nil)[:])
+
+	if user.Password != hashpasswordValue {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		return
 	}
 
 	config, _ := initializers.LoadConfig(".")
