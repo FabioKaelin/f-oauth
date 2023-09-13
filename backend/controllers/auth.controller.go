@@ -20,7 +20,6 @@ func SignUpUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		fmt.Println("1", err)
-		spew.Dump(payload)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "1message": err.Error()})
 		return
 	}
