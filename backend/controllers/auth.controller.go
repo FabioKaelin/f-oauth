@@ -42,7 +42,20 @@ func SignUpUser(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
+	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error appeared"})
+		return
+	}
+
+	isExisting := rows.Next()
+
+	if isExisting {
+		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists"})
+		return
+	}
+
+	rows, err = utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
 
 	for rows.Next() {
 		rows.Scan(&newUser.ID)
@@ -78,11 +91,14 @@ func SignInUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
 	}
+	isExisting := rows.Next()
 
-	for rows.Next() {
-		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
-		break
+	if !isExisting {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		return
 	}
+
+	rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 
 	hashpassword := sha256.New()
 
@@ -92,6 +108,11 @@ func SignInUser(ctx *gin.Context) {
 
 	if user.Password != hashpasswordValue {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		return
+	}
+
+	if user.Provider != "local" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
 		return
 	}
 
@@ -195,6 +216,11 @@ func GoogleOAuth(ctx *gin.Context) {
 	}
 
 	spew.Dump(user)
+
+	if user.Provider != "Google" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
+		return
+	}
 
 	config, _ := initializers.LoadConfig(".")
 
