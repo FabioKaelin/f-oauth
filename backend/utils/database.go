@@ -3,71 +3,64 @@ package utils
 import (
 	// "backend/config"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 )
 
-func getDBconnection() *sql.DB {
-	// fmt.Println("connect to Database")
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", initializers.StartConfig.DatabaseUser, initializers.StartConfig.DatabasePassword, initializers.StartConfig.DatabaseHost, initializers.StartConfig.DatabasePort, "oauth"))
-	// db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", "root", "secretpass", "db.fabkli.ch", "38487", "oauth"))
-	// db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", DB_Username, DB_Password, DB_Host, DB_Port, DB_Name))
+var dbConn *sqlx.DB
+
+func UpdateDBConnection() error {
+	dbNew, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", initializers.StartConfig.DatabaseUser, initializers.StartConfig.DatabasePassword, initializers.StartConfig.DatabaseHost, initializers.StartConfig.DatabasePort, "oauth"))
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	// test if connection is working
+	err = dbNew.Ping()
+	if err != nil {
+		newErr := errors.Join(errors.New("error durring updating db connection"), err)
+		return newErr
+	}
+	dbConn = dbNew
 	// db.QueryRow("set client_encoding='win1252'")
 	// db.QueryRow("SET CLIENT_ENCODING TO 'LATIN1';")
-	return db
+	return nil
 }
 
-func RunSQL_OLD(sqlStatement string) *sql.Rows {
-	db := getDBconnection()
-	fmt.Println("run sql")
-	rows, err := db.Query(sqlStatement)
-	defer db.Close()
+func RunSQL(sqlStatement string, parameters ...any) (*sql.Rows, error) {
+
+	err := dbConn.Ping()
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("DB Connection lost, reconnecting...")
+		err := UpdateDBConnection()
+		if err != nil {
+			return &sql.Rows{}, err
+		}
 	}
-	// defer rows.Close()
-	return rows
-}
-
-func RunSQLRow(sqlStatement string) *sql.Row {
-	db := getDBconnection()
-	fmt.Println("run sql row")
-	row := db.QueryRow(sqlStatement)
-	defer db.Close()
-	// defer rows.Close()
-	return row
-}
-
-func RunSQLSecureOne(sqlStatement string, parameters ...any) (*sql.Rows, error) {
-	db := getDBconnection()
-	fmt.Println("run sql")
-	rows, err := db.Query(sqlStatement, parameters...)
-	defer db.Close()
+	rows, err := dbConn.Query(sqlStatement, parameters...)
 	if err != nil {
-		return new(sql.Rows), err
+		newErr := errors.Join(errors.New("error durring executing "+sqlStatement), err)
+		return &sql.Rows{}, newErr
 	}
-	// defer rows.Close()
 	return rows, nil
 }
 
-func RunSQLSecureMultible(sqlstatements [][]string) {
-	fmt.Println("run sql")
-	db := getDBconnection()
-	for _, statement := range sqlstatements {
-		var parametersAny []any
-		for _, parameter := range statement[1:] {
-			parametersAny = append(parametersAny, parameter)
-		}
-		rows, err := db.Query(statement[0], parametersAny...)
-		defer db.Close()
+func RunSQLRow(sqlStatement string, parameters ...any) (*sql.Row, error) {
+
+	err := dbConn.Ping()
+	if err != nil {
+		fmt.Println("DB Connection lost, reconnecting...")
+		err := UpdateDBConnection()
 		if err != nil {
-			fmt.Println(err.Error())
+			return &sql.Row{}, err
 		}
-		rows.Close()
 	}
+	rows := dbConn.QueryRow(sqlStatement, parameters...)
+	return rows, nil
 }
+
+var ErrorDryExec = "DRY_EXEC is set to true, no changes will be made to the database."

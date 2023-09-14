@@ -8,9 +8,9 @@
         <br>
         <input type="password" placeholder="Password" v-model="password">
         <br>
-        <input type="password" placeholder="Password confirm"  v-model="passwordConfirm">
+        <input type="password" placeholder="Password confirm" v-model="passwordConfirm">
         <br>
-        <button @click="register">Register</button>
+        <button v-if="showRegister" @click="register">Register</button>
         <br>
         <span>
             <span>if you have a account you can login <router-link to="/login">here</router-link></span>
@@ -38,6 +38,14 @@ export default defineComponent({
             from: ""
         }
     },
+    computed: {
+        passwordMatch() {
+            return this.password == this.passwordConfirm
+        },
+        showRegister() {
+            return this.passwordMatch && this.name.length > 0 && this.email.length > 0 && this.password.length > 0
+        }
+    },
     methods: {
         getLoggedin() {
             return getLoggedin()
@@ -58,14 +66,15 @@ export default defineComponent({
             console.log(data)
             console.log(data2)
 
-            axios.request(getAxiosConfigMethod("/auth/register","POST", data)).then((res) => {
+            axios.request(getAxiosConfigMethod("/auth/register", "POST", data)).then((res) => {
                 console.log(res)
                 if (res.status == 201) {
                     console.log("success")
-                    this.$router.push("/login")
+                    this.login()
+                    // this.$router.push("/login")
                 }
             }).catch((err) => {
-                console.error(err)
+                console.error(err.response.data)
             })
         },
         login() {
@@ -76,10 +85,10 @@ export default defineComponent({
                 console.log(res)
                 if (res.status == 200) {
                     console.log("success")
-                    this.$router.push(this.from)
+                    document.location.href =this.from
                 }
             }).catch((err) => {
-                console.error(err)
+                console.error(err.response.data)
             })
         }
     },
@@ -93,7 +102,9 @@ export default defineComponent({
         console.log(this.from)
 
         if (this.getLoggedin()) {
-            this.$router.push(window.location.origin + this.from)
+            console.log(window.location.origin + "?from=" + this.from)
+            console.log(this.from)
+            document.location.href= window.location.origin + "?from=" + this.from
         }
     }
 })

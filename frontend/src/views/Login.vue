@@ -62,7 +62,7 @@ export default defineComponent({
                 console.log(res.data)
                 if (res.status == 200) {
                     console.log("success")
-                    this.$router.push(this.from)
+                    document.location.href = this.from
                 } else {
                     console.log("failed")
                     console.log(res.data)
@@ -88,7 +88,7 @@ export default defineComponent({
         this.from = fromDirect.toString()
         console.log(this.from)
         if (this.getLoggedin()) {
-            this.$router.push(window.location.origin + this.from)
+            document.location.href = window.location.origin + "?from=" + this.from
         }
     }
 })
@@ -108,8 +108,7 @@ export default defineComponent({
     background-position: 12px 11px;
 }
 
-.error{
+.error {
     color: red;
 }
-
 </style>

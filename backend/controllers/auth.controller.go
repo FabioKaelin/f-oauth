@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strings"
@@ -24,11 +25,8 @@ func SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	hashpassword := sha256.New()
-
-	hashpassword.Write([]byte(payload.Password))
-
-	hashpasswordValue := string(hashpassword.Sum(nil)[:])
+	hashpassword := sha512.Sum512([]byte(payload.Password))
+	hashpasswordValue := hex.EncodeToString(hashpassword[:])
 
 	now := time.Now()
 	newUser := models.User{
@@ -55,18 +53,22 @@ func SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	rows, err = utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
-
-	for rows.Next() {
-		rows.Scan(&newUser.ID)
-	}
+	row, err := utils.RunSQLRow("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
 
 	if err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.email") {
-
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "2message": "User with that email already exists"})
 		return
 	} else if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "3message": "Something bad happened"})
+		return
+	}
+
+	err = row.Scan(&newUser.ID)
+
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(newUser.Password)
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "4message": "Something bad happened"})
 		return
 	}
 
@@ -100,11 +102,9 @@ func SignInUser(ctx *gin.Context) {
 
 	rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 
-	hashpassword := sha256.New()
-
-	hashpassword.Write([]byte(payload.Password))
-
-	hashpasswordValue := string(hashpassword.Sum(nil)[:])
+	hashpassword := sha512.Sum512([]byte(payload.Password))
+	hashpasswordValue := hex.EncodeToString(hashpassword[:])
+	fmt.Println("hashpasswordValue", hashpasswordValue)
 
 	if user.Password != hashpasswordValue {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
