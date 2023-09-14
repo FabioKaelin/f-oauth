@@ -31,23 +31,28 @@ export function loadLoggedIn() {
         headers: {
             accept: "application/json",
         },
+        validateStatus: function (status: number) {
+            return status < 500; // Resolve only if the status code is less than 500
+        }
     }
 
 
     axios.request(config).then((res) => {
-        console.log(res);
         if (res.status === 200) {
             console.log("logged in")
             setLoggedin(true)
             sessionStorage.setItem("loggedin", true.toString());
+        } else if (res.status === 401) {
+            console.log("not logged in 401")
+            setLoggedin(false)
+            sessionStorage.setItem("loggedin", false.toString());
         } else {
             console.log("not logged in")
             setLoggedin(false)
             sessionStorage.setItem("loggedin", false.toString());
         }
-    }).catch(() => {
-        console.log("not logged in")
-        setLoggedin(false)
-        sessionStorage.setItem("loggedin", false.toString());
+    }).catch((err) => {
+        console.log("b")
+        console.log(err.response.status)
     })
 }

@@ -13,6 +13,8 @@
         <br>
         <input type="password" placeholder="Password" v-model="password">
         <br>
+        <span v-if="error != ''" class="error">{{ error }}</span>
+        <br>
         <button v-if="password != '' && email != ''" @click="login">Login</button>
         <br>
         <span>if you don't have an account you can create one <router-link to="/register">here</router-link></span>
@@ -38,7 +40,8 @@ export default defineComponent({
             count: 1,
             from: "",
             email: "",
-            password: ""
+            password: "",
+            error: ""
         }
     },
     methods: {
@@ -56,13 +59,23 @@ export default defineComponent({
                 email: this.email,
                 password: this.password
             })).then((res) => {
-                console.log(res)
+                console.log(res.data)
                 if (res.status == 200) {
                     console.log("success")
                     this.$router.push(this.from)
+                } else {
+                    console.log("failed")
+                    console.log(res.data)
                 }
             }).catch((err) => {
-                console.error(err)
+                if (err.response.status == 401) {
+                    console.log("failed")
+                    console.log(err.response.data)
+                    this.error = err.response.data.message
+                } else {
+                    console.log("catch")
+                    console.log(err)
+                }
             })
         }
     },
@@ -93,6 +106,10 @@ export default defineComponent({
     background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=);
     background-repeat: no-repeat;
     background-position: 12px 11px;
+}
+
+.error{
+    color: red;
 }
 
 </style>

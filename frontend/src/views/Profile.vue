@@ -83,7 +83,8 @@ export default defineComponent({
                 let me = response.data;
                 this.me = me;
             }).catch((error: any) => {
-                console.log(error);
+                // console.log(error);
+                console.log(error.response.status, "not logged in")
                 this.$router.push({ name: 'login' });
             });
     }

@@ -1,7 +1,7 @@
 <template>
     <div class="linkbuttons">
 
-        <Slide :closeOnNavigation="true" noOverlay >
+        <Slide closeOnNavigation noOverlay >
             <router-link v-if="loggedIn" to="/">
                 <span>Home</span>
             </router-link>
