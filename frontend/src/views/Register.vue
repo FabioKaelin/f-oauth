@@ -92,7 +92,9 @@ export default defineComponent({
                 console.log(res)
                 if (res.status == 200) {
                     console.log("success")
-                    document.location.href = this.from
+                    setTimeout(() => {
+                        document.location.href = this.from
+                    }, 50);
                 }
             }).catch((err) => {
                 console.error(err.response.data)
