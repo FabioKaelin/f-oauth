@@ -9,6 +9,7 @@
             {
                 "name": "Git",
                 "commands": [
+                    "cd ~/code/f-oauth",
                     "git status"
                 ],
                 "icon": "git-branch",
@@ -19,6 +20,7 @@
                 {
                     "name": "Frontend",
                     "commands": [
+                        "cd ~/code/f-oauth",
                         "cd frontend",
                         "npm run dev"
                     ],
@@ -29,6 +31,7 @@
                 {
                     "name": "Backend",
                     "commands": [
+                        "cd ~/code/f-oauth",
                         "cd backend",
                         "go run ."
                     ],
