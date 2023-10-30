@@ -1,4 +1,4 @@
-name: Frontend Dev
+name: Backend
 
 
 on:
@@ -8,8 +8,8 @@ on:
     branches:
     - "main"
     paths:
-    - "frontend/**"
-    - ".github/workflows/frontend-dev.yaml"
+    - "backend/**"
+    - ".github/workflows/backend.yaml"
     # Publish semver tags as releases.
     # tags: [ 'v*.*.*' ]
   # pull_request:
@@ -18,15 +18,16 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "oauth-frontend"
+  IMAGE_NAME: "oauth-backend"
 
 
 jobs:
   build:
-    #runs-on: self-hosted
+
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: login ghcr.io
         run: |
@@ -36,25 +37,23 @@ jobs:
 
       - name: build and push
         run: |
-          cd frontend
+          cd backend
           echo ${{ env.REGISTRY }}
           echo ${{ env.IMAGE_NAME }}
           echo ${{ github.actor }}
           docker buildx ls
-          docker buildx rm fdeployer || true
           docker buildx create --name fdeployer
           docker buildx use fdeployer
           docker buildx inspect --bootstrap
           export username=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')
-          docker buildx build --platform linux/arm64,linux/amd64 -t ${{ env.REGISTRY }}/${username}/${{ env.IMAGE_NAME }}:latest --push .
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - uses: actions/checkout@v3
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${{ env.REGISTRY }}/${username}/${{ env.IMAGE_NAME }}:latest --push .
 
+      # - uses: actions-hub/kubectl@master
+      #   name: connect to k8s-cluster
+      #   env:
+      #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       - uses: azure/setup-kubectl@v3
-      # with:
+        # with:
           # version: '<version>' # default is latest stable
         id: install
 
@@ -97,10 +96,10 @@ jobs:
 
       - name: deploy
         run: |
-          cd frontend
+          cd backend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
-          kubectl apply -f resources/dev-deployment.yaml
-          kubectl rollout restart deployment oauth-frontend
+          kubectl apply -f resources/deployment.yaml
+          kubectl rollout restart deployment oauth-backend
           kubectl get pods
 

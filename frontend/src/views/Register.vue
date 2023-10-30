@@ -13,9 +13,10 @@
         <button v-if="showRegister" @click="register">Register</button>
         <br>
         <span>
-            <span>if you have a account you can login <router-link to="/login">here</router-link></span>
+            <span>if you have a account you can login <router-link :to="'/login' + getFrom()">here</router-link></span>
             <br>
-            <span>you can even login without an account with google <router-link to="/login">here</router-link></span>
+            <span>you can even login without an account with google <router-link
+                    :to="'/login' + getFrom()">here</router-link></span>
         </span>
     </div>
 </template>
@@ -49,6 +50,12 @@ export default defineComponent({
     methods: {
         getLoggedin() {
             return getLoggedin()
+        },
+        getFrom() {
+            if (this.from == "") {
+                return ""
+            }
+            return "?from=" + this.from
         },
         register() {
             let data = {
@@ -85,7 +92,9 @@ export default defineComponent({
                 console.log(res)
                 if (res.status == 200) {
                     console.log("success")
-                    document.location.href =this.from
+                    setTimeout(() => {
+                        document.location.href = this.from
+                    }, 50);
                 }
             }).catch((err) => {
                 console.error(err.response.data)
@@ -104,7 +113,7 @@ export default defineComponent({
         if (this.getLoggedin()) {
             console.log(window.location.origin + "?from=" + this.from)
             console.log(this.from)
-            document.location.href= window.location.origin + "?from=" + this.from
+            document.location.href = window.location.origin + "?from=" + this.from
         }
     }
 })

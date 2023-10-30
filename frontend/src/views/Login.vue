@@ -17,7 +17,8 @@
         <br>
         <button v-if="password != '' && email != ''" @click="login">Login</button>
         <br>
-        <span>if you don't have an account you can create one <router-link to="/register">here</router-link></span>
+        <span>if you don't have an account you can create one <router-link
+                :to="'/register' + getFrom()">here</router-link></span>
     </div>
 </template>
 
@@ -53,6 +54,12 @@ export default defineComponent({
         },
         goToGoogle() {
             window.location.href = this.getGoogleUrl()
+        },
+        getFrom() {
+            if (this.from == "") {
+                return ""
+            }
+            return "?from=" + this.from
         },
         login() {
             axios.request(getAxiosConfigMethod("/auth/login", "POST", {
