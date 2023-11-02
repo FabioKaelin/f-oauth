@@ -1,37 +1,33 @@
 <template>
     <div class="login<">
         <h1>Login</h1>
-        <button @click="goToGoogle" type="button" class="login-with-google-button">
-            Sign in with Google
-        </button>
-        <br>
+        <button type="button" class="login-with-google-button" @click="goToGoogle">Sign in with Google</button>
+        <br />
         <span>you can even login without an account with google</span>
-        <br>
+        <br />
         <span><b>or</b></span>
-        <br>
-        <input type="email" placeholder="Email" v-model="email">
-        <br>
-        <input type="password" placeholder="Password" v-model="password">
-        <br>
+        <br />
+        <input v-model="email" type="email" placeholder="Email" />
+        <br />
+        <input v-model="password" type="password" placeholder="Password" />
+        <br />
         <span v-if="error != ''" class="error">{{ error }}</span>
-        <br>
+        <br />
         <button v-if="password != '' && email != ''" @click="login">Login</button>
-        <br>
-        <span>if you don't have an account you can create one <router-link
-                :to="'/register' + getFrom()">here</router-link></span>
+        <br />
+        <span>if you don't have an account you can create one <router-link :to="'/register' + getFrom()">here</router-link></span>
     </div>
 </template>
 
 <script lang="ts">
-
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue"
 import { getGoogleUrl } from "../helper/getGoogleUrl"
-import axios from 'axios'
-import { getAxiosConfigMethod } from '../helper/request'
-import { getLoggedin } from '../helper/userStatus'
+import axios from "axios"
+import { getAxiosConfigMethod } from "../helper/request"
+import { getLoggedin } from "../helper/userStatus"
 
 export default defineComponent({
-    name: 'Login',
+    name: "LoginView",
     // props: {
     //     name: String,
     //     msg: { type: String, required: true }
@@ -43,6 +39,18 @@ export default defineComponent({
             email: "",
             password: "",
             error: ""
+        }
+    },
+    mounted() {
+        let fromDirect = this.$route.query.from
+        if (fromDirect == undefined || fromDirect == null) {
+            fromDirect = window.location.origin
+            // fromDirect = "http://localhost:5173/profile" // TODO: lh
+        }
+        this.from = fromDirect.toString()
+        console.log(this.from)
+        if (this.getLoggedin()) {
+            document.location.href = window.location.origin + "?from=" + this.from
         }
     },
     methods: {
@@ -62,44 +70,36 @@ export default defineComponent({
             return "?from=" + this.from
         },
         login() {
-            axios.request(getAxiosConfigMethod("/auth/login", "POST", {
-                email: this.email,
-                password: this.password
-            })).then((res) => {
-                console.log(res.data)
-                if (res.status == 200) {
-                    console.log("success")
-                    document.location.href = this.from
-                } else {
-                    console.log("failed")
+            axios
+                .request(
+                    getAxiosConfigMethod("/auth/login", "POST", {
+                        email: this.email,
+                        password: this.password
+                    })
+                )
+                .then(res => {
                     console.log(res.data)
-                }
-            }).catch((err) => {
-                if (err.response.status == 401) {
-                    console.log("failed")
-                    console.log(err.response.data)
-                    this.error = err.response.data.message
-                } else {
-                    console.log("catch")
-                    console.log(err)
-                }
-            })
-        }
-    },
-    mounted() {
-        let fromDirect = this.$route.query.from
-        if (fromDirect == undefined || fromDirect == null) {
-            fromDirect = window.location.origin
-            // fromDirect = "http://localhost:5173/profile" // TODO: lh
-        }
-        this.from = fromDirect.toString()
-        console.log(this.from)
-        if (this.getLoggedin()) {
-            document.location.href = window.location.origin + "?from=" + this.from
+                    if (res.status == 200) {
+                        console.log("success")
+                        document.location.href = this.from
+                    } else {
+                        console.log("failed")
+                        console.log(res.data)
+                    }
+                })
+                .catch(err => {
+                    if (err.response.status == 401) {
+                        console.log("failed")
+                        console.log(err.response.data)
+                        this.error = err.response.data.message
+                    } else {
+                        console.log("catch")
+                        console.log(err)
+                    }
+                })
         }
     }
 })
-
 </script>
 
 <style scoped>

@@ -1,13 +1,13 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router"
 // import Home from './views/Home.vue'
 
 export default createRouter({
     history: createWebHistory(),
     routes: [
         {
-            path: '/',
-            name: 'Home',
-            component: () => import('./views/Profile.vue'),
+            path: "/",
+            name: "Home",
+            component: () => import("./views/ProfileView.vue")
         },
         // {
         //     path: '/',
@@ -15,22 +15,22 @@ export default createRouter({
         //     component: Home,
         // },
         {
-            path: '/profile',
-            name: 'Profile',
-            component: () => import('./views/Profile.vue'),
+            path: "/profile",
+            name: "Profile",
+            component: () => import("./views/ProfileView.vue")
         },
         {
-            path: '/login',
-            name: 'login',
-            component: () => import('./views/Login.vue'),
+            path: "/login",
+            name: "login",
+            component: () => import("./views/LoginView.vue")
             // query: {
             //     from: '',
             // }
         },
         {
-            path: '/register',
-            name: 'register',
-            component: () => import('./views/Register.vue'),
-        },
-    ],
+            path: "/register",
+            name: "register",
+            component: () => import("./views/RegisterView.vue")
+        }
+    ]
 })

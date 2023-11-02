@@ -1,1 +1,1 @@
-declare module 'vue3-burger-menu';
+declare module "vue3-burger-menu"

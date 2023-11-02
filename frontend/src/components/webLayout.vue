@@ -1,7 +1,6 @@
 <template>
     <div class="linkbuttons">
-
-        <Slide closeOnNavigation noOverlay >
+        <Slide close-on-navigation no-overlay>
             <router-link v-if="loggedIn" to="/">
                 <span>Home</span>
             </router-link>
@@ -15,23 +14,21 @@
                 <span>Register</span>
             </router-link>
             <a v-if="loggedIn" @click="logout">
-                <span>
-                    Logout
-                </span>
+                <span> Logout </span>
             </a>
         </Slide>
     </div>
 </template>
 
 <script lang="ts">
-import axios from 'axios';
-import { defineComponent } from 'vue'
-import { getAxiosConfig } from '../helper/request';
-import { Slide } from 'vue3-burger-menu'  // import the CSS transitions you wish to use, in this case we are using `Slide`
-import { getLoggedin, loggedIn } from '../helper/userStatus';
+import axios from "axios"
+import { defineComponent } from "vue"
+import { getAxiosConfig } from "../helper/request"
+import { Slide } from "vue3-burger-menu" // import the CSS transitions you wish to use, in this case we are using `Slide`
+import { getLoggedin, loggedIn } from "../helper/userStatus"
 // const Slide = require('vue-burger-menu').Slide
 export default defineComponent({
-    name: 'Layout',
+    name: "WebLayout",
     components: {
         Slide
     },
@@ -42,16 +39,16 @@ export default defineComponent({
         }
     },
     created() {
-        this.interval = setInterval(() => this.getLoggedin(), 3000);
+        this.interval = setInterval(() => this.getLoggedin(), 3000)
     },
-    beforeDestroy() {
+    beforeUnmount() {
         clearInterval(this.interval)
     },
     methods: {
         logout() {
-            axios.request(getAxiosConfig('/auth/logout')).then((response) => {
-                console.log(response);
-                localStorage.removeItem("loggedin");
+            axios.request(getAxiosConfig("/auth/logout")).then(response => {
+                console.log(response)
+                localStorage.removeItem("loggedin")
                 // this.$router.push('/')
                 window.location.reload()
             })
@@ -61,7 +58,6 @@ export default defineComponent({
             this.loggedIn = loggedIn
             return loggedIn
         }
-
     }
 })
 </script>
