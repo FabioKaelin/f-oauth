@@ -45,62 +45,62 @@ spec: # specification for deployment resource
         app: mariadb-oauth # service will look for this label
     spec: # specification for Pod
       containers:
-      - name: mariadb
-        image: mariadb:11
-        ports:
-        - containerPort: 3306 #default one
-        env:
-        - name: MARIADB_DATABASE
-          value: oauth
-        - name: MARIADB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: DATABASE_ROOT_PASSWORD
-        - name: MARIADB_ROOT_HOST
-          value: "localhost"
-        - name: MARIADB_USER
-          value: oauthuser
-        - name: MARIADB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: DATABASE_PASSWORD
+        - name: mariadb
+          image: mariadb:11
+          ports:
+            - containerPort: 3306 #default one
+          env:
+            - name: MARIADB_DATABASE
+              value: oauth
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-secrets
+                  key: DATABASE_ROOT_PASSWORD
+            - name: MARIADB_ROOT_HOST
+              value: "localhost"
+            - name: MARIADB_USER
+              value: oauthuser
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-secrets
+                  key: DATABASE_PASSWORD
 
-        resources:
-          requests: # minimum (ensured)
-            memory: "128Mi"
-            cpu: "50m"
-          limits: # maximum (allowed)
-            memory: "1024Mi"
-            cpu: "200m"
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsNonRoot: true
-          runAsUser: 1001
-          runAsGroup: 1001
+          resources:
+            requests: # minimum (ensured)
+              memory: "128Mi"
+              cpu: "50m"
+            limits: # maximum (allowed)
+              memory: "1024Mi"
+              cpu: "200m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
 
-        volumeMounts:
-        - name: mariadb-pv-1
-          mountPath: /var/lib/mysql
-          readOnly: false
-          mountPropagation: None
-          # mountPropagation: HostToContainer
+          volumeMounts:
+            - name: mariadb-pv-1
+              mountPath: /var/lib/mysql
+              readOnly: false
+              mountPropagation: None
+              # mountPropagation: HostToContainer
 
-        # command: ["sh", "-c", "ls -la /var/lib/mysql"]
+          # command: ["sh", "-c", "ls -la /var/lib/mysql"]
       volumes:
-      - name: mariadb-pv-1
-        persistentVolumeClaim:
-          claimName: mariadb-pv-claim-1
+        - name: mariadb-pv-1
+          persistentVolumeClaim:
+            claimName: mariadb-pv-claim-1
 
       tolerations:
-      - effect: NoSchedule
-        key: kubernetes.azure.com/scalesetpriority
-        operator: Equal
-        value: spot
+        - effect: NoSchedule
+          key: kubernetes.azure.com/scalesetpriority
+          operator: Equal
+          value: spot
       securityContext:
         runAsNonRoot: true
         fsGroup: 2000
