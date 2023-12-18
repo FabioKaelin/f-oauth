@@ -1,42 +1,36 @@
-
-
 <template>
-    <layout></layout>
+    <web-layout></web-layout>
     <router-view />
-
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import { defineComponent } from 'vue'
-
-import Layout from './components/layout.vue';
-import { loadLoggedIn } from './helper/userStatus';
+import webLayout from "./components/webLayout.vue"
+import { loadLoggedIn } from "./helper/userStatus"
 export default defineComponent({
     name: "App",
-    components: { Layout },
+    components: { webLayout: webLayout },
     data() {
         return {
-            interval: {} as  ReturnType<typeof setTimeout>
-
+            interval: {} as ReturnType<typeof setTimeout>
         }
     },
-    methods: {
-        loadLoggedIn() {
-            loadLoggedIn()
-        },
-    },
 
-    beforeDestroy() {
+    beforeUnmount() {
         clearInterval(this.interval)
     },
     created() {
         this.loadLoggedIn()
-        this.interval = setInterval(() => this.loadLoggedIn(), 60*1000);
+        this.interval = setInterval(() => this.loadLoggedIn(), 60 * 1000)
     },
+    methods: {
+        loadLoggedIn() {
+            loadLoggedIn()
+        }
+    }
 })
 // import HelloWorld from './components/HelloWorld.vue'
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -21,8 +21,6 @@ export function getAxiosConfigMethod(url: string, method: string, data: any) {
     return config
 }
 
-
-
 export function getAxiosConfig(url: string) {
     const backendURL = import.meta.env.VITE_SERVER_ENDPOINT as string
     // console.log(backendURL);
@@ -35,8 +33,8 @@ export function getAxiosConfig(url: string) {
         credentials: "include",
         withCredentials: true,
         headers: {
-            accept: "application/json",
-        },
+            accept: "application/json"
+        }
         // withCredentials: true
     }
     return config

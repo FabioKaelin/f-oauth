@@ -1,9 +1,7 @@
 <template>
     <div>
         <h1>Profile</h1>
-        <span>
-            <img :src="me.photo" alt="Profilbild" width="100" height="100"> <br>
-        </span>
+        <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span>
         <table>
             <tr>
                 <td>Name</td>
@@ -21,20 +19,18 @@
                 <td>Rolle</td>
                 <td>{{ getReadableRole() }}</td>
             </tr>
-
         </table>
     </div>
 </template>
 
 <script lang="ts">
-
-import { defineComponent } from 'vue'
-import { getAxiosConfig } from '../helper/request';
-import axios from 'axios'
-import { user } from '../helper/types';
+import { defineComponent } from "vue"
+import { getAxiosConfig } from "../helper/request"
+import axios from "axios"
+import { user } from "../helper/types"
 
 export default defineComponent({
-    name: 'Profile',
+    name: "ProfileView",
     // props: {
     //     name: String,
     //     msg: { type: String, required: true }
@@ -47,49 +43,50 @@ export default defineComponent({
             readableProvider: ""
         }
     },
+    mounted() {
+        axios
+            .request(getAxiosConfig("/users/me"))
+            .then((response: any) => {
+                let me = response.data
+                this.me = me
+            })
+            .catch((error: any) => {
+                // console.log(error);
+                console.log(error.response.status, "not logged in")
+                this.$router.push({ name: "login" })
+            })
+    },
     methods: {
         getReadableRole() {
-            let role = this.me.role;
-            if (role == undefined) return "Unbekannt";
+            let role = this.me.role
+            if (role == undefined) return "Unbekannt"
             switch (role.toLowerCase()) {
                 case "admin":
-                    return "Administrator";
+                    return "Administrator"
                 case "test-admin":
-                    return "Test-Administrator";
+                    return "Test-Administrator"
                 case "user":
-                    return "Benutzer";
+                    return "Benutzer"
                 case "test-user":
-                    return "Test-Benutzer";
+                    return "Test-Benutzer"
                 default:
-                    return "Unbekannt";
+                    return "Unbekannt"
             }
         },
         getRealableProvider() {
-            let provider = this.me.provider;
-            if (provider == undefined) return "Unbekannt";
+            let provider = this.me.provider
+            if (provider == undefined) return "Unbekannt"
             switch (provider.toLowerCase()) {
                 case "local":
-                    return "Benutzername und Passwort";
+                    return "Benutzername und Passwort"
                 case "google":
-                    return "Google";
+                    return "Google"
                 default:
-                    return "Unbekannt";
+                    return "Unbekannt"
             }
         }
-    },
-    mounted() {
-        axios.request(getAxiosConfig("/users/me"))
-            .then((response: any) => {
-                let me = response.data;
-                this.me = me;
-            }).catch((error: any) => {
-                // console.log(error);
-                console.log(error.response.status, "not logged in")
-                this.$router.push({ name: 'login' });
-            });
     }
 })
-
 </script>
 
 <style scoped>
@@ -97,7 +94,7 @@ table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
     /* width: 100%; */
-    margin:auto;
+    margin: auto;
 }
 
 td,

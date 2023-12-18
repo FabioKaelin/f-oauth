@@ -1,5 +1,5 @@
 {
-    "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v7/terminal-keeper.json",
+    "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v9/terminal-keeper.json",
     "theme": "tribe",
     "active": "default",
     "activateOnStartup": true,
@@ -9,7 +9,8 @@
             {
                 "name": "Git",
                 "commands": [
-                    " cd ~/code/f-oauth",
+                    "cd $CODE",
+                    "cd f-oauth",
                     "git status"
                 ],
                 "icon": "git-branch",
@@ -20,7 +21,8 @@
                 {
                     "name": "Frontend",
                     "commands": [
-                        " cd ~/code/f-oauth",
+                        "cd $CODE",
+                        "cd f-oauth",
                         "cd frontend",
                         "npm run dev"
                     ],
@@ -31,7 +33,8 @@
                 {
                     "name": "Backend",
                     "commands": [
-                        " cd ~/code/f-oauth",
+                        "cd $CODE",
+                        "cd f-oauth",
                         "cd backend",
                         "go run ."
                     ],
