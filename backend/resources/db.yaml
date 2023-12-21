@@ -1,29 +1,25 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mariadb-pv-claim-1
+  name: db
   labels:
-    app: mariadb
+    app: db
 spec:
-  # storageClassName: managed-csi
   storageClassName: standard
-  # storageClassName: default
-  # storageClassName: ivp-foperator-file-temp-standard
   accessModes:
     - ReadWriteMany
-    # - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
-      storage: "2Gi"
+      storage: "4Gi"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mariadb-internal-service
+  name: db
 spec:
   selector:
-    app: mariadb-oauth
+    app: db
   ports:
     - protocol: TCP
       port: 3306
@@ -33,22 +29,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mariadb-deployment
-spec: # specification for deployment resource
+  name: db
+spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mariadb-oauth
-  template: # blueprint for Pod
+      app: db
+  template:
     metadata:
       labels:
-        app: mariadb-oauth # service will look for this label
-    spec: # specification for Pod
+        app: db
+    spec:
       containers:
         - name: mariadb
           image: mariadb:11
           ports:
-            - containerPort: 3306 #default one
+            - containerPort: 3306
           env:
             - name: MARIADB_DATABASE
               value: oauth
@@ -68,10 +64,10 @@ spec: # specification for deployment resource
                   key: DATABASE_PASSWORD
 
           resources:
-            requests: # minimum (ensured)
+            requests:
               memory: "128Mi"
               cpu: "50m"
-            limits: # maximum (allowed)
+            limits:
               memory: "1024Mi"
               cpu: "200m"
           securityContext:
@@ -84,17 +80,14 @@ spec: # specification for deployment resource
             runAsGroup: 1001
 
           volumeMounts:
-            - name: mariadb-pv-1
+            - name: db
               mountPath: /var/lib/mysql
               readOnly: false
               mountPropagation: None
-              # mountPropagation: HostToContainer
-
-          # command: ["sh", "-c", "ls -la /var/lib/mysql"]
       volumes:
-        - name: mariadb-pv-1
+        - name: db
           persistentVolumeClaim:
-            claimName: mariadb-pv-claim-1
+            claimName: db
 
       tolerations:
         - effect: NoSchedule
