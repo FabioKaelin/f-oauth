@@ -2,6 +2,7 @@ apiVersion: k8s.fabkli.ch/v1
 kind: Fdeployment
 metadata:
   name: oauth-backend
+  namespace: oauth
 spec:
   path: "/api"
   replicas: 1
