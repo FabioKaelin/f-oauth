@@ -51,9 +51,16 @@ export default defineComponent({
                 this.me = me
             })
             .catch((error: any) => {
+                let fromDirect = this.$route.query.from
+                if (fromDirect == undefined || fromDirect == null) {
+                    fromDirect = window.location.origin
+                    // fromDirect = "http://localhost:5173/profile" // TODO: lh
+                }
+                let from = fromDirect.toString()
+                console.log(from)
                 // console.log(error);
                 console.log(error.response.status, "not logged in")
-                this.$router.push({ name: "login" })
+                this.$router.push({ name: "login", query: { from: from } })
             })
     },
     methods: {
