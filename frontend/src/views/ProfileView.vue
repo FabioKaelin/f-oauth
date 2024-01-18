@@ -20,6 +20,19 @@
                 <td>{{ getReadableRole() }}</td>
             </tr>
         </table>
+        <br>
+        <hr>
+        <h2>Applications</h2>
+        <!-- link to https://tipp.fabkli.ch as button -->
+        <a href="https://tipp.fabkli.ch" target="_blank" rel="noopener noreferrer">
+            <button>Tippspiel</button>
+        </a>
+        <br>
+        <br>
+        <!-- link to https://tipp.dev.fabkli.ch as button -->
+        <a href="https://tipp.dev.fabkli.ch" target="_blank" rel="noopener noreferrer">
+            <button>Tippspiel-Dev (Nur für Entwicklung)</button>
+        </a>
     </div>
 </template>
 

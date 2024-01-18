@@ -35,18 +35,26 @@ jobs:
         env:
           CR_PAT: ${{ secrets.CR_PAT }}
 
+      - name: install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install jq
+
       - name: build and push
         run: |
+          export version=$(cat project-meta.jsonc | jq -r ."backend_version")
+
           cd backend
           echo ${{ env.REGISTRY }}
           echo ${{ env.IMAGE_NAME }}
           echo ${{ github.actor }}
+          echo ${version}
           docker buildx ls
           docker buildx create --name fdeployer
           docker buildx use fdeployer
           docker buildx inspect --bootstrap
           export username=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${{ env.REGISTRY }}/${username}/${{ env.IMAGE_NAME }}:latest --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${{ env.REGISTRY }}/${username}/${{ env.IMAGE_NAME }}:${version} --push .
 
       # - uses: actions-hub/kubectl@master
       #   name: connect to k8s-cluster
@@ -96,9 +104,11 @@ jobs:
 
       - name: deploy
         run: |
+          export version=$(cat project-meta.jsonc | jq -r ."backend_version")
           cd backend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
+          sed -i "s/latest/${version}/g" resources/deployment.yaml
           kubectl apply -f resources/deployment.yaml
           kubectl rollout restart deployment oauth-backend
           kubectl get pods
