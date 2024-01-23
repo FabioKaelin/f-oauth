@@ -1,48 +1,48 @@
 {
-  "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v9/terminal-keeper.json",
-  "theme": "tribe",
-  "active": "default",
-  "activateOnStartup": true,
-  "keepExistingTerminals": false,
-  "sessions": {
-    "default": [
-      {
-        "name": "Git",
-        "commands": [
-          "cd $CODE",
-          "cd f-oauth",
-          "git status"
-        ],
-        "icon": "git-branch",
-        "color": "terminal.ansiRed",
-        "autoExecuteCommands": true
-      },
-      [
-        {
-          "name": "Frontend",
-          "commands": [
-            "cd $CODE",
-            "cd f-oauth",
-            "cd frontend",
-            "npm run dev"
-          ],
-          "icon": "notebook-render-output",
-          "autoExecuteCommands": true,
-          "color": "terminal.ansiGreen"
-        },
-        {
-          "name": "Backend",
-          "commands": [
-            "cd $CODE",
-            "cd f-oauth",
-            "cd backend",
-            "go run ."
-          ],
-          "autoExecuteCommands": true,
-          "icon": "circuit-board",
-          "color": "terminal.ansiBrightBlue"
-        }
-      ]
-    ]
-  }
+    "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v10/terminal-keeper.json",
+    "theme": "tribe",
+    "active": "default",
+    "activateOnStartup": true,
+    "keepExistingTerminals": false,
+    "sessions": {
+        "default": [
+            {
+                "name": "Git",
+                "commands": [
+                    "cd $CODE",
+                    "cd f-oauth",
+                    "git status"
+                ],
+                "icon": "git-branch",
+                "color": "terminal.ansiRed",
+                "autoExecuteCommands": true
+            },
+            [
+                {
+                    "name": "Frontend",
+                    "commands": [
+                        "cd $CODE",
+                        "cd f-oauth",
+                        "cd frontend",
+                        "npm run dev"
+                    ],
+                    "icon": "notebook-render-output",
+                    "autoExecuteCommands": true,
+                    "color": "terminal.ansiGreen"
+                },
+                {
+                    "name": "Backend",
+                    "commands": [
+                        "cd $CODE",
+                        "cd f-oauth",
+                        "cd backend",
+                        "go run ."
+                    ],
+                    "autoExecuteCommands": true,
+                    "icon": "circuit-board",
+                    "color": "terminal.ansiBrightBlue"
+                }
+            ]
+        ]
+    }
 }
