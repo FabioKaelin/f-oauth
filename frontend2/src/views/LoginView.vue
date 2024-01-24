@@ -17,7 +17,7 @@
         <br />
         <hr>
         <br>
-        <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google einloggen möchtest kannst du dich hier registrieren</span>
+        <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google einloggen möchtest (was ohne Account funktioniert) kannst du dich hier registrieren</span>
         <br>
         <input v-model="rname" class="textInput" type="text" placeholder="Name" />
         <br />
