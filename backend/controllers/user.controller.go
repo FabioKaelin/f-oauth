@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
 	"github.com/wpcodevo/google-github-oath2-golang/utils"
 )
@@ -55,5 +58,34 @@ func UpdateMe(ctx *gin.Context) {
 		return
 	}
 
+	updateInAllFProducts(currentUser)
+
 	ctx.JSON(http.StatusOK, models.FilteredResponse(&currentUser))
+}
+
+func updateInAllFProducts(currentUser models.User) {
+	// Tipp
+	url := initializers.StartConfig.InternalTippURL
+	putRequest(url+"/internal/user", currentUser)
+
+	// DevTipp
+	url = initializers.StartConfig.InternalDevTippURL
+	putRequest(url+"/internal/user", currentUser)
+}
+
+func putRequest(url string, currentUser models.User) {
+	// Marshal it into JSON prior to requesting
+	userJSON, err := json.Marshal(currentUser)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Make request with marshalled JSON as the POST body
+	_, err = http.Post(url, "application/json",
+		bytes.NewBuffer(userJSON))
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 }
