@@ -21,6 +21,44 @@
             </tr>
         </table>
         <br>
+        <button
+            type="button"
+            value="menu"
+            class="clickButton"
+            @click="
+                () => {
+                    isShow = true
+                    newGroupName = ''
+                }
+            ">
+            Bearbeiten
+            <Modal
+                v-model="isShow"
+                :close="
+                    () => {
+                        isShow = false
+                    }
+                ">
+                <div class="modal">
+                    Name:
+                    <input v-model="newGroupName" type="text" />
+                    <br />
+                    <button class="clickButton" @click="isShow = false">Cancel</button>
+                    &ensp;
+                    <button
+                    class="clickButton"
+                        @click="
+                            () => {
+                                createGroup()
+                                isShow = false
+                            }
+                        ">
+                        Erstellen
+                    </button>
+                </div>
+            </Modal>
+        </button>
+        <br>
         <hr>
         <h2>Applications</h2>
         <!-- link to https://tipp.fabkli.ch as button -->
@@ -49,7 +87,8 @@ export default defineComponent({
             count: 1,
             me: {} as User,
             readableRole: "",
-            readableProvider: ""
+            readableProvider: "",
+            isShow: false,
         }
     },
     mounted() {
@@ -134,6 +173,19 @@ tr:nth-child(even) {
 
 .clickButton{
     font-size: larger;
+}
+
+
+.modal {
+    // width: 300px;
+    padding: 30px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: rgb(15, 90, 77);
+    font-size: 20px;
+    text-align: center;
+    color: var(--font-color);
+    font-size: normal;
 }
 
 </style>
