@@ -28,7 +28,7 @@
             @click="
                 () => {
                     isShow = true
-                    newGroupName = ''
+                    newUsername = ''
                 }
             ">
             Bearbeiten
@@ -41,19 +41,19 @@
                 ">
                 <div class="modal">
                     Name:
-                    <input v-model="newGroupName" type="text" />
+                    <input v-model="newUsername" type="text" />
                     <br />
-                    <button class="clickButton" @click="isShow = false">Cancel</button>
+                    <button class="clickButton" @click="isShow = false">Abbrechen</button>
                     &ensp;
                     <button
                     class="clickButton"
                         @click="
                             () => {
-                                createGroup()
+                                updateUser()
                                 isShow = false
                             }
                         ">
-                        Erstellen
+                        Aktualisieren
                     </button>
                 </div>
             </Modal>
@@ -78,7 +78,7 @@
 import { defineComponent } from "vue"
 import axios from "axios"
 import { User } from "../structs"
-import { getAxiosConfig } from "../func"
+import { getAxiosConfig, getAxiosConfigMethod } from "../func"
 
 export default defineComponent({
     name: "HomeView",
@@ -89,6 +89,7 @@ export default defineComponent({
             readableRole: "",
             readableProvider: "",
             isShow: false,
+            newUsername: ""
         }
     },
     mounted() {
@@ -139,6 +140,17 @@ export default defineComponent({
                 default:
                     return "Unbekannt"
             }
+        },
+        updateUser() {
+            axios
+                .request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
+                .then((response: any) => {
+                    let me = response.data
+                    this.me = me
+                })
+                .catch((error: any) => {
+                    console.log(error)
+                })
         }
     }
 })
