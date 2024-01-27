@@ -151,3 +151,41 @@ hr.head {
         transform: rotate(360deg);
     }
 }
+
+button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: var(--color);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+
+.textInput {
+    margin: 5px;
+    margin-left: 1px;
+    margin-right: 1px;
+
+    padding-left: 6px;
+    background-color: var(--color-half);
+    border: none;
+    border-color: transparent;
+    color: var(--font-color);
+    font-weight: bolder;
+    font-size: large;
+    border-radius: 100px;
+    text-decoration: none;
+    padding-top: 1px;
+    height: min-content;
+    &:hover {
+        background-color: var(--color);
+    }
+
+    &:disabled {
+        background-color: var(--color-half);
+        color: rgba(255, 255, 255, 0.5);
+    }
+}

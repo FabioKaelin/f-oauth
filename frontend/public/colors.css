@@ -14,7 +14,7 @@
     /* color: rgb(209, 125, 0); */
     /* color: rgb(139, 30, 143); */
     /* color: rgb(143, 30, 30); */
-    color: rgb(223, 226, 43);
+    /* color: rgb(223, 226, 43); */
     /* color: rgb(0, 0, 0); */
 }
 
@@ -52,4 +52,5 @@
 
 html {
     background-color: var(--main-background-color);
+    color: var(--font-color);
 }
