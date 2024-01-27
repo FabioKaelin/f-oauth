@@ -28,6 +28,9 @@ type Config struct {
 	DatabaseUser     string `mapstructure:"DATABASE_USER"`
 	DatabasePassword string `mapstructure:"DATABASE_PASSWORD"`
 	DatabasePort     string `mapstructure:"DATABASE_PORT"`
+
+	InternalTippURL    string `mapstructure:"INTERNAL_TIPP_URL"`
+	InternalDevTippURL string `mapstructure:"INTERNAL_DEV_TIPP_URL"`
 }
 
 var StartConfig Config
@@ -68,6 +71,8 @@ func LoadConfig(path string) (config Config, err error) {
 		DatabaseUser:           os.Getenv("DATABASE_USER"),
 		DatabasePassword:       os.Getenv("DATABASE_PASSWORD"),
 		DatabasePort:           os.Getenv("DATABASE_PORT"),
+		InternalTippURL:        os.Getenv("INTERNAL_TIPP_URL"),
+		InternalDevTippURL:     os.Getenv("INTERNAL_DEV_TIPP_URL"),
 	}
 
 	return

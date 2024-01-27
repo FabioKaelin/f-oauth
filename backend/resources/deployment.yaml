@@ -2,6 +2,7 @@ apiVersion: k8s.fabkli.ch/v1
 kind: Fdeployment
 metadata:
   name: oauth-backend
+  namespace: oauth
 spec:
   path: "/api"
   replicas: 1
@@ -45,6 +46,10 @@ spec:
       value: oauthuser
     - name: DATABASE_PORT
       value: "3306"
+    - name: INTERNAL_TIPP_URL
+      value: prod-backend.tipp.svc.cluster.local
+    - name: INTERNAL_DEV_TIPP_URL
+      value: dev-backend.tipp.svc.cluster.local
     - name: DATABASE_PASSWORD
       fromSecret:
         name: oauth-secrets

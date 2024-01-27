@@ -83,6 +83,7 @@ func main() {
 	router.GET("/sessions/oauth/google", controllers.GoogleOAuth)
 	router.GET("/sessions/oauth/github", controllers.GitHubOAuth)
 	router.GET("/users/me", middleware.DeserializeUser(), controllers.GetMe)
+	router.PUT("/users/me", middleware.DeserializeUser(), controllers.UpdateMe)
 
 	router.StaticFS("/images", http.Dir("public"))
 	server.NoRoute(func(ctx *gin.Context) {

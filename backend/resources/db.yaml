@@ -2,6 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: db
+  namespace: oauth
   labels:
     app: db
 spec:
@@ -17,6 +18,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: db
+  namespace: oauth
 spec:
   selector:
     app: db
@@ -30,6 +32,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: db
+  namespace: oauth
 spec:
   replicas: 1
   selector:

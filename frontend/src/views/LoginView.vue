@@ -1,30 +1,42 @@
 <template>
-    <div class="login<">
+    <div class="login">
         <h1>Login</h1>
         <button type="button" class="login-with-google-button" @click="goToGoogle">Sign in with Google</button>
         <br />
-        <span>you can even login without an account with google</span>
         <br />
-        <span><b>or</b></span>
+        <span class="text">oder mit Email und Passwort</span>
         <br />
-        <input v-model="email" type="email" placeholder="Email" />
         <br />
-        <input v-model="password" type="password" placeholder="Password" />
+        <input v-model="email" class="textInput" type="email" placeholder="Email" />
+        <br />
+        <input v-model="password" class="textInput" type="password" placeholder="Password" />
         <br />
         <span v-if="error != ''" class="error">{{ error }}</span>
         <br />
         <button v-if="password != '' && email != ''" @click="login">Login</button>
         <br />
-        <span>if you don't have an account you can create one <router-link :to="'/register' + getFrom()">here</router-link></span>
+        <hr>
+        <br>
+        <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google einloggen möchtest (was ohne Account funktioniert) kannst du dich hier registrieren</span>
+        <br>
+        <input v-model="rname" class="textInput" type="text" placeholder="Name" />
+        <br />
+        <input v-model="remail" class="textInput" type="email" placeholder="Email" />
+        <br />
+        <input v-model="rpassword" class="textInput" type="password" placeholder="Password" />
+        <br />
+        <input v-model="rpasswordConfirm" class="textInput" type="password" placeholder="Password confirm" />
+        <br />
+        <button v-if="showRegister" class="textInput" @click="register">Register</button>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue"
-import { getGoogleUrl } from "../helper/getGoogleUrl"
+import { getGoogleUrl } from "../func"
 import axios from "axios"
-import { getAxiosConfigMethod } from "../helper/request"
-import { getLoggedin } from "../helper/userStatus"
+import { getAxiosConfigMethod } from "../func"
+import { store } from "../store"
 
 export default defineComponent({
     name: "LoginView",
@@ -38,7 +50,19 @@ export default defineComponent({
             from: "",
             email: "",
             password: "",
-            error: ""
+            error: "",
+            rname: "",
+            remail: "",
+            rpassword: "",
+            rpasswordConfirm: ""
+        }
+    },
+    computed: {
+        passwordMatch() {
+            return this.rpassword == this.rpasswordConfirm
+        },
+        showRegister() {
+            return this.passwordMatch && this.rname.length > 0 && this.remail.length > 0 && this.rpassword.length > 0
         }
     },
     mounted() {
@@ -49,16 +73,13 @@ export default defineComponent({
         }
         this.from = fromDirect.toString()
         console.log(this.from)
-        if (this.getLoggedin()) {
+        if (store.loggedIn) {
             document.location.href = window.location.origin + "?from=" + this.from
         }
     },
     methods: {
         getGoogleUrl() {
             return getGoogleUrl(this.from)
-        },
-        getLoggedin() {
-            return getLoggedin()
         },
         goToGoogle() {
             window.location.href = this.getGoogleUrl()
@@ -68,6 +89,38 @@ export default defineComponent({
                 return ""
             }
             return "?from=" + this.from
+        },
+        register() {
+            let data = {
+                name: this.rname,
+                email: this.remail,
+                password: this.rpassword
+            }
+
+            let data2 = JSON.stringify({
+                name: this.rname,
+                email: this.remail,
+                password: this.rpassword
+            })
+
+            console.log(data)
+            console.log(data2)
+
+            axios
+                .request(getAxiosConfigMethod("/auth/register", "POST", data))
+                .then(res => {
+                    console.log(res)
+                    if (res.status == 201) {
+                        console.log("success")
+                        this.email = this.remail
+                        this.password = this.rpassword
+                        this.login()
+                        // this.$router.push("/login")
+                    }
+                })
+                .catch(err => {
+                    console.error(err.response.data)
+                })
         },
         login() {
             axios
@@ -117,5 +170,10 @@ export default defineComponent({
 
 .error {
     color: red;
+}
+
+.text {
+    color: var(--font-color);
+    font-size: large;
 }
 </style>
