@@ -21,37 +21,30 @@
             </tr>
         </table>
         <br>
-        <button
-            type="button"
-            value="menu"
-            class="clickButton"
-            @click="
-                () => {
-                    isShow = true
-                    newUsername = ''
-                }
+        <button type="button" value="menu" class="clickButton" @click="() => {
+            isShow = true
+            newUsername = me.name
+        }
             ">
             Bearbeiten
-            <Modal
-                v-model="isShow"
-                :close="
-                    () => {
-                        isShow = false
-                    }
+            <Modal v-model="isShow" :close="() => {
+                isShow = false
+            }
                 ">
                 <div class="modal">
                     Name:
                     <input v-model="newUsername" type="text" />
                     <br />
+                    <div>
+                        <input type="file" accept="image/*" capture @change="onFileChanged($event)"  />
+                    </div>
+                    <br>
                     <button class="clickButton" @click="isShow = false">Abbrechen</button>
                     &ensp;
-                    <button
-                    class="clickButton"
-                        @click="
-                            () => {
-                                updateUser()
-                                isShow = false
-                            }
+                    <button class="clickButton" @click="() => {
+                        updateUser()
+                        isShow = false
+                    }
                         ">
                         Aktualisieren
                     </button>
@@ -75,7 +68,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
+import { defineComponent, ref } from "vue"
 import axios from "axios"
 import { User } from "../structs"
 import { getAxiosConfig, getAxiosConfigMethod } from "../func"
@@ -89,7 +82,9 @@ export default defineComponent({
             readableRole: "",
             readableProvider: "",
             isShow: false,
-            newUsername: ""
+            newUsername: "",
+            file: ref<File | null>(),
+            form: ref<HTMLFormElement>()
         }
     },
     mounted() {
@@ -151,6 +146,25 @@ export default defineComponent({
                 .catch((error: any) => {
                     console.log(error)
                 })
+        },
+        onFileChanged($event: Event) {
+            const target = $event.target as HTMLInputElement;
+            if (target && target.files) {
+                this.file.value = target.files[0];
+            }
+        },
+        saveImage() {
+            if (this.file.value) {
+                try {
+                    // save file.value
+                } catch (error) {
+                    console.error(error);
+                    this.form.value?.reset();
+                    this.file.value = null;
+                } finally {
+                    console.log("finally");
+                }
+            }
         }
     }
 })
@@ -183,7 +197,7 @@ tr:nth-child(even) {
     background-color: #dddddd1f;
 }
 
-.clickButton{
+.clickButton {
     font-size: larger;
 }
 
@@ -199,5 +213,4 @@ tr:nth-child(even) {
     color: var(--font-color);
     font-size: normal;
 }
-
 </style>
