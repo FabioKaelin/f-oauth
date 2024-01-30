@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/controllers"
@@ -33,7 +34,8 @@ func init() {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "application/json")
+		fmt.Println("CORSMiddleware")
+		// c.Writer.Header().Set("Content-Type", "application/json")
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		origin := c.Request.Header.Get("Origin")
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
@@ -50,6 +52,15 @@ func CORSMiddleware() gin.HandlerFunc {
 		}
 
 		c.Next()
+	}
+}
+
+func init() {
+	if _, err := os.Stat("public/images"); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll("public/images", os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -85,7 +96,10 @@ func main() {
 	router.GET("/users/me", middleware.DeserializeUser(), controllers.GetMe)
 	router.PUT("/users/me", middleware.DeserializeUser(), controllers.UpdateMe)
 
-	router.StaticFS("/images", http.Dir("public"))
+	router.POST("/users/me/image", middleware.DeserializeUser(), controllers.UploadResizeSingleFile)
+	router.GET("/users/:userid/image", controllers.GetProfileImage)
+
+	router.StaticFS("/images", http.Dir("public/images"))
 	server.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Route Not Found"})
 	})

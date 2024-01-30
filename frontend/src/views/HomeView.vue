@@ -1,7 +1,8 @@
 <template>
     <div class="home">
         <h1>Profile</h1>
-        <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span>
+        <span> <img :src="imageUrl" alt="Profilbild" width="100" height="100" /> <br /> </span>
+        <!-- <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span> -->
         <table>
             <tr>
                 <td>Name</td>
@@ -21,37 +22,31 @@
             </tr>
         </table>
         <br>
-        <button
-            type="button"
-            value="menu"
-            class="clickButton"
-            @click="
-                () => {
-                    isShow = true
-                    newUsername = ''
-                }
+        <button type="button" value="menu" class="clickButton" @click="() => {
+            isShow = true
+            newUsername = me.name
+            file = null
+        }
             ">
             Bearbeiten
-            <Modal
-                v-model="isShow"
-                :close="
-                    () => {
-                        isShow = false
-                    }
+            <Modal v-model="isShow" :close="() => {
+                isShow = false
+            }
                 ">
                 <div class="modal">
                     Name:
                     <input v-model="newUsername" type="text" />
                     <br />
+                    <div>
+                        <input type="file" accept="image/*" capture @change="onFileChanged($event)" />
+                    </div>
+                    <br>
                     <button class="clickButton" @click="isShow = false">Abbrechen</button>
                     &ensp;
-                    <button
-                    class="clickButton"
-                        @click="
-                            () => {
-                                updateUser()
-                                isShow = false
-                            }
+                    <button class="clickButton" @click="() => {
+                        updateUser()
+                        isShow = false
+                    }
                         ">
                         Aktualisieren
                     </button>
@@ -75,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
+import { defineComponent, ref } from "vue"
 import axios from "axios"
 import { User } from "../structs"
 import { getAxiosConfig, getAxiosConfigMethod } from "../func"
@@ -89,7 +84,9 @@ export default defineComponent({
             readableRole: "",
             readableProvider: "",
             isShow: false,
-            newUsername: ""
+            newUsername: "",
+            file: ref<File | null>(),
+            imageUrl: "",
         }
     },
     mounted() {
@@ -98,6 +95,13 @@ export default defineComponent({
             .then((response: any) => {
                 let me = response.data
                 this.me = me
+                const userId = me.id
+                const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
+                if (userId) {
+                    this.imageUrl = `${backendUrl}/api/users/${userId}/image`
+                } else{
+                    this.imageUrl = `${backendUrl}/api/users/nouser/image`
+                }
             })
             .catch((error: any) => {
                 let fromDirect = this.$route.query.from
@@ -142,6 +146,7 @@ export default defineComponent({
             }
         },
         updateUser() {
+            this.saveImage()
             axios
                 .request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
                 .then((response: any) => {
@@ -151,6 +156,34 @@ export default defineComponent({
                 .catch((error: any) => {
                     console.log(error)
                 })
+        },
+        onFileChanged($event: Event) {
+            const target = $event.target as HTMLInputElement;
+            if (target && target.files) {
+                this.file = target.files[0];
+            }
+        },
+        saveImage() {
+            if (this.file) {
+                try {
+                    let formData = new FormData();
+                    formData.append("image", this.file);
+                    axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then(() => {
+                        const userId = this.me.id
+                        const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
+                        if (userId) {
+                            this.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
+                        } else{
+                            this.imageUrl = `${backendUrl}/api/users/nouser/image`
+                        }
+                    })
+                } catch (error) {
+                    console.error(error);
+                    this.file = null;
+                } finally {
+                    console.log("finally");
+                }
+            }
         }
     }
 })
@@ -183,7 +216,7 @@ tr:nth-child(even) {
     background-color: #dddddd1f;
 }
 
-.clickButton{
+.clickButton {
     font-size: larger;
 }
 
@@ -199,5 +232,4 @@ tr:nth-child(even) {
     color: var(--font-color);
     font-size: normal;
 }
-
 </style>
