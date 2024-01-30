@@ -168,7 +168,15 @@ export default defineComponent({
                 try {
                     let formData = new FormData();
                     formData.append("image", this.file);
-                    axios.request(getAxiosConfigMethod("/users/me/image", "post", formData))
+                    axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then(() => {
+                        const userId = this.me.id
+                        const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
+                        if (userId) {
+                            this.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
+                        } else{
+                            this.imageUrl = `${backendUrl}/api/users/nouser/image`
+                        }
+                    })
                 } catch (error) {
                     console.error(error);
                     this.file = null;
