@@ -141,6 +141,8 @@ export default defineComponent({
                     return "Benutzername und Passwort"
                 case "google":
                     return "Google"
+                case "github":
+                    return "GitHub"
                 default:
                     return "Unbekannt"
             }

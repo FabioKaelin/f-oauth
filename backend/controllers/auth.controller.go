@@ -268,6 +268,7 @@ func GitHubOAuth(ctx *gin.Context) {
 	}
 
 	if code == "" {
+		fmt.Println(`CODE == ""`)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Authorization code not provided!"})
 		return
 	}
@@ -301,33 +302,51 @@ func GitHubOAuth(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := utils.RunSQL("UPDATE `users` SET `name`= ? ,`password`= ? ,`role`= ? ,`photo`= ? ,`verified`= ? ,`provider`= ? ,`created_at`= ? ,`updated_at`= ?  WHERE `email` = ?;", user_data.Name, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt, user_data.Email)
+	fmt.Println("email", email)
+	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
 		return
 	}
 
-	if !rows.Next() {
+	ifExist := rows.Next()
+	fmt.Println("ifExist", ifExist)
+
+	if !ifExist {
 		// initializers.DB.Create(&user_data)
+		fmt.Println("new user")
 		_, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
 			return
 		}
 	}
-
-	var user models.User
 	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
-	// initializers.DB.First(&user, "email = ?", email)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
 	}
+
+	var user models.User
 	for rows.Next() {
 		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 		break
+	}
+
+	if !ifExist {
+		// get image from google
+		// save image to public/images
+		saveImage(user.Photo, user.ID.String())
+
+	}
+
+	spew.Dump(user)
+
+	if user.Provider != "GitHub" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
+		return
 	}
 	config, _ := initializers.LoadConfig(".")
 
@@ -339,7 +358,14 @@ func GitHubOAuth(ctx *gin.Context) {
 
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 
-	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
+	fmt.Println("success redirect")
+
+	fmt.Println("pathUrl", pathUrl)
+
+	fmt.Println("config.FrontEndOrigin", config.FrontEndOrigin)
+
+	ctx.Redirect(http.StatusPermanentRedirect, config.FrontEndOrigin)
+	// ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
 }
 
 func saveImage(url string, userid string) error {
