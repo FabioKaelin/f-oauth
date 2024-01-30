@@ -1,7 +1,8 @@
 <template>
     <div class="home">
         <h1>Profile</h1>
-        <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span>
+        <span> <img :src="imageUrl" alt="Profilbild" width="100" height="100" /> <br /> </span>
+        <!-- <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span> -->
         <table>
             <tr>
                 <td>Name</td>
@@ -85,6 +86,7 @@ export default defineComponent({
             isShow: false,
             newUsername: "",
             file: ref<File | null>(),
+            imageUrl: "",
         }
     },
     mounted() {
@@ -93,6 +95,13 @@ export default defineComponent({
             .then((response: any) => {
                 let me = response.data
                 this.me = me
+                const userId = me.id
+                const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
+                if (userId) {
+                    this.imageUrl = `${backendUrl}/api/users/${userId}/image`
+                } else{
+                    this.imageUrl = `${backendUrl}/api/users/nouser/image`
+                }
             })
             .catch((error: any) => {
                 let fromDirect = this.$route.query.from

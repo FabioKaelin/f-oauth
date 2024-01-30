@@ -79,7 +79,6 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 
 	newFileName := "profileimage-" + currentUser.ID.String() + ".png"
 	fmt.Println("newFileName", newFileName)
-	filePath := "http://localhost:8001/images/" + newFileName
 
 	imageFile, _, err := image.Decode(file)
 	if err != nil {
@@ -103,7 +102,7 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 		log.Fatalf("failed to save image: %v", err)
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"filepath": filePath})
+	ctx.JSON(http.StatusOK, gin.H{"worked": true})
 }
 
 func GetProfileImage(ctx *gin.Context) {

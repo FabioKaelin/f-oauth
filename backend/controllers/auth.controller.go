@@ -1,14 +1,19 @@
 package controllers
 
 import (
+	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
+	"image"
+	"image/png"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -215,6 +220,13 @@ func GoogleOAuth(ctx *gin.Context) {
 		break
 	}
 
+	if !ifExist {
+		// get image from google
+		// save image to public/images
+		saveImage(user.Photo, user.ID.String())
+
+	}
+
 	spew.Dump(user)
 
 	if user.Provider != "Google" {
@@ -327,4 +339,41 @@ func GitHubOAuth(ctx *gin.Context) {
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true) // TODO: lh
 
 	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
+}
+
+func saveImage(url string, userid string) error {
+	// Create new file name
+	newFileName := "profileimage-" + userid + ".png"
+	fmt.Println("newFileName", newFileName)
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Decode the image
+	imageFile, _, err := image.Decode(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, imageFile); err != nil {
+		log.Fatal(err)
+	}
+
+	pngFile, err := png.Decode(buf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	src := imaging.Fill(pngFile, 400, 400, imaging.Center, imaging.Lanczos)
+	err = imaging.Save(src, fmt.Sprintf("public/images/%v", newFileName))
+	if err != nil {
+		log.Fatalf("failed to save image: %v", err)
+	}
+
+	return nil
 }
