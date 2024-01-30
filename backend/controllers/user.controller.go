@@ -3,15 +3,15 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"image"
+	_ "image/jpeg"
 	"image/png"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
-	"os"
 
-	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -89,17 +89,55 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 		log.Fatal(err)
 	}
 
-	pngFile, err := png.Decode(buf)
+	// pngFile, err := png.Decode(buf)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// src := imaging.Fill(pngFile, 400, 400, imaging.Center, imaging.Lanczos)
+	// // src := imaging.Fill(pngFile, 100, 100, imaging.Center, imaging.Lanczos)
+	// // src := imaging.Resize(pngFile, 1000, 0, imaging.Lanczos)
+	// err = imaging.Save(src, fmt.Sprintf("public/images/%v", newFileName))
+	// if err != nil {
+	// 	log.Fatalf("failed to save image: %v", err)
+	// }
+
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	// Create a new form file
+	fw, err := w.CreateFormFile("image", newFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	src := imaging.Fill(pngFile, 400, 400, imaging.Center, imaging.Lanczos)
-	// src := imaging.Fill(pngFile, 100, 100, imaging.Center, imaging.Lanczos)
-	// src := imaging.Resize(pngFile, 1000, 0, imaging.Lanczos)
-	err = imaging.Save(src, fmt.Sprintf("public/images/%v", newFileName))
+	// Write the image data to the form file
+	if _, err = io.Copy(fw, buf); err != nil {
+		log.Fatal(err)
+	}
+
+	// Close the multipart writer
+	if err = w.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("POST", initializers.StartConfig.InternalImageService+"/api/users/"+currentUser.ID.String(), &b)
 	if err != nil {
-		log.Fatalf("failed to save image: %v", err)
+		log.Fatal(err)
+	}
+
+	// Set the content type, this is very important
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	// Do the request
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if res.StatusCode != http.StatusOK {
+		fmt.Printf("bad status: %s\n", res.Status)
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"worked": true})
@@ -108,32 +146,26 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 func GetProfileImage(ctx *gin.Context) {
 	userID := ctx.Param("userid")
 	fmt.Println("userID", userID)
-	// check if public/images/profileimage-userID.png exists
-	// if not, return default image (public/default.png)
-	// if yes, return public/images/profileimage-userID.png
 
-	if _, err := os.Stat("public/images/profileimage-" + userID + ".png"); err == nil {
-		fmt.Println("file exists")
-		ctx.Status(http.StatusOK)
-		ctx.Writer.Header().Set("Content-Type", "image/png")
-		ctx.File("public/images/profileimage-" + userID + ".png")
-
-	} else if errors.Is(err, os.ErrNotExist) {
-		fmt.Println("file does not exist")
-		ctx.Writer.Header().Set("Content-Type", "image/png")
-		ctx.Status(http.StatusOK)
-		ctx.File("public/default.png")
-	} else {
-		fmt.Println("error durring checking if file exists")
-		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error durring checking if file exists"})
-		// Schrodinger: file may or may not exist. See err for details.
-
-		// Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
-
-		ctx.Writer.Header().Set("Content-Type", "image/png")
-		ctx.Status(http.StatusOK)
-		ctx.File("public/default.png")
+	url := initializers.StartConfig.InternalImageService + "/api/users/" + userID
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
 	}
+	defer resp.Body.Close()
+
+	// Decode the image
+	imageFile, _, err := image.Decode(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, imageFile); err != nil {
+		log.Fatal(err)
+	}
+
+	ctx.Data(http.StatusOK, "image/png", buf.Bytes())
 
 }
 
