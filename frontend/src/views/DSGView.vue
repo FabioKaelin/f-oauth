@@ -1,0 +1,93 @@
+<template>
+    <div class="dsg">
+        <code>
+            <pre>
+                Datenschutzerklärung
+
+1 Datenschutzerklärung
+Die vorliegende Datenschutzerklärung klärt Sie über die Art, den Umfang und den Zweck der Erhebung und Verwendung personenbezogener Daten auf unserer Website *.fabkli.ch (im Folgenden „Website“) durch die Fabio (im Folgenden „wir“ oder „uns“) auf und gibt über die Ihnen zustehenden Rechte Auskunft. Diese Rechte richten sich nach den anwendbaren Datenschutzgesetzen.
+
+2 Verantwortlicher für die Datenbearbeitung
+Verantwortlicher für die Datenbearbeitung auf dieser Website und Ansprechpartner für Datenschutzanliegen ist:
+Fabio
+Fabio.Kaelin.206@gmail.com
+
+3 Datenerfassung auf dieser Website
+3.1 Logfiles
+Unsere Website wird von Fabio Kälin (FabKli.ch) gehostet.
+Zur Optimierung und Aufrechterhaltung unserer Website protokollieren wir technische Fehler, die beim Aufrufen unserer Website allenfalls auftreten. Ferner werden bei der Nutzung dieser Website automatisch Informationen erhoben, die der Browser Ihres Endgeräts an unseren Host-Provider übermittelt. Dies sind:
+IP-Adresse und Betriebssystem Ihres Endgeräts,
+Browsertyp, Version, Sprache
+Datum und Uhrzeit der Serveranfrage,
+aufgerufene Datei,
+die Website, von der aus der Zugriff erfolgte (Referrer URL),
+den Status-Code (z.B. 404) und
+das verwendete Übertragungsprotokoll (z.B. HTTP/2).
+Diese Daten werden von unserem Host-Provider erhoben und gespeichert, um Prozesse und Abläufe insbesondere in Zusammenhang mit der Nutzung unserer Website und der Sicherheit und Stabilität des Computersystems optimieren zu können.
+Weitere Informationen finden Sie in der Datenschutzerklärung der Fabio unter oauth.fabkli.ch/dsg.
+Sofern die DSGVO anwendbar ist, sind Grundlage für diese Datenbearbeitung Art. 6 Abs. 1 lit. f DSGVO.
+
+3.2 Kontaktformular
+Wenn Sie unser Kontaktformular benutzen, werden Ihre Angaben aus dem Anfrageformular zur Bearbeitung der Anfrage und für den Fall von Anschlussfragen von uns bearbeitet. In der Regel benötigen wir folgende Angaben:
+Fabio Kälin
+Fabio.Kaelin.206@gmail.com
+Wir verwenden die von Ihnen mitgeteilten Daten, um Ihre Anfrage zu beantworten. Sofern die DSGVO anwendbar ist, sind Grundlage für diese Datenbearbeitung Art. 6 Abs. 1 lit. f DSGVO.
+
+3.3 Cookies
+Wir setzen auf unserer Website Cookies ein. Cookies sind kleine Dateien, die auf Ihrem Endgerät abgelegt werden und die Ihr Browser speichert. Einige der von uns verwendeten Cookies werden automatisch gelöscht, wenn Sie unsere Website verlassen. Andere Cookies bleiben auf Ihrem Endgerät gespeichert, bis Sie diese löschen oder bis sie ablaufen. Diese Cookies ermöglichen es, Ihren Browser beim nächsten Besuch unserer Website wiederzuerkennen.
+In Ihrem Browser können Sie einstellen, dass Sie über das Setzen von Cookies vorab informiert werden und im Einzelfall entscheiden können, ob Sie die Annahme von Cookies für bestimmte Fälle oder generell ausschliessen, oder dass Cookies komplett verhindert werden. Dadurch kann die Funktionalität der Website eingeschränkt werden.
+Cookies, die für den elektronischen Kommunikationsvorgang oder von Ihnen gewünschte Funktionen erforderlich sind oder Ihr Benutzererlebnis optimieren, werden – sofern die DSGVO anwendbar ist – auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO gespeichert.
+
+3.4 Newsletter
+Wir bieten einen Newsletter an, den Sie abonnieren können. Wenn Sie sich für den Newsletter anmelden, so erfassen wir mindestens Ihre E-Mail-Adresse. Unser externer Newsletter-Dienstleister kann weitere Daten erfassen; wir verweisen hierzu auf seine Datenschutzerklärung (siehe unten).
+Wir verwenden Ihre E-Mail-Adresse, um Ihnen den Newsletter per E-Mail zuzustellen. Sofern die DSGVO anwendbar ist, ist Grundlage für die Datenbearbeitung Art. 6 Abs. 1 lit. f DSGVO.
+
+3.5 Newsletter-Analytics
+Wir nutzen einen Analysedienst, um die Reichweite unseres Newsletters zu messen. Gemessen wird, wie oft der Newsletter geöffnet wird und welchen Links der Empfänger folgt.
+Sofern die DSGVO anwendbar ist, ist Grundlage für die Datenbearbeitung Art. 6 Abs. 1 lit. f DSGVO.
+
+3.6 Registrierung
+Wenn Sie auf unserer Webseite ein Konto eröffnen, werden die von Ihnen eingegebenen Informationen gespeichert. Wir erfassen folgende Angaben:
+Fabio Kälin
+Fabio.Kaelin.206@gmail.com
+Wir verwenden die Daten, um Ihnen das Konto zur Verfügung stellen zu können. Sofern die DSGVO anwendbar ist, sind Grundlage für diese Datenbearbeitung Art. 6 Abs. 1 lit. b und f DSGVO.
+
+4 Externe Dienste
+Auf unserer Website setzen wir verschiedene Dienste von Drittanbietern ein. Nachfolgend legen wir im Einzelnen dar, um welche Dienste es sich handelt, wofür wir sie einsetzen und welche Daten gesammelt werden.
+
+Aktuell keine Dienste von Drittanbietern
+
+4.1 TEMPLATE FÜR EXTERNE DIENSTE
+Wir nutzen PRODUKTNAME von NAME UND ADRESSE DES ANBIETERS. PRODUKTNAME BESCHREIBUNG DER FUNKTIONSWEISE DES PRODUKTS
+Sofern die DSGVO anwendbar ist, ist Grundlage für die Datenbearbeitung Art. 6 Abs. 1 lit. a DSGVO oder Art. 6 Abs. 1 lit. b DSGVO oder Art. 6 Abs. 1 lit. f DSGVO.
+Die Datenschutzerklärung von ANBIETER finden Sie unter URL.
+
+5 Links
+Auf unserer Website finden Sie Links auf Seiten von Drittanbietern. Wir sind nicht verantwortlich für die Inhalte und Datenschutzvorkehrungen auf externen Websites, welche Sie über die Links erreichen können. Bitte informieren Sie sich über den Datenschutz direkt auf den entsprechenden Websites.
+
+6 Weitergabe von Daten an Dritte
+Damit wir Ihnen die Informationen auf unserer Website anbieten können, arbeiten wir mit verschiedenen Dienstleistern zusammen, namentlich mit IT-Dienstleistern, um Ihnen eine zeitgemässe Website anbieten zu können. Diese verwenden Ihre Daten nur im Rahmen der Auftragsabwicklungen für uns.
+Mit Ausnahme der Bestimmungen in Ziffer 3.4 dieser Datenschutzerklärung, nehmen wir eine Datenübermittlung an Stellen ausserhalb der Schweiz und der Europäischen Union (Drittstaat) ohne Ihre Einwilligung nur vor, sofern dies nach dem jeweiligen Vertrag erforderlich ist, zur Erfüllung gesetzlicher Verpflichtungen oder zur Wahrung unserer berechtigten Interessen.
+
+7 Ihre Rechte
+Soweit von dem auf Sie anwendbaren Datenschutzrecht vorgesehen, können Sie unentgeltlich Auskunft über die auf Sie bezogenen gespeicherten Daten, deren Herkunft und Empfänger und den Zweck der Datenbearbeitung verlangen. Ebenso steht Ihnen unter den gesetzlichen Voraussetzungen ein Recht auf Berichtigung, Löschung, Einschränkung der oder Widerspruch gegen die Bearbeitung sowie, sofern die DSGVO zur Anwendung gelangt, auf Herausgabe dieser Daten zur Übertragung an eine andere Stelle zu.
+Eine von Ihnen erteilte Einwilligung können Sie mit Wirkung für die Zukunft jederzeit widerrufen. Dazu reicht eine formlose Mitteilung per E-Mail an uns.
+Bitte beachten Sie, dass die vorstehenden Rechte gesetzlichen Einschränkungen unterstehen und ggf. die Erbringung unserer Dienstleistungen beeinträchtigen oder verunmöglichen können.
+Sie sind berechtigt, Ihre Ansprüche gerichtlich durchzusetzen oder eine Beschwerde bei der zuständigen Datenschutzbehörde einzureichen. Für die Schweiz ist der Eidgenössische Datenschutz- und Öffentlichkeitsbeauftragte zuständig (http://www.edoeb.admin.ch).
+
+8 Aktualität und Änderung dieser Datenschutzerklärung
+Wir können diese Datenschutzerklärung jederzeit ändern oder anpassen. Die aktuelle Datenschutzerklärung kann auf oauth.fabkli.ch abgerufen werden.
+
+            </pre>
+        </code>
+    </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue"
+// import ChampionGuess from '@/components/ChampionGuess.vue';
+
+export default defineComponent({
+    name: "DSGView",
+})
+</script>

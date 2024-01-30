@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -364,15 +365,43 @@ func saveImage(url string, userid string) error {
 		log.Fatal(err)
 	}
 
-	pngFile, err := png.Decode(buf)
+	// push to INTERNAL_IMAGE_SERVICE as formFile with name "image"
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	// Create a new form file
+	fw, err := w.CreateFormFile("image", newFileName)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	src := imaging.Fill(pngFile, 400, 400, imaging.Center, imaging.Lanczos)
-	err = imaging.Save(src, fmt.Sprintf("public/images/%v", newFileName))
+	// Write the image data to the form file
+	if _, err = io.Copy(fw, buf); err != nil {
+		return err
+	}
+
+	// Close the multipart writer
+	if err = w.Close(); err != nil {
+		return err
+	}
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("POST", initializers.StartConfig.InternalImageService+"/api/users/"+userid, &b)
 	if err != nil {
-		log.Fatalf("failed to save image: %v", err)
+		return err
+	}
+
+	// Set the content type, this is very important
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	// Do the request
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", res.Status)
 	}
 
 	return nil

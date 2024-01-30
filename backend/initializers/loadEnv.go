@@ -31,6 +31,8 @@ type Config struct {
 
 	InternalTippURL    string `mapstructure:"INTERNAL_TIPP_URL"`
 	InternalDevTippURL string `mapstructure:"INTERNAL_DEV_TIPP_URL"`
+
+	InternalImageService string `mapstructure:"INTERNAL_IMAGE_SERVICE"`
 }
 
 var StartConfig Config
@@ -73,6 +75,7 @@ func LoadConfig(path string) (config Config, err error) {
 		DatabasePort:           os.Getenv("DATABASE_PORT"),
 		InternalTippURL:        os.Getenv("INTERNAL_TIPP_URL"),
 		InternalDevTippURL:     os.Getenv("INTERNAL_DEV_TIPP_URL"),
+		InternalImageService:   os.Getenv("INTERNAL_IMAGE_SERVICE"),
 	}
 
 	return
