@@ -34,6 +34,7 @@ func init() {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		fmt.Println("CORSMiddleware")
 		c.Writer.Header().Set("Content-Type", "application/json")
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		origin := c.Request.Header.Get("Origin")
@@ -96,6 +97,7 @@ func main() {
 	router.PUT("/users/me", middleware.DeserializeUser(), controllers.UpdateMe)
 
 	router.POST("/users/me/image", middleware.DeserializeUser(), controllers.UploadResizeSingleFile)
+	router.GET("/users/:userid/image", controllers.GetProfileImage)
 
 	router.StaticFS("/images", http.Dir("public/images"))
 	server.NoRoute(func(ctx *gin.Context) {
