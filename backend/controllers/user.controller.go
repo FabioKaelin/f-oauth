@@ -115,25 +115,25 @@ func GetProfileImage(ctx *gin.Context) {
 
 	if _, err := os.Stat("public/images/profileimage-" + userID + ".png"); err == nil {
 		fmt.Println("file exists")
-		// path/to/whatever exists
-		ctx.File("public/images/profileimage-" + userID + ".png")
 		ctx.Status(http.StatusOK)
 		ctx.Writer.Header().Set("Content-Type", "image/png")
+		ctx.File("public/images/profileimage-" + userID + ".png")
 
 	} else if errors.Is(err, os.ErrNotExist) {
 		fmt.Println("file does not exist")
-		ctx.File("public/default.png")
-		ctx.Status(http.StatusOK)
 		ctx.Writer.Header().Set("Content-Type", "image/png")
-		// path/to/whatever does *not* exist
-
+		ctx.Status(http.StatusOK)
+		ctx.File("public/default.png")
 	} else {
 		fmt.Println("error durring checking if file exists")
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error durring checking if file exists"})
+		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error durring checking if file exists"})
 		// Schrodinger: file may or may not exist. See err for details.
 
 		// Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
 
+		ctx.Writer.Header().Set("Content-Type", "image/png")
+		ctx.Status(http.StatusOK)
+		ctx.File("public/default.png")
 	}
 
 }
