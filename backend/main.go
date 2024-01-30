@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/controllers"
@@ -53,6 +54,15 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+func init() {
+	if _, err := os.Stat("public/images"); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll("public/images", os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+}
+
 func main() {
 	// corsConfig := cors.DefaultConfig()
 	// corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
@@ -85,7 +95,9 @@ func main() {
 	router.GET("/users/me", middleware.DeserializeUser(), controllers.GetMe)
 	router.PUT("/users/me", middleware.DeserializeUser(), controllers.UpdateMe)
 
-	router.StaticFS("/images", http.Dir("public"))
+	router.POST("/users/me/image", middleware.DeserializeUser(), controllers.UploadResizeSingleFile)
+
+	router.StaticFS("/images", http.Dir("public/images"))
 	server.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Route Not Found"})
 	})

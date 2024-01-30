@@ -4,8 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"image"
+	"log"
 	"net/http"
+	"path/filepath"
+	"strings"
+	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 	"github.com/wpcodevo/google-github-oath2-golang/models"
@@ -61,6 +67,38 @@ func UpdateMe(ctx *gin.Context) {
 	updateInAllFProducts(currentUser)
 
 	ctx.JSON(http.StatusOK, models.FilteredResponse(&currentUser))
+}
+func UploadResizeSingleFile(ctx *gin.Context) {
+	currentUser := ctx.MustGet("currentUser").(models.User)
+
+	file, header, err := ctx.Request.FormFile("image")
+	if err != nil {
+		ctx.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
+		return
+	}
+
+	fileExt := filepath.Ext(header.Filename)
+	originalFileName := strings.TrimSuffix(filepath.Base(header.Filename), filepath.Ext(header.Filename))
+	fmt.Println("originalFileName", originalFileName)
+	now := time.Now()
+	filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + "-" + fmt.Sprintf("%v", now.Unix()) + fileExt
+	fmt.Println("filename", filename)
+	newFileName := "profileimage-" + currentUser.ID.String() + fileExt
+	fmt.Println("newFileName", newFileName)
+	filePath := "http://localhost:8001/images/" + newFileName
+
+	imageFile, _, err := image.Decode(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// src := imaging.Fill(imageFile, 100, 100, imaging.Center, imaging.Lanczos)
+	src := imaging.Resize(imageFile, 1000, 0, imaging.Lanczos)
+	err = imaging.Save(src, fmt.Sprintf("public/images/%v", newFileName))
+	if err != nil {
+		log.Fatalf("failed to save image: %v", err)
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"filepath": filePath})
 }
 
 func updateInAllFProducts(currentUser models.User) {
