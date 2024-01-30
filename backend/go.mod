@@ -4,7 +4,6 @@ go 1.21
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/disintegration/imaging v1.6.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -13,8 +12,6 @@ require (
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.6
 )
-
-require golang.org/x/image v0.15.0 // indirect
 
 require (
 	github.com/bytedance/sonic v1.10.2 // indirect
