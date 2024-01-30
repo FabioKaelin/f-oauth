@@ -24,6 +24,7 @@
         <button type="button" value="menu" class="clickButton" @click="() => {
             isShow = true
             newUsername = me.name
+            file = null
         }
             ">
             Bearbeiten
@@ -36,7 +37,7 @@
                     <input v-model="newUsername" type="text" />
                     <br />
                     <div>
-                        <input type="file" accept="image/*" capture @change="onFileChanged($event)"  />
+                        <input type="file" accept="image/*" capture @change="onFileChanged($event)" />
                     </div>
                     <br>
                     <button class="clickButton" @click="isShow = false">Abbrechen</button>
@@ -84,7 +85,6 @@ export default defineComponent({
             isShow: false,
             newUsername: "",
             file: ref<File | null>(),
-            form: ref<HTMLFormElement>()
         }
     },
     mounted() {
@@ -137,6 +137,7 @@ export default defineComponent({
             }
         },
         updateUser() {
+            this.saveImage()
             axios
                 .request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
                 .then((response: any) => {
@@ -150,17 +151,18 @@ export default defineComponent({
         onFileChanged($event: Event) {
             const target = $event.target as HTMLInputElement;
             if (target && target.files) {
-                this.file.value = target.files[0];
+                this.file = target.files[0];
             }
         },
         saveImage() {
-            if (this.file.value) {
+            if (this.file) {
                 try {
-                    // save file.value
+                    let formData = new FormData();
+                    formData.append("image", this.file);
+                    axios.request(getAxiosConfigMethod("/users/me/image", "post", formData))
                 } catch (error) {
                     console.error(error);
-                    this.form.value?.reset();
-                    this.file.value = null;
+                    this.file = null;
                 } finally {
                     console.log("finally");
                 }

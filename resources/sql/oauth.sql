@@ -22,7 +22,8 @@ START TRANSACTION;
 --
 -- Table structure for table `users`
 --
--- CREATE DATABASE `oauth`;
+CREATE DATABASE IF NOT EXISTS `oauth`;
+
 
 USE `oauth`;
 
