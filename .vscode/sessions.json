@@ -9,7 +9,7 @@
       {
         "name": "Git",
         "commands": [
-          "cd $CODE",
+          " cd $CODE",
           "cd f-oauth",
           "git status"
         ],
@@ -21,7 +21,7 @@
         {
           "name": "Frontend",
           "commands": [
-            "cd $CODE",
+            " cd $CODE",
             "cd f-oauth",
             "cd frontend",
             "npm run dev"
@@ -33,7 +33,7 @@
         {
           "name": "Backend",
           "commands": [
-            "cd $CODE",
+            " cd $CODE",
             "cd f-oauth",
             "cd backend",
             "go run ."
