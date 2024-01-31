@@ -26,6 +26,14 @@
                 <span class="fakelink" @click="logout">Logout</span>
                 <br />
             </span>
+            <span>
+                <router-link to="/dsg">Datenschutz</router-link>
+                <br />
+            </span>
+            <span>
+                <router-link to="/about">About</router-link>
+                <br />
+            </span>
             <br />
             <span>
                 Theme:

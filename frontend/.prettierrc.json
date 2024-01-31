@@ -15,12 +15,6 @@
     "embeddedLanguageFormatting": "auto",
     "overrides": [
         {
-            "files": "*.json",
-            "options": {
-                "parser": "json"
-            }
-        },
-        {
             "files": "*.yaml",
             "options": {
                 "parser": "yaml",

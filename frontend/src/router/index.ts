@@ -22,6 +22,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("../views/DSGView.vue")
     },
     {
+        path: "/about",
+        name: "about",
+        component: () => import("../views/AboutView.vue")
+    },
+    {
         path: "/:pathMatch(.*)",
         name: "404",
         component: PageNotFoundView
