@@ -51,8 +51,9 @@
         <p>Diese Datenschutzerklärung kann von Zeit zu Zeit aktualisiert werden, um Änderungen in unseren
             Datenschutzpraktiken und in der geltenden Gesetzgebung widerzuspiegeln. Wir empfehlen Ihnen, diese
             Datenschutzerklärung regelmäßig zu überprüfen, um über unsere Datenschutzpraktiken informiert zu bleiben.</p>
-
-</div></template>
+        <br><br>
+    </div>
+</template>
 
 <script lang="ts">
 import { defineComponent } from "vue"
