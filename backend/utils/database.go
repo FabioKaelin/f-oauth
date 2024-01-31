@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/fabiokaelin/f-oauth/initializers"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 )
 
 var dbConn *sqlx.DB

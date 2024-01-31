@@ -15,19 +15,20 @@
             </span>
             <router-link v-if="!store.loggedIn" to="/login">
                 <span>Login</span>
-                <br>
+                <br />
             </router-link>
             <router-link v-if="!store.loggedIn" to="/register">
                 <span>Register</span>
-                <br>
+                <br />
             </router-link>
 
             <span v-if="store.loggedIn">
                 <span class="fakelink" @click="logout">Logout</span>
                 <br />
             </span>
-            <br>
-            <span> Theme:
+            <br />
+            <span>
+                Theme:
                 <ThemeSelect />
             </span>
         </span>
@@ -74,7 +75,7 @@ export default defineComponent({
             } else {
                 return false
             }
-        },
+        }
     },
     watch: {
         theme() {

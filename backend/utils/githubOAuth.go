@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/wpcodevo/google-github-oath2-golang/initializers"
+	"github.com/fabiokaelin/f-oauth/initializers"
 )
 
 type GitHubOauthToken struct {

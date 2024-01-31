@@ -21,17 +21,25 @@
                 <td>{{ getReadableRole() }}</td>
             </tr>
         </table>
-        <br>
-        <button type="button" value="menu" class="clickButton" @click="() => {
-            isShow = true
-            newUsername = me.name
-            file = null
-        }
+        <br />
+        <button
+            type="button"
+            value="menu"
+            class="clickButton"
+            @click="
+                () => {
+                    isShow = true
+                    newUsername = me.name
+                    file = null
+                }
             ">
             Bearbeiten
-            <Modal v-model="isShow" :close="() => {
-                isShow = false
-            }
+            <Modal
+                v-model="isShow"
+                :close="
+                    () => {
+                        isShow = false
+                    }
                 ">
                 <div class="modal">
                     Name:
@@ -40,28 +48,31 @@
                     <div>
                         <input type="file" accept="image/*" capture @change="onFileChanged($event)" />
                     </div>
-                    <br>
+                    <br />
                     <button class="clickButton" @click="isShow = false">Abbrechen</button>
                     &ensp;
-                    <button class="clickButton" @click="() => {
-                        updateUser()
-                        isShow = false
-                    }
+                    <button
+                        class="clickButton"
+                        @click="
+                            () => {
+                                updateUser()
+                                isShow = false
+                            }
                         ">
                         Aktualisieren
                     </button>
                 </div>
             </Modal>
         </button>
-        <br>
-        <hr>
+        <br />
+        <hr />
         <h2>Applications</h2>
         <!-- link to https://tipp.fabkli.ch as button -->
         <a href="https://tipp.fabkli.ch" target="_blank" rel="noopener noreferrer">
             <button class="clickButton">Tippspiel</button>
         </a>
-        <br>
-        <br>
+        <br />
+        <br />
         <!-- link to https://tipp.dev.fabkli.ch as button -->
         <a href="https://tipp.dev.fabkli.ch" target="_blank" rel="noopener noreferrer">
             <button class="clickButton">Tippspiel-Dev (Nur für Entwicklung)</button>
@@ -86,7 +97,7 @@ export default defineComponent({
             isShow: false,
             newUsername: "",
             file: ref<File | null>(),
-            imageUrl: "",
+            imageUrl: ""
         }
     },
     mounted() {
@@ -99,7 +110,7 @@ export default defineComponent({
                 const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
                 if (userId) {
                     this.imageUrl = `${backendUrl}/api/users/${userId}/image`
-                } else{
+                } else {
                     this.imageUrl = `${backendUrl}/api/users/nouser/image`
                 }
             })
@@ -160,30 +171,30 @@ export default defineComponent({
                 })
         },
         onFileChanged($event: Event) {
-            const target = $event.target as HTMLInputElement;
+            const target = $event.target as HTMLInputElement
             if (target && target.files) {
-                this.file = target.files[0];
+                this.file = target.files[0]
             }
         },
         saveImage() {
             if (this.file) {
                 try {
-                    let formData = new FormData();
-                    formData.append("image", this.file);
+                    let formData = new FormData()
+                    formData.append("image", this.file)
                     axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then(() => {
                         const userId = this.me.id
                         const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
                         if (userId) {
                             this.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
-                        } else{
+                        } else {
                             this.imageUrl = `${backendUrl}/api/users/nouser/image`
                         }
                     })
                 } catch (error) {
-                    console.error(error);
-                    this.file = null;
+                    console.error(error)
+                    this.file = null
                 } finally {
-                    console.log("finally");
+                    console.log("finally")
                 }
             }
         }
@@ -221,7 +232,6 @@ tr:nth-child(even) {
 .clickButton {
     font-size: larger;
 }
-
 
 .modal {
     // width: 300px;

@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/fabiokaelin/f-oauth/controllers"
+	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/middleware"
+	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/wpcodevo/google-github-oath2-golang/controllers"
-	"github.com/wpcodevo/google-github-oath2-golang/initializers"
-	"github.com/wpcodevo/google-github-oath2-golang/middleware"
-	"github.com/wpcodevo/google-github-oath2-golang/utils"
 )
 
 var server *gin.Engine

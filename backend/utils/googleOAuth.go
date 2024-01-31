@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/wpcodevo/google-github-oath2-golang/initializers"
+	"github.com/fabiokaelin/f-oauth/initializers"
 )
 
 type GoogleOauthToken struct {

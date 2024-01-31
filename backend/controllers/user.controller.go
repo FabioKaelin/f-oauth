@@ -11,10 +11,10 @@ import (
 	"mime/multipart"
 	"net/http"
 
+	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/models"
+	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/wpcodevo/google-github-oath2-golang/initializers"
-	"github.com/wpcodevo/google-github-oath2-golang/models"
-	"github.com/wpcodevo/google-github-oath2-golang/utils"
 )
 
 func GetMe(ctx *gin.Context) {
