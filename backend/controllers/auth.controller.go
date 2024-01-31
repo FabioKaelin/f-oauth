@@ -8,7 +8,6 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -73,7 +72,6 @@ func SignUpUser(ctx *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println(newUser.Password)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "4message": "Something bad happened"})
 		return
 	}
@@ -110,7 +108,6 @@ func SignInUser(ctx *gin.Context) {
 
 	hashpassword := sha512.Sum512([]byte(payload.Password))
 	hashpasswordValue := hex.EncodeToString(hashpassword[:])
-	fmt.Println("hashpasswordValue", hashpasswordValue)
 
 	if user.Password != hashpasswordValue {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
@@ -383,12 +380,12 @@ func saveImage(url string, userid string) error {
 	// Decode the image
 	imageFile, _, err := image.Decode(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	buf := new(bytes.Buffer)
 	if err := png.Encode(buf, imageFile); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// push to INTERNAL_IMAGE_SERVICE as formFile with name "image"

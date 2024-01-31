@@ -81,8 +81,6 @@ func GetGitHubUser(access_token string) (*GitHubUserResult, error) {
 		return nil, err
 	}
 
-	fmt.Println("access_token", access_token)
-
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 
 	client := http.Client{

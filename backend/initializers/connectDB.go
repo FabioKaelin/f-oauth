@@ -2,7 +2,6 @@ package initializers
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/wpcodevo/google-github-oath2-golang/models"
 	"gorm.io/driver/mysql"
@@ -37,7 +36,8 @@ func ConnectDB() {
 	// DB, err = gorm.Open(sqlite.Open("golang.db"), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal("Failed to connect to the Database")
+		fmt.Println("Failed to connect to the Database")
+		fmt.Println("error", err)
 	}
 	fmt.Println("5")
 
