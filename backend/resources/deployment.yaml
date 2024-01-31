@@ -27,9 +27,9 @@ spec:
     - name: FRONTEND_ORIGIN
       value: https://oauth.fabkli.ch
     - name: TOKEN_EXPIRED_IN
-      value: 10080m
+      value: 10080m # 7 days
     - name: TOKEN_MAXAGE
-      value: "10080"
+      value: "10080" # 7 days
     - name: TOKEN_URL
       value: "fabkli.ch"
     - name: GOOGLE_OAUTH_CLIENT_ID

@@ -119,7 +119,6 @@ export default defineComponent({
                 if (fromDirect == undefined || fromDirect == null) {
                     fromDirect = window.location.href
                     console.log("1 fromDirect", fromDirect)
-                    // fromDirect = "http://localhost:5173/profile" // TODO: lh
                 }
                 let from = fromDirect.toString()
                 console.log(from)
