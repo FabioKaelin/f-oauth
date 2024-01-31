@@ -8,15 +8,17 @@
                 <span>{{ store.user.name }}</span>
                 <br />
             </span>
-            <span v-if="store.loggedIn">
-                <router-link to="/">Profil</router-link>
-                <!-- logged in -->
+
+            <router-link v-if="store.loggedIn" to="/">
+                <span>Profil</span>
                 <br />
-            </span>
+            </router-link>
+
             <router-link v-if="!store.loggedIn" to="/login">
                 <span>Login</span>
                 <br />
             </router-link>
+
             <router-link v-if="!store.loggedIn" to="/register">
                 <span>Register</span>
                 <br />
@@ -26,14 +28,17 @@
                 <span class="fakelink" @click="logout">Logout</span>
                 <br />
             </span>
-            <span>
-                <router-link to="/dsg">Datenschutz</router-link>
+
+            <router-link to="/dsg">
+                <span>Datenschutz</span>
                 <br />
-            </span>
-            <span>
-                <router-link to="/about">About</router-link>
+            </router-link>
+
+            <router-link to="about">
+                <span>About</span>
                 <br />
-            </span>
+            </router-link>
+
             <br />
             <span>
                 Theme:

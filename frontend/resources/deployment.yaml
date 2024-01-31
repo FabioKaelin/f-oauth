@@ -30,3 +30,5 @@ spec:
       value: https://oauth.fabkli.ch/api/sessions/oauth/google
     - name: VITE_GITHUB_OAUTH_REDIRECT_URL
       value: https://oauth.fabkli.ch/api/sessions/oauth/github
+    - name: VITE_GITHUB_OAUTH_CLIENT_ID
+      value: cac7086fb2c1848886c9
