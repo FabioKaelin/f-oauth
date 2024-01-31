@@ -9,7 +9,12 @@
                 <br />
             </span>
 
-            <router-link v-if="store.loggedIn" to="/">
+            <router-link to="/">
+                <span>Home</span>
+                <br />
+            </router-link>
+
+            <router-link v-if="store.loggedIn" to="/profile">
                 <span>Profil</span>
                 <br />
             </router-link>
