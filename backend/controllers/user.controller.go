@@ -8,7 +8,6 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 
@@ -82,25 +81,16 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 
 	imageFile, _, err := image.Decode(file)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "image decode failed"})
+		return
 	}
 	buf := new(bytes.Buffer)
 	if err := png.Encode(buf, imageFile); err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "png encode failed"})
+		return
 	}
-
-	// pngFile, err := png.Decode(buf)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// src := imaging.Fill(pngFile, 400, 400, imaging.Center, imaging.Lanczos)
-	// // src := imaging.Fill(pngFile, 100, 100, imaging.Center, imaging.Lanczos)
-	// // src := imaging.Resize(pngFile, 1000, 0, imaging.Lanczos)
-	// err = imaging.Save(src, fmt.Sprintf("public/images/%v", newFileName))
-	// if err != nil {
-	// 	log.Fatalf("failed to save image: %v", err)
-	// }
 
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -108,23 +98,31 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 	// Create a new form file
 	fw, err := w.CreateFormFile("image", newFileName)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "create form file failed"})
+		return
 	}
 
 	// Write the image data to the form file
 	if _, err = io.Copy(fw, buf); err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "copy image data to form file failed"})
+		return
 	}
 
 	// Close the multipart writer
 	if err = w.Close(); err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "close multipart writer failed"})
+		return
 	}
 
 	// Create a new HTTP request
 	req, err := http.NewRequest("POST", initializers.StartConfig.InternalImageService+"/api/users/"+currentUser.ID.String(), &b)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "create new http request failed"})
+		return
 	}
 
 	// Set the content type, this is very important
@@ -134,7 +132,9 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "do request failed"})
+		return
 	}
 	if res.StatusCode != http.StatusOK {
 		fmt.Printf("bad status: %s\n", res.Status)
@@ -150,19 +150,25 @@ func GetProfileImage(ctx *gin.Context) {
 	url := initializers.StartConfig.InternalImageService + "/api/users/" + userID
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "get image from image service failed"})
+		return
 	}
 	defer resp.Body.Close()
 
 	// Decode the image
 	imageFile, _, err := image.Decode(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "image decode failed"})
+		return
 	}
 
 	buf := new(bytes.Buffer)
 	if err := png.Encode(buf, imageFile); err != nil {
-		log.Fatal(err)
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "png encode failed"})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "image/png", buf.Bytes())
@@ -183,7 +189,8 @@ func putRequest(url string, currentUser models.User) {
 	// Marshal it into JSON prior to requesting
 	userJSON, err := json.Marshal(currentUser)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error", err)
+		return
 	}
 
 	// Make request with marshalled JSON as the POST body
@@ -191,7 +198,8 @@ func putRequest(url string, currentUser models.User) {
 		bytes.NewBuffer(userJSON))
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error", err)
+		return
 	}
 
 }

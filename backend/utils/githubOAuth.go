@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/wpcodevo/google-github-oath2-golang/initializers"
 )
 
@@ -107,8 +108,80 @@ func GetGitHubUser(access_token string) (*GitHubUserResult, error) {
 		return nil, err
 	}
 
+	spew.Dump(GitHubUserRes)
+	email := ""
+
+	email, ok := GitHubUserRes["email"].(string)
+
+	if !ok {
+		fmt.Println("email not found")
+		rootUrl := "https://api.github.com/user/emails"
+
+		req, err := http.NewRequest("GET", rootUrl, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
+
+		client := http.Client{
+			Timeout: time.Second * 30,
+		}
+
+		res, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if res.StatusCode != http.StatusOK {
+			return nil, errors.New("could not retrieve user")
+		}
+
+		var resBody bytes.Buffer
+		_, err = io.Copy(&resBody, res.Body)
+		if err != nil {
+			return nil, err
+		}
+		// [
+		// 	{
+		// 	  "email": "supermae206@gmail.com",
+		// 	  "primary": true,
+		// 	  "verified": true,
+		// 	  "visibility": "private"
+		// 	},
+		// 	{
+		// 	  "email": "90179796+FabioKaelin@users.noreply.github.com",
+		// 	  "primary": false,
+		// 	  "verified": true,
+		// 	  "visibility": null
+		// 	}
+		//   ]
+
+		var GitHubUserEmailRes []map[string]interface{}
+
+		if err := json.Unmarshal(resBody.Bytes(), &GitHubUserEmailRes); err != nil {
+			return nil, err
+		}
+
+		spew.Dump(GitHubUserEmailRes)
+
+		for _, emailRes := range GitHubUserEmailRes {
+			spew.Dump(emailRes)
+			if emailRes["primary"].(bool) {
+				email, ok = emailRes["email"].(string)
+				fmt.Println("email found", email)
+				if !ok {
+					return nil, errors.New("email not found")
+				}
+				break
+			}
+		}
+	}
+
+	fmt.Println("email", email)
+
 	userBody := &GitHubUserResult{
-		Email: GitHubUserRes["email"].(string),
+		Email: email,
 		Name:  GitHubUserRes["login"].(string),
 		Photo: GitHubUserRes["avatar_url"].(string),
 	}

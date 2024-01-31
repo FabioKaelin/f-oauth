@@ -1,5 +1,5 @@
 import axios from "axios"
-import {  User } from "@/structs"
+import { User } from "@/structs"
 
 export function getAxiosConfigMethod(url: string, method: string, data: any) {
     const backendURL = import.meta.env.VITE_SERVER_ENDPOINT
@@ -43,7 +43,6 @@ export function getLocation() {
     }
 }
 
-
 import { store } from "./store"
 
 function loadUser(): Promise<any> {
@@ -65,7 +64,6 @@ function loadUser(): Promise<any> {
         })
 }
 
-
 export { loadUser }
 
 export const getGoogleUrl = (from: string) => {
@@ -84,4 +82,19 @@ export const getGoogleUrl = (from: string) => {
     const qs = new URLSearchParams(options)
 
     return `${rootUrl}?${qs.toString()}`
+}
+
+export const getGithubUrl = (from: string) => {
+    const rootURl = `https://github.com/login/oauth/authorize`
+
+    const options = {
+        client_id: import.meta.env.VITE_GITHUB_OAUTH_CLIENT_ID,
+        redirect_uri: import.meta.env.VITE_GITHUB_OAUTH_REDIRECT_URL,
+        scope: "user:email",
+        state: from
+    }
+
+    const qs = new URLSearchParams(options)
+
+    return `${rootURl}?${qs.toString()}`
 }
