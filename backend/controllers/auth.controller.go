@@ -361,7 +361,7 @@ func GitHubOAuth(ctx *gin.Context) {
 
 	fmt.Println("config.FrontEndOrigin", config.FrontEndOrigin)
 
-	ctx.Redirect(http.StatusPermanentRedirect, config.FrontEndOrigin)
+	ctx.Redirect(http.StatusPermanentRedirect, pathUrl)
 	// ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
 }
 
