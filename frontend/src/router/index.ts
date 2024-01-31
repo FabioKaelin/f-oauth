@@ -17,15 +17,15 @@ const routes: Array<RouteRecordRaw> = [
         // component: HomeView
     },
     {
-        path:"/dsg",
-        name:"dsg",
+        path: "/dsg",
+        name: "dsg",
         component: () => import("../views/DSGView.vue")
     },
     {
         path: "/:pathMatch(.*)",
         name: "404",
         component: PageNotFoundView
-    },
+    }
 ]
 
 const router = createRouter({

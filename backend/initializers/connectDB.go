@@ -3,7 +3,7 @@ package initializers
 import (
 	"fmt"
 
-	"github.com/wpcodevo/google-github-oath2-golang/models"
+	"github.com/fabiokaelin/f-oauth/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

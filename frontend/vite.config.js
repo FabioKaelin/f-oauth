@@ -2,13 +2,12 @@ import { defineConfig } from "vite"
 import vue from "@vitejs/plugin-vue"
 import eslintPlugin from "vite-plugin-eslint"
 
-
 // apple-touch-icon
 // <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
 const path = require("path")
 // export default defineConfig(() =>({
-export default defineConfig(({mode}) =>({
+export default defineConfig(({ mode }) => ({
     plugins: [vue(), eslintPlugin()],
     resolve: {
         alias: {
@@ -18,7 +17,7 @@ export default defineConfig(({mode}) =>({
     },
     define: {
         // __VUE_PROD_DEVTOOLS__: true,
-        __VUE_PROD_DEVTOOLS__: mode !== "production",
+        __VUE_PROD_DEVTOOLS__: mode !== "production"
     },
     build: {
         rollupOptions: {

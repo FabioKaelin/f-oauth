@@ -17,10 +17,10 @@
         <br />
         <button v-if="password != '' && email != ''" @click="login">Login</button>
         <br />
-        <hr>
-        <br>
+        <hr />
+        <br />
         <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google oder GitHub einloggen möchtest (was ohne Account funktioniert) kannst du dich hier registrieren</span>
-        <br>
+        <br />
         <input v-model="rname" class="textInput" type="text" placeholder="Name" />
         <br />
         <input v-model="remail" class="textInput" type="email" placeholder="Email" />
@@ -86,7 +86,7 @@ export default defineComponent({
         goToGoogle() {
             window.location.href = this.getGoogleUrl()
         },
-        goToGitHub(){
+        goToGitHub() {
             window.location.href = getGithubUrl(this.from)
         },
         getFrom() {
@@ -174,7 +174,7 @@ export default defineComponent({
     margin-bottom: 10px;
 }
 
-.login-with-github-button{
+.login-with-github-button {
     cursor: pointer;
 
     padding: 12px 16px 12px 42px;
