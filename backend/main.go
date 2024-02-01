@@ -63,6 +63,13 @@ func init() {
 	}
 }
 
+func ipMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fmt.Println("Client IP:", c.ClientIP())
+		c.Next()
+	}
+}
+
 func main() {
 	// corsConfig := cors.DefaultConfig()
 	// corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
@@ -76,6 +83,7 @@ func main() {
 
 	// server.Use(cors.New(corsConfig))
 	server.Use(CORSMiddleware())
+	server.Use(ipMiddleware())
 
 	router := server.Group("/api")
 	router.GET("", func(ctx *gin.Context) {
