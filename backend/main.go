@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/fabiokaelin/f-oauth/controllers"
 	"github.com/fabiokaelin/f-oauth/initializers"
@@ -51,15 +50,6 @@ func CORSMiddleware() gin.HandlerFunc {
 		}
 
 		c.Next()
-	}
-}
-
-func init() {
-	if _, err := os.Stat("public/images"); errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll("public/images", os.ModePerm)
-		if err != nil {
-			log.Println(err)
-		}
 	}
 }
 
