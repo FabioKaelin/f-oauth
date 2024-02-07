@@ -56,7 +56,7 @@ func CORSMiddleware() gin.HandlerFunc {
 func ipMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("Client IP:", c.ClientIP())
-		fmt.Println("X-Real-IP", c.Request.Header.Get("X-Real-IP"))
+		fmt.Println("X-Real-IP:", c.Request.Header.Get("X-Real-IP"))
 		c.Next()
 	}
 }
