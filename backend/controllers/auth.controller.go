@@ -22,6 +22,8 @@ import (
 
 // SignUp User
 func SignUpUser(ctx *gin.Context) {
+	// TODO: Add email verification
+	// TODO: Redirect to loginpage when an error occurs with error message
 	var payload *models.RegisterUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
@@ -52,8 +54,10 @@ func SignUpUser(ctx *gin.Context) {
 	}
 
 	isExisting := rows.Next()
+	rows.Close()
 
 	if isExisting {
+		// TODO: Redirect to loginpage with error message
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists"})
 		return
 	}
@@ -81,6 +85,7 @@ func SignUpUser(ctx *gin.Context) {
 
 // SignIn User
 func SignInUser(ctx *gin.Context) {
+	// TODO: Redirect to loginpage when an error occurs with error message
 	var payload *models.LoginUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
@@ -97,6 +102,7 @@ func SignInUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
 	}
+	defer rows.Close()
 	isExisting := rows.Next()
 
 	if !isExisting {
@@ -115,6 +121,7 @@ func SignInUser(ctx *gin.Context) {
 	}
 
 	if user.Provider != "local" {
+		// TODO: Redirect to loginpage with error message
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
 		return
 	}
@@ -140,6 +147,7 @@ func LogoutUser(ctx *gin.Context) {
 }
 
 func GoogleOAuth(ctx *gin.Context) {
+	// TODO: Redirect to loginpage when an error occurs with error message
 	code := ctx.Query("code")
 	var pathUrl string = "/"
 
@@ -192,23 +200,26 @@ func GoogleOAuth(ctx *gin.Context) {
 	}
 
 	ifExist := rows.Next()
+	rows.Close()
 	fmt.Println("ifExist", ifExist)
 
 	if !ifExist {
 		// initializers.DB.Create(&user_data)
 		fmt.Println("new user")
-		_, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+		rows, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
 			return
 		}
+		rows.Close()
 	}
 	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
 	}
+	defer rows.Close()
 
 	var user models.User
 	for rows.Next() {
@@ -230,7 +241,11 @@ func GoogleOAuth(ctx *gin.Context) {
 		return
 	}
 
-	config, _ := initializers.LoadConfig(".")
+	config, err := initializers.LoadConfig(".")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
 
 	token, err := utils.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
 	if err != nil {
@@ -306,23 +321,26 @@ func GitHubOAuth(ctx *gin.Context) {
 	}
 
 	ifExist := rows.Next()
+	rows.Close()
 	fmt.Println("ifExist", ifExist)
 
 	if !ifExist {
 		// initializers.DB.Create(&user_data)
 		fmt.Println("new user")
-		_, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+		rows, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
 			return
 		}
+		rows.Close()
 	}
 	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
 	}
+	defer rows.Close()
 
 	var user models.User
 	for rows.Next() {
