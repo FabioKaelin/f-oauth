@@ -1,6 +1,6 @@
 # F-OAuth
 
-[![wakatime](https://wakatime.com/badge/github/FabioKaelin/f-oauth.svg)](https://wakatime.com/badge/github/FabioKaelin/f-oauth) (Seid 30.01.2024)
+[![Backend](https://github.com/FabioKaelin/f-oauth/actions/workflows/backend.yaml/badge.svg?branch=main)](https://github.com/FabioKaelin/f-oauth/actions/workflows/backend.yaml) [![Frontend](https://github.com/FabioKaelin/f-oauth/actions/workflows/frontend.yaml/badge.svg?branch=main)](https://github.com/FabioKaelin/f-oauth/actions/workflows/frontend.yaml) [![wakatime](https://wakatime.com/badge/github/FabioKaelin/f-oauth.svg)](https://wakatime.com/badge/github/FabioKaelin/f-oauth) (Seid 30.01.2024)
 
 ## Description
 
