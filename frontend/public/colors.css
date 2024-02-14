@@ -1,11 +1,14 @@
 :root {
-    --main-background-color: color-mix(in HSL, var(--color-full) 30%, black);
-
     --color: rgba(var(--color-dev), 0.161);
     --color-half: rgba(var(--color-dev), 0.5);
     --color-full: rgb(var(--color-dev));
-    --color-dark: color-mix(in HSL, var(--color-full) 60%, black);
-    --font-color: color-mix(in HSL, var(--color-full) 30%, white);
+    --color-dark: color-mix(in srgb, var(--color-full) 60%, black);
+    /* --color-dark: color-mix(in HSL, var(--color-full) 60%, black); */
+    --font-color: color-mix(in srgb, var(--color-full) 30%, white);
+    /* --font-color: color-mix(in HSL, var(--color-full) 30%, white); */
+
+    --main-background-color: color-mix(in srgb, var(--color-full) 30%, black);
+    /* --main-background-color: color-mix(in HSL, var(--color-full) 30%, black); */
 
     --color-dev: 30, 143, 143;
     /* color: rgb(30, 143, 143); */
@@ -22,7 +25,7 @@
     --color-dev: 0, 0, 255 !important;
     --color-full: rgb(var(--color-dev));
     /* --main-background-color: color-mix(in HSL, var(--color-full) 20%, black); */
-    --main-background-color: rgb(0, 0, 50) /* --color-dev: 25, 28, 189 !important; */;
+    --main-background-color: rgb(0, 0, 50) !important;
 }
 
 [data-theme="green"] {
@@ -47,7 +50,7 @@
 
 [data-theme="black"] {
     --color-dev: 80, 80, 80 !important;
-    --main-background-color: black;
+    --main-background-color: black !important;
 }
 
 html {

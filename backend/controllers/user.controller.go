@@ -50,6 +50,7 @@ func UpdateMe(ctx *gin.Context) {
 	}
 
 	ifExist := rows.Next()
+	rows.Close()
 	fmt.Println("ifExist", ifExist)
 	if !ifExist {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "User not found"})
@@ -57,11 +58,12 @@ func UpdateMe(ctx *gin.Context) {
 	}
 
 	// update user
-	_, err = utils.RunSQL("UPDATE `users` SET `name` = ?, `photo` = ? WHERE `id` = ?", currentUser.Name, currentUser.Photo, currentUser.ID)
+	rows, err = utils.RunSQL("UPDATE `users` SET `name` = ?, `photo` = ? WHERE `id` = ?", currentUser.Name, currentUser.Photo, currentUser.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "update user in database failed"})
 		return
 	}
+	rows.Close()
 
 	updateInAllFProducts(currentUser)
 

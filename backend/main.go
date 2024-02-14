@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/fabiokaelin/f-oauth/controllers"
 	"github.com/fabiokaelin/f-oauth/initializers"
@@ -54,18 +53,10 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func init() {
-	if _, err := os.Stat("public/images"); errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll("public/images", os.ModePerm)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-}
-
 func ipMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("Client IP:", c.ClientIP())
+		fmt.Println("X-Real-IP:", c.Request.Header.Get("X-Real-IP"))
 		c.Next()
 	}
 }

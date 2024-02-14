@@ -71,7 +71,7 @@ const themes: Array<Theme> = [
     },
     {
         id: "black",
-        name: "dark"
+        name: "Black"
     }
 ]
 

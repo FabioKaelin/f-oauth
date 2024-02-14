@@ -22,8 +22,8 @@ func UpdateDBConnection() error {
 	// test if connection is working
 	err = dbNew.Ping()
 	if err != nil {
-		newErr := errors.Join(errors.New("error durring updating db connection"), err)
-		return newErr
+		err := errors.Join(errors.New("error durring updating db connection"), err)
+		return err
 	}
 	dbConn = dbNew
 	// db.QueryRow("set client_encoding='win1252'")
@@ -32,7 +32,6 @@ func UpdateDBConnection() error {
 }
 
 func RunSQL(sqlStatement string, parameters ...any) (*sql.Rows, error) {
-
 	err := dbConn.Ping()
 	if err != nil {
 		fmt.Println("DB Connection lost, reconnecting...")
@@ -43,8 +42,8 @@ func RunSQL(sqlStatement string, parameters ...any) (*sql.Rows, error) {
 	}
 	rows, err := dbConn.Query(sqlStatement, parameters...)
 	if err != nil {
-		newErr := errors.Join(errors.New("error durring executing "+sqlStatement), err)
-		return &sql.Rows{}, newErr
+		err := errors.Join(errors.New("error durring executing "+sqlStatement), err)
+		return &sql.Rows{}, err
 	}
 	return rows, nil
 }
