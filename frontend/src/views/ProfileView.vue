@@ -1,82 +1,80 @@
 <template>
     <div class="prifile">
         <h1>Profile</h1>
-        <span> <img :src="imageUrl" alt="Profilbild" width="100" height="100" /> <br /> </span>
-        <!-- <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span> -->
-        <table>
-            <tr>
-                <td>Name</td>
-                <td>{{ me.name }}</td>
-            </tr>
-            <tr>
-                <td>Email</td>
-                <td>{{ me.email }}</td>
-            </tr>
-            <tr>
-                <td>Loginmethode</td>
-                <td>{{ getRealableProvider() }}</td>
-            </tr>
-            <tr>
-                <td>Rolle</td>
-                <td>{{ getReadableRole() }}</td>
-            </tr>
-        </table>
-        <br />
-        <button
-            type="button"
-            value="menu"
-            class="clickButton"
-            @click="
-                () => {
-                    isShow = true
-                    newUsername = me.name
-                    file = null
-                }
-            ">
-            Bearbeiten
-            <Modal
-                v-model="isShow"
-                :close="
-                    () => {
-                        isShow = false
-                    }
+        <div v-if="error && loaded" class="error">{{ error }}</div>
+        <div v-if="!loaded" class="loader"></div>
+        <div v-if="loaded">
+            <span> <img :src="imageUrl" alt="Profilbild" width="100" height="100" /> <br /> </span>
+            <!-- <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span> -->
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ me.name }}</td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td>{{ me.email }}</td>
+                </tr>
+                <tr>
+                    <td>Loginmethode</td>
+                    <td>{{ getRealableProvider() }}</td>
+                </tr>
+                <tr>
+                    <td>Rolle</td>
+                    <td>{{ getReadableRole() }}</td>
+                </tr>
+            </table>
+            <br>
+            <button type="button" value="menu" class="clickButton" @click="() => {
+                isShow = true
+                newUsername = me.name
+                file = null
+            }
                 ">
-                <div class="modal">
-                    Name:
-                    <input v-model="newUsername" type="text" />
-                    <br />
-                    <div>
-                        <input type="file" accept="image/*" capture @change="onFileChanged($event)" />
+                Bearbeiten
+                <Modal v-model="isShow" :close="() => {
+                    isShow = false
+                }
+                    ">
+                    <div class="modal">
+                        Name:
+                        <input v-model="newUsername" type="text" />
+                        <br />
+                        <div>
+                            <input type="file" accept="image/*" capture @change="onFileChanged($event)" />
+                        </div>
+                        <br />
+                        <button class="clickButton" @click="isShow = false">Abbrechen</button>
+                        &ensp;
+                        <button class="clickButton" @click="() => {
+                            updateUser()
+                            isShow = false
+                        }
+                            ">
+                            Aktualisieren
+                        </button>
                     </div>
-                    <br />
-                    <button class="clickButton" @click="isShow = false">Abbrechen</button>
-                    &ensp;
-                    <button
-                        class="clickButton"
-                        @click="
-                            () => {
-                                updateUser()
-                                isShow = false
-                            }
-                        ">
-                        Aktualisieren
-                    </button>
-                </div>
-            </Modal>
-        </button>
+                </Modal>
+            </button>
+        </div>
+        <br />
         <br />
         <hr />
         <h2>Applications</h2>
         <!-- link to https://tipp.fabkli.ch as button -->
-        <a href="https://tipp.fabkli.ch" target="_blank" rel="noopener noreferrer">
-            <button class="clickButton">Tippspiel</button>
+        <a class="applicationlink" href="https://tipp.fabkli.ch" target="_blank" rel="noopener noreferrer">
+            <button class="clickButton">
+                <img src="https://tipp.fabkli.ch/favicon.png" alt="">
+                <br>
+                Tippspiel
+            </button>
         </a>
         <br />
         <br />
         <!-- link to https://tipp.dev.fabkli.ch as button -->
-        <a href="https://tipp.dev.fabkli.ch" target="_blank" rel="noopener noreferrer">
+        <!-- <a class="applicationlink" href="https://tipp.dev.fabkli.ch" target="_blank" rel="noopener noreferrer">
             <button class="clickButton">Tippspiel-Dev (Nur für Entwicklung)</button>
-        </a>
+        </a> -->
     </div>
 </template>
 
@@ -97,7 +95,9 @@ export default defineComponent({
             isShow: false,
             newUsername: "",
             file: ref<File | null>(),
-            imageUrl: ""
+            imageUrl: "",
+            loaded: false,
+            error: ""
         }
     },
     mounted() {
@@ -107,6 +107,7 @@ export default defineComponent({
                 let me = response.data
                 this.me = me
                 const userId = me.id
+                this.loaded = true
                 const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
                 if (userId) {
                     this.imageUrl = `${backendUrl}/api/users/${userId}/image`
@@ -115,16 +116,22 @@ export default defineComponent({
                 }
             })
             .catch((error: any) => {
-                let fromDirect = this.$route.query.from
-                if (fromDirect == undefined || fromDirect == null) {
-                    fromDirect = window.location.href
-                    console.log("1 fromDirect", fromDirect)
+                if (error.response.status == 401) {
+                    let fromDirect = this.$route.query.from
+                    if (fromDirect == undefined || fromDirect == null) {
+                        fromDirect = window.location.href
+                        console.log("1 fromDirect", fromDirect)
+                    }
+                    let from = fromDirect.toString()
+                    console.log(from)
+                    // console.log(error);
+                    console.log(error.response.status, "not logged in")
+                    this.$router.push({ name: "login", query: { from: from } })
+                    return
                 }
-                let from = fromDirect.toString()
-                console.log(from)
-                // console.log(error);
-                console.log(error.response.status, "not logged in")
-                this.$router.push({ name: "login", query: { from: from } })
+                this.error = "Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut."
+                this.loaded = true
+
             })
     },
     methods: {
@@ -203,6 +210,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.error {
+    color: red;
+}
+
 // img {
 //     width: 100%;
 //     max-width: 800px;
@@ -243,5 +254,17 @@ tr:nth-child(even) {
     text-align: center;
     color: var(--font-color);
     font-size: normal;
+}
+
+img {
+    border-radius: 40%;
+    height: 100px;
+}
+
+.applicationlink {
+    text-decoration: none;
+    font-size: larger;
+    font-size: larger;
+    color: var(--font-color);
 }
 </style>

@@ -7,7 +7,7 @@
     --font-color: color-mix(in srgb, var(--color-full) 30%, white);
     /* --font-color: color-mix(in HSL, var(--color-full) 30%, white); */
 
-    --main-background-color: color-mix(in srgb, var(--color-full) 30%, black);
+    --main-background-color: color-mix(in srgb, var(--color-full) 20%, black);
     /* --main-background-color: color-mix(in HSL, var(--color-full) 30%, black); */
 
     --color-dev: 30, 143, 143;
