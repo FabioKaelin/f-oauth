@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -22,13 +23,28 @@ import (
 
 // SignUp User
 func SignUpUser(ctx *gin.Context) {
-	// TODO: Add email verification
 	// TODO: Redirect to loginpage when an error occurs with error message
 	var payload *models.RegisterUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		fmt.Println("1", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "1message": err.Error()})
+		return
+	}
+
+	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	emailRegex := regexp.MustCompile(emailPattern)
+
+	if !emailRegex.MatchString(payload.Email) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email address pattern"})
+		return
+	}
+
+	usernamePattern := "^[a-zA-Z0-9_\\-öäüÖÄÜêÊéàèÉÀÈç ]{3,20}$"
+	usernameRegesxx := regexp.MustCompile(usernamePattern)
+
+	if !usernameRegesxx.MatchString(payload.Name) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid username pattern"})
 		return
 	}
 
@@ -92,6 +108,14 @@ func SignInUser(ctx *gin.Context) {
 		spew.Dump(payload)
 		fmt.Println("1", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	emailRegex := regexp.MustCompile(emailPattern)
+
+	if !emailRegex.MatchString(payload.Email) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email address pattern"})
 		return
 	}
 
