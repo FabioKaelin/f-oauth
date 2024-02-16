@@ -25,6 +25,12 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+.home {
+    background-color: var(--color);
+    border-radius: 10px;
+    padding: 5px;
+}
+
 a {
     font-weight: bold;
     color: var(--color-half);

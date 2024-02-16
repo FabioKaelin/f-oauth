@@ -105,6 +105,7 @@ jobs:
       - name: deploy
         run: |
           export version=$(cat project-meta.jsonc | jq -r ."backend_version")
+
           cd backend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth

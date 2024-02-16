@@ -34,3 +34,11 @@ export default defineComponent({
     name: "AboutView"
 })
 </script>
+
+<style scoped lang="scss">
+.AboutView {
+    background-color: var(--color);
+    border-radius: 10px;
+    padding: 5px;
+}
+</style>

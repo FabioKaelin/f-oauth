@@ -160,6 +160,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.login {
+    background-color: var(--color);
+    border-radius: 10px;
+    padding: 5px;
+}
+
 .login-with-google-button {
     cursor: pointer;
 
