@@ -10,6 +10,8 @@
         <br />
         <br />
         <input v-model="email" class="textInput" type="email" placeholder="Email" />
+        <br v-if="!emailValid && email.length != 0" />
+        <span v-if="!emailValid && email.length != 0" style="color: red">Die Email ist nicht gültig</span>
         <br />
         <input v-model="password" class="textInput" type="password" placeholder="Password" />
         <br />
@@ -22,14 +24,22 @@
         <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google oder GitHub einloggen möchtest (was ohne Account funktioniert) kannst du dich hier registrieren</span>
         <br />
         <input v-model="rname" class="textInput" type="text" placeholder="Name" />
+        <br v-if="!usernameValid && rname.length != 0" />
+        <span v-if="!usernameValid && rname.length != 0" style="color: red">Der Name darf nur Buchstaben, Zahlen, Leerzeichen, - und _ enthalten und mindestens 3 und maximal 20 Zeichen lang sein</span>
         <br />
         <input v-model="remail" class="textInput" type="email" placeholder="Email" />
+        <br v-if="!emailrValid && remail.length != 0" />
+        <span v-if="!emailrValid && remail.length != 0" style="color: red">Die Email ist nicht gültig</span>
         <br />
         <input v-model="rpassword" class="textInput" type="password" placeholder="Password" />
+        <br v-if="!passwordValid && rpassword.length != 0" />
+        <span v-if="!passwordValid && rpassword.length != 0" style="color: red">Das Passwort muss mindestens 8 Zeichen lang sein und mindestens eine Großbuchstabe, eine Kleinbuchstabe, eine Zahl und ein Sonderzeichen enthalten.</span>
         <br />
         <input v-model="rpasswordConfirm" class="textInput" type="password" placeholder="Password confirm" />
+        <br v-if="!passwordMatch && rpasswordConfirm.length != 0" />
+        <span v-if="!passwordMatch && rpasswordConfirm.length != 0" style="color: red">Die Passwörter stimmen nicht überein</span>
         <br />
-        <button v-if="showRegister" class="textInput" @click="register">Register</button>
+        <button v-if="showRegister && usernameValid && emailrValid && passwordValid" class="textInput" @click="register">Register</button>
     </div>
 </template>
 
@@ -65,6 +75,43 @@ export default defineComponent({
         },
         showRegister() {
             return this.passwordMatch && this.rname.length > 0 && this.remail.length > 0 && this.rpassword.length > 0
+        },
+        usernameValid() {
+            // validate guessgroup name Max 20 Char Only a-z A-Z 0-9 "-" "_" öäüÖÄÜêÊéàèÉÀÈç and " "
+
+            const regex = /^[a-zA-Z0-9_äöüÄÖÜêÊéàèÉÀÈç -]{3,20}$/;
+            if (this.rname.match(regex)) {
+                return true
+            } else {
+                return false
+            }
+        },
+        emailrValid() {
+            // validate email
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (this.remail.match(emailRegex)) {
+                return true
+            } else {
+                return false
+            }
+        },
+        emailValid() {
+            // validate email
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (this.email.match(emailRegex)) {
+                return true
+            } else {
+                return false
+            }
+        },
+        passwordValid() {
+            // validate password
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (this.password.match(passwordRegex)) {
+                return true
+            } else {
+                return false
+            }
         }
     },
     mounted() {
@@ -95,6 +142,18 @@ export default defineComponent({
             return "?from=" + this.from
         },
         register() {
+            if (this.rpassword != this.rpasswordConfirm) {
+                return
+            }
+            if (!this.usernameValid) {
+                return
+            }
+            if (!this.emailrValid) {
+                return
+            }
+            if (!this.passwordValid) {
+                return
+            }
             let data = {
                 name: this.rname,
                 email: this.remail,
