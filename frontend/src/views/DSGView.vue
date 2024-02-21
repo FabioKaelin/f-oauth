@@ -63,3 +63,11 @@ export default defineComponent({
     name: "DSGView"
 })
 </script>
+
+<style scoped lang="scss">
+.dsg {
+    background-color: var(--color);
+    border-radius: 10px;
+    padding: 5px;
+}
+</style>

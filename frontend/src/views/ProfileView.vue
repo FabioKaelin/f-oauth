@@ -1,5 +1,5 @@
 <template>
-    <div class="prifile">
+    <div class="profile">
         <h1>Profile</h1>
         <div v-if="error && loaded" class="error">{{ error }}</div>
         <div v-if="!loaded" class="loader"></div>
@@ -24,17 +24,25 @@
                     <td>{{ getReadableRole() }}</td>
                 </tr>
             </table>
-            <br>
-            <button type="button" value="menu" class="clickButton" @click="() => {
-                isShow = true
-                newUsername = me.name
-                file = null
-            }
+            <br />
+            <button
+                type="button"
+                value="menu"
+                class="clickButton"
+                @click="
+                    () => {
+                        isShow = true
+                        newUsername = me.name
+                        file = null
+                    }
                 ">
                 Bearbeiten
-                <Modal v-model="isShow" :close="() => {
-                    isShow = false
-                }
+                <Modal
+                    v-model="isShow"
+                    :close="
+                        () => {
+                            isShow = false
+                        }
                     ">
                     <div class="modal">
                         Name:
@@ -46,10 +54,13 @@
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
                         &ensp;
-                        <button class="clickButton" @click="() => {
-                            updateUser()
-                            isShow = false
-                        }
+                        <button
+                            class="clickButton"
+                            @click="
+                                () => {
+                                    updateUser()
+                                    isShow = false
+                                }
                             ">
                             Aktualisieren
                         </button>
@@ -64,8 +75,8 @@
         <!-- link to https://tipp.fabkli.ch as button -->
         <a class="applicationlink" href="https://tipp.fabkli.ch" target="_blank" rel="noopener noreferrer">
             <button class="clickButton">
-                <img src="https://tipp.fabkli.ch/favicon.png" alt="">
-                <br>
+                <img src="https://tipp.fabkli.ch/favicon.png" alt="" />
+                <br />
                 Tippspiel
             </button>
         </a>
@@ -131,7 +142,6 @@ export default defineComponent({
                 }
                 this.error = "Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut."
                 this.loaded = true
-
             })
     },
     methods: {
@@ -210,6 +220,12 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.profile {
+    background-color: var(--color);
+    border-radius: 10px;
+    padding: 5px;
+}
+
 .error {
     color: red;
 }
