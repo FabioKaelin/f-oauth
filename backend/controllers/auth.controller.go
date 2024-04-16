@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"bytes"
-	"crypto/sha512"
-	"encoding/hex"
 	"fmt"
 	"image"
 	"image/png"
@@ -19,6 +17,7 @@ import (
 	"github.com/fabiokaelin/f-oauth/models"
 	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // SignUp User
@@ -48,14 +47,18 @@ func SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	hashpassword := sha512.Sum512([]byte(payload.Password))
-	hashpasswordValue := hex.EncodeToString(hashpassword[:])
+	// hashpassword := sha512.Sum512([]byte(payload.Password))
+	// hashpasswordValue := hex.EncodeToString(hashpassword[:])
+	hashPassword, err := hashAndSalt([]byte(payload.Password))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error in hashing password"})
+	}
 
 	now := time.Now()
 	newUser := models.User{
 		Name:      payload.Name,
 		Email:     strings.ToLower(payload.Email),
-		Password:  hashpasswordValue,
+		Password:  hashPassword,
 		Role:      "user",
 		Provider:  "local",
 		Verified:  true,
@@ -68,9 +71,9 @@ func SignUpUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error appeared"})
 		return
 	}
+	defer rows.Close()
 
 	isExisting := rows.Next()
-	rows.Close()
 
 	if isExisting {
 		// TODO: Redirect to loginpage with error message
@@ -136,10 +139,9 @@ func SignInUser(ctx *gin.Context) {
 
 	rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 
-	hashpassword := sha512.Sum512([]byte(payload.Password))
-	hashpasswordValue := hex.EncodeToString(hashpassword[:])
+	equal := comparePasswords(user.Password, []byte(payload.Password))
 
-	if user.Password != hashpasswordValue {
+	if !equal {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
 	}
@@ -168,6 +170,19 @@ func LogoutUser(ctx *gin.Context) {
 	ctx.SetCookie("token", "", -1, "/", initializers.StartConfig.TokenURL, false, true)
 	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+func hashAndSalt(pwd []byte) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword(pwd, 12)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+func comparePasswords(hashedPwd string, plainPwd []byte) bool {
+	byteHash := []byte(hashedPwd)
+	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	return err == nil
 }
 
 func GoogleOAuth(ctx *gin.Context) {
