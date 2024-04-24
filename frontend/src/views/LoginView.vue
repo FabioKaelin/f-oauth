@@ -32,14 +32,14 @@
         <span v-if="!emailrValid && remail.length != 0" style="color: red">Die Email ist nicht gültig</span>
         <br />
         <input v-model="rpassword" class="textInput" type="password" placeholder="Password" />
-        <br v-if="!passwordValid && rpassword.length != 0" />
-        <span v-if="!passwordValid && rpassword.length != 0" style="color: red">Das Passwort muss mindestens 8 Zeichen lang sein und mindestens eine Großbuchstabe, eine Kleinbuchstabe, eine Zahl und ein Sonderzeichen enthalten.</span>
+        <br v-if="!passwordrValid && rpassword.length != 0" />
+        <span v-if="!passwordrValid && rpassword.length != 0" style="color: red">Das Passwort muss mindestens 8 Zeichen lang sein und mindestens eine Großbuchstabe, eine Kleinbuchstabe, eine Zahl und ein Sonderzeichen enthalten.</span>
         <br />
         <input v-model="rpasswordConfirm" class="textInput" type="password" placeholder="Password confirm" />
         <br v-if="!passwordMatch && rpasswordConfirm.length != 0" />
         <span v-if="!passwordMatch && rpasswordConfirm.length != 0" style="color: red">Die Passwörter stimmen nicht überein</span>
         <br />
-        <button v-if="showRegister && usernameValid && emailrValid && passwordValid" class="textInput" @click="register">Register</button>
+        <button v-if="showRegister && usernameValid && emailrValid && passwordrValid" class="textInput" @click="register">Register</button>
     </div>
 </template>
 
@@ -98,16 +98,29 @@ export default defineComponent({
         emailValid() {
             // validate email
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            console.log(".............")
+            console.log(this.email)
             if (this.email.match(emailRegex)) {
+                console.log("true")
                 return true
             } else {
+                console.log("false")
                 return false
             }
         },
         passwordValid() {
             // validate password
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            const passwordRegex = /^(?=.*?[A-Z])(?=(.*[a-z]){1,})(?=(.*[\d]){1,})(?=(.*[\W]){1,})(?!.*\s).{8,}$/;
             if (this.password.match(passwordRegex)) {
+                return true
+            } else {
+                return false
+            }
+        },
+        passwordrValid() {
+            // validate password
+            const passwordrRegex = /^(?=.*?[A-Z])(?=(.*[a-z]){1,})(?=(.*[\d]){1,})(?=(.*[\W]){1,})(?!.*\s).{8,}$/;
+            if (this.rpassword.match(passwordrRegex)) {
                 return true
             } else {
                 return false
@@ -151,7 +164,7 @@ export default defineComponent({
             if (!this.emailrValid) {
                 return
             }
-            if (!this.passwordValid) {
+            if (!this.passwordrValid) {
                 return
             }
             let data = {
