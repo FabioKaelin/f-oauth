@@ -13,6 +13,7 @@
           "cd f-oauth",
           "git status"
         ],
+        "joinOperator": ";",
         "icon": "git-branch",
         "color": "terminal.ansiRed",
         "autoExecuteCommands": true
@@ -26,6 +27,7 @@
             "cd frontend",
             "npm run dev"
           ],
+          "joinOperator": ";",
           "icon": "notebook-render-output",
           "autoExecuteCommands": true,
           "color": "terminal.ansiGreen"
@@ -38,6 +40,7 @@
             "cd backend",
             "go run ."
           ],
+          "joinOperator": ";",
           "autoExecuteCommands": true,
           "icon": "circuit-board",
           "color": "terminal.ansiBrightBlue"
