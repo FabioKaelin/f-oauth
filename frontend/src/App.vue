@@ -24,11 +24,6 @@
                 <br />
             </router-link>
 
-            <router-link v-if="!store.loggedIn" to="/register">
-                <span>Register</span>
-                <br />
-            </router-link>
-
             <span v-if="store.loggedIn">
                 <span class="fakelink" @click="logout">Logout</span>
                 <br />
