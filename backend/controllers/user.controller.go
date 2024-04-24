@@ -97,6 +97,8 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 
+	defer w.Close()
+
 	// Create a new form file
 	fw, err := w.CreateFormFile("image", newFileName)
 	if err != nil {
@@ -112,12 +114,12 @@ func UploadResizeSingleFile(ctx *gin.Context) {
 		return
 	}
 
-	// Close the multipart writer
-	if err = w.Close(); err != nil {
-		fmt.Println("error", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "close multipart writer failed"})
-		return
-	}
+	// // Close the multipart writer
+	// if err = w.Close(); err != nil {
+	// 	fmt.Println("error", err)
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "close multipart writer failed"})
+	// 	return
+	// }
 
 	// Create a new HTTP request
 	req, err := http.NewRequest("POST", initializers.StartConfig.InternalImageService+"/api/users/"+currentUser.ID.String(), &b)
