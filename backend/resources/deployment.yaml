@@ -47,11 +47,11 @@ spec:
     - name: DATABASE_PORT
       value: "3306"
     - name: INTERNAL_TIPP_URL
-      value: prod-backend.tipp.svc.cluster.local
+      value: http://prod-backend.tipp.svc.cluster.local
     - name: INTERNAL_DEV_TIPP_URL
-      value: dev-backend.tipp.svc.cluster.local
+      value: http://dev-backend.tipp.svc.cluster.local
     - name: INTERNAL_IMAGE_SERVICE
-      value: f-image.f-image.svc.cluster.local
+      value: http://f-image.f-image.svc.cluster.local
     - name: DATABASE_PASSWORD
       fromSecret:
         name: oauth-secrets
