@@ -45,10 +45,10 @@ const themes: Array<Theme> = [
         id: "",
         name: "Cyan"
     },
-    {
-        id: "blue",
-        name: "Blue"
-    },
+    // {
+    //     id: "blue",
+    //     name: "Blue"
+    // },
     {
         id: "green",
         name: "Green"

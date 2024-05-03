@@ -3,7 +3,7 @@
         <h2>About</h2>
         <ul>
             <li><strong>Name:</strong> Fabio Kälin</li>
-            <li><strong>E-Mail:</strong> fabio.kaelin.206[at]gmail.com</li>
+            <li><strong>E-Mail:</strong> fabio.kaelin.fk+oauth@gmail.com</li>
             <li><strong>GitHub:</strong> <a href="https://github.com/FabioKaelin">FabioKaelin</a></li>
         </ul>
 
@@ -40,5 +40,10 @@ export default defineComponent({
     background-color: var(--color);
     border-radius: 10px;
     padding: 5px;
+}
+
+a{
+    color: var(--color-full);
+    // text-decoration: none;
 }
 </style>
