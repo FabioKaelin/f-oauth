@@ -33,6 +33,8 @@ type Config struct {
 	InternalDevTippURL string `mapstructure:"INTERNAL_DEV_TIPP_URL"`
 
 	InternalImageService string `mapstructure:"INTERNAL_IMAGE_SERVICE"`
+
+	NotificationID string `mapstructure:"NOTIFICATION_ID"`
 }
 
 var StartConfig Config
@@ -76,6 +78,7 @@ func LoadConfig(path string) (config Config, err error) {
 		InternalTippURL:        os.Getenv("INTERNAL_TIPP_URL"),
 		InternalDevTippURL:     os.Getenv("INTERNAL_DEV_TIPP_URL"),
 		InternalImageService:   os.Getenv("INTERNAL_IMAGE_SERVICE"),
+		NotificationID:         os.Getenv("NOTIFICATION_ID"),
 	}
 
 	return

@@ -15,6 +15,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/initializers"
 	"github.com/fabiokaelin/f-oauth/models"
+	"github.com/fabiokaelin/f-oauth/pkg/notification"
 	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -98,6 +99,14 @@ func SignUpUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "4message": "Something bad happened"})
 		return
 	}
+
+	notificationConfig := notification.Config{
+		Title:   fmt.Sprintf("New User: %s", newUser.Name),
+		Message: fmt.Sprintf("Provider: %s\nEmail: %s", newUser.Provider, newUser.Email),
+		Type:    "newuser",
+	}
+
+	notificationConfig.Send()
 
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": models.FilteredResponse(&newUser)}})
 }
