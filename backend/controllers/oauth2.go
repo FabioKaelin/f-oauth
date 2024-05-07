@@ -8,11 +8,13 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
-	"github.com/fabiokaelin/f-oauth/models"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
+	"github.com/fabiokaelin/f-oauth/pkg/google"
+	"github.com/fabiokaelin/f-oauth/pkg/image"
 	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 
-	"github.com/fabiokaelin/f-oauth/utils"
+	"github.com/fabiokaelin/f-oauth/pkg/github"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +27,7 @@ func OAuth2Router(apiGroup *gin.RouterGroup) {
 }
 
 func oauth2Google(ctx *gin.Context) {
+	fmt.Println(ctx.Request.URL.String())
 	// TODO: Redirect to loginpage when an error occurs with error message
 	code := ctx.Query("code")
 	var pathUrl string = "/"
@@ -40,16 +43,18 @@ func oauth2Google(ctx *gin.Context) {
 		return
 	}
 
-	tokenRes, err := utils.GetGoogleOauthToken(code)
+	tokenRes, err := google.GetGoogleOauthToken(code)
 
 	if err != nil {
+		fmt.Println("err1", err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	google_user, err := utils.GetGoogleUser(tokenRes.Access_token, tokenRes.Id_token)
+	google_user, err := google.GetGoogleUser(tokenRes.Access_token, tokenRes.Id_token)
 
 	if err != nil {
+		fmt.Println("err2", err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
@@ -57,7 +62,7 @@ func oauth2Google(ctx *gin.Context) {
 	now := time.Now()
 	email := strings.ToLower(google_user.Email)
 
-	user_data := models.User{
+	user_data := user_pkg.User{
 		Name:      google_user.Name,
 		Email:     email,
 		Password:  "",
@@ -73,6 +78,7 @@ func oauth2Google(ctx *gin.Context) {
 	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 
 	if err != nil {
+		fmt.Println("err3", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
 		return
 	}
@@ -94,12 +100,13 @@ func oauth2Google(ctx *gin.Context) {
 	}
 	rows, err = db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	if err != nil {
+		fmt.Println("err4", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var user models.User
+	var user user_pkg.User
 	for rows.Next() {
 		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 		break
@@ -108,8 +115,7 @@ func oauth2Google(ctx *gin.Context) {
 	if !ifExist {
 		// get image from google
 		// save image to public/images
-		saveImage(user.Photo, user.ID.String())
-
+		image.SaveImage(user.Photo, user.ID.String())
 	}
 
 	spew.Dump(user)
@@ -121,6 +127,7 @@ func oauth2Google(ctx *gin.Context) {
 
 	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
 	if err != nil {
+		fmt.Println("err5", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message4": err.Error()})
 		return
 	}
@@ -142,6 +149,8 @@ func oauth2Google(ctx *gin.Context) {
 }
 
 func oauth2GitHub(ctx *gin.Context) {
+	fmt.Println(ctx.Request.URL.String())
+
 	code := ctx.Query("code")
 	var pathUrl string = "/"
 
@@ -155,14 +164,14 @@ func oauth2GitHub(ctx *gin.Context) {
 		return
 	}
 
-	tokenRes, err := utils.GetGitHubOauthToken(code)
+	tokenRes, err := github.GetGitHubOauthToken(code)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message5": err.Error()})
 		return
 	}
 
-	github_user, err := utils.GetGitHubUser(tokenRes.Access_token)
+	github_user, err := github.GetGitHubUser(tokenRes.Access_token)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message6": err.Error()})
@@ -172,7 +181,7 @@ func oauth2GitHub(ctx *gin.Context) {
 	now := time.Now()
 	email := strings.ToLower(github_user.Email)
 
-	user_data := models.User{
+	user_data := user_pkg.User{
 		Name:      github_user.Name,
 		Email:     email,
 		Password:  "",
@@ -214,7 +223,7 @@ func oauth2GitHub(ctx *gin.Context) {
 	}
 	defer rows.Close()
 
-	var user models.User
+	var user user_pkg.User
 	for rows.Next() {
 		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 		break
@@ -223,7 +232,7 @@ func oauth2GitHub(ctx *gin.Context) {
 	if !ifExist {
 		// get image from google
 		// save image to public/images
-		saveImage(user.Photo, user.ID.String())
+		image.SaveImage(user.Photo, user.ID.String())
 
 	}
 

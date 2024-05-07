@@ -12,9 +12,9 @@ import (
 	"net/http"
 
 	"github.com/fabiokaelin/f-oauth/config"
-	"github.com/fabiokaelin/f-oauth/models"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
+	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,17 +29,17 @@ func UserRouter(apiGroup *gin.RouterGroup) {
 }
 
 func userGetMe(ctx *gin.Context) {
-	currentUser := ctx.MustGet("currentUser").(models.User)
+	currentUser := ctx.MustGet("currentUser").(user_pkg.User)
 
-	ctx.JSON(http.StatusOK, models.FilteredResponse(&currentUser))
-	// ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"user": models.FilteredResponse(&currentUser)}})
+	ctx.JSON(http.StatusOK, user_pkg.FilteredResponse(&currentUser))
+	// ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"user": user_pkg.FilteredResponse(&currentUser)}})
 }
 
 func userPutMe(ctx *gin.Context) {
-	currentUser := ctx.MustGet("currentUser").(models.User)
+	currentUser := ctx.MustGet("currentUser").(user_pkg.User)
 
 	// read bodyUser from request
-	var bodyUser models.User
+	var bodyUser user_pkg.User
 	if err := ctx.ShouldBindJSON(&bodyUser); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -78,11 +78,11 @@ func userPutMe(ctx *gin.Context) {
 
 	updateInAllFProducts(currentUser)
 
-	ctx.JSON(http.StatusOK, models.FilteredResponse(&currentUser))
+	ctx.JSON(http.StatusOK, user_pkg.FilteredResponse(&currentUser))
 }
 
 func userPostMeImage(ctx *gin.Context) {
-	currentUser := ctx.MustGet("currentUser").(models.User)
+	currentUser := ctx.MustGet("currentUser").(user_pkg.User)
 
 	file, _, err := ctx.Request.FormFile("image")
 	if err != nil {
@@ -191,7 +191,7 @@ func userGetProfileImage(ctx *gin.Context) {
 
 }
 
-func updateInAllFProducts(currentUser models.User) {
+func updateInAllFProducts(currentUser user_pkg.User) {
 	// Tipp
 	url := config.InternalTippURL
 	putRequest(url+"/internal/user", currentUser)
@@ -201,7 +201,7 @@ func updateInAllFProducts(currentUser models.User) {
 	putRequest(url+"/internal/user", currentUser)
 }
 
-func putRequest(url string, currentUser models.User) {
+func putRequest(url string, currentUser user_pkg.User) {
 	// Marshal it into JSON prior to requesting
 	userJSON, err := json.Marshal(currentUser)
 	if err != nil {
@@ -218,69 +218,4 @@ func putRequest(url string, currentUser models.User) {
 		return
 	}
 
-}
-
-func saveImage(url string, userid string) error {
-	// Create new file name
-	newFileName := "profileimage-" + userid + ".png"
-	fmt.Println("newFileName", newFileName)
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Decode the image
-	imageFile, _, err := image.Decode(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	buf := new(bytes.Buffer)
-	if err := png.Encode(buf, imageFile); err != nil {
-		return err
-	}
-
-	// push to INTERNAL_IMAGE_SERVICE as formFile with name "image"
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
-
-	// Create a new form file
-	fw, err := w.CreateFormFile("image", newFileName)
-	if err != nil {
-		return err
-	}
-
-	// Write the image data to the form file
-	if _, err = io.Copy(fw, buf); err != nil {
-		return err
-	}
-
-	// Close the multipart writer
-	if err = w.Close(); err != nil {
-		return err
-	}
-
-	// Create a new HTTP request
-	req, err := http.NewRequest("POST", config.InternalImageService+"/api/users/"+userid, &b)
-	if err != nil {
-		return err
-	}
-
-	// Set the content type, this is very important
-	req.Header.Set("Content-Type", w.FormDataContentType())
-
-	// Do the request
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", res.Status)
-	}
-
-	return nil
 }

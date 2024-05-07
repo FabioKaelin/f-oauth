@@ -9,14 +9,14 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
-	"github.com/fabiokaelin/f-oauth/models"
+	"github.com/fabiokaelin/f-oauth/pkg/auth"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
 	"github.com/fabiokaelin/f-oauth/pkg/notification"
 	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func AuthRouter(apiGroup *gin.RouterGroup) {
@@ -31,7 +31,7 @@ func AuthRouter(apiGroup *gin.RouterGroup) {
 // authRegister
 func authRegister(ctx *gin.Context) {
 	// TODO: Redirect to loginpage when an error occurs with error message
-	var payload *models.RegisterUserInput
+	var payload *user_pkg.RegisterUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		fmt.Println("1", err)
@@ -57,13 +57,13 @@ func authRegister(ctx *gin.Context) {
 
 	// hashpassword := sha512.Sum512([]byte(payload.Password))
 	// hashpasswordValue := hex.EncodeToString(hashpassword[:])
-	hashPassword, err := hashAndSalt([]byte(payload.Password))
+	hashPassword, err := auth.HashAndSalt([]byte(payload.Password))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error in hashing password"})
 	}
 
 	now := time.Now()
-	newUser := models.User{
+	newUser := user_pkg.User{
 		Name:      payload.Name,
 		Email:     strings.ToLower(payload.Email),
 		Password:  hashPassword,
@@ -115,13 +115,13 @@ func authRegister(ctx *gin.Context) {
 
 	notificationConfig.Send()
 
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": models.FilteredResponse(&newUser)}})
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": user_pkg.FilteredResponse(&newUser)}})
 }
 
 // authLogin
 func authLogin(ctx *gin.Context) {
 	// TODO: Redirect to loginpage when an error occurs with error message
-	var payload *models.LoginUserInput
+	var payload *user_pkg.LoginUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		spew.Dump(payload)
@@ -138,7 +138,7 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
-	var user models.User
+	var user user_pkg.User
 
 	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
 	if err != nil {
@@ -155,7 +155,7 @@ func authLogin(ctx *gin.Context) {
 
 	rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
 
-	equal := comparePasswords(user.Password, []byte(payload.Password))
+	equal := auth.ComparePasswords(user.Password, []byte(payload.Password))
 
 	if !equal {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
@@ -185,17 +185,4 @@ func authLogout(ctx *gin.Context) {
 	ctx.SetCookie("token", "", -1, "/", config.TokenURL, false, true)
 	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
-}
-
-func hashAndSalt(pwd []byte) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword(pwd, 12)
-	if err != nil {
-		return "", err
-	}
-	return string(hash), nil
-}
-func comparePasswords(hashedPwd string, plainPwd []byte) bool {
-	byteHash := []byte(hashedPwd)
-	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
-	return err == nil
 }

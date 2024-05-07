@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/fabiokaelin/f-oauth/config"
-	"github.com/fabiokaelin/f-oauth/models"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,7 +40,7 @@ func SetUserToContext() gin.HandlerFunc {
 			return
 		}
 
-		var user models.User
+		var user user_pkg.User
 
 		rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1;", fmt.Sprint(sub))
 
