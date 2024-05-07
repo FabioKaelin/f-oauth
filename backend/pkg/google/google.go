@@ -1,4 +1,4 @@
-package utils
+package google
 
 import (
 	"bytes"
@@ -10,29 +10,30 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 )
 
-type GoogleOauthToken struct {
-	Access_token string
-	Id_token     string
-}
+type (
+	GoogleOauthToken struct {
+		Access_token string
+		Id_token     string
+	}
 
-type GoogleUserResult struct {
-	Id             string
-	Email          string
-	Verified_email bool
-	Name           string
-	Given_name     string
-	Family_name    string
-	Picture        string
-	Locale         string
-}
+	GoogleUserResult struct {
+		Id             string
+		Email          string
+		Verified_email bool
+		Name           string
+		Given_name     string
+		Family_name    string
+		Picture        string
+		Locale         string
+	}
+)
 
 func GetGoogleOauthToken(code string) (*GoogleOauthToken, error) {
 	const rootURl = "https://oauth2.googleapis.com/token"
 
-	config, _ := initializers.LoadConfig(".")
 	values := url.Values{}
 	values.Add("grant_type", "authorization_code")
 	values.Add("code", code)

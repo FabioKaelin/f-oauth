@@ -4,40 +4,41 @@
         <span class="nav">
             <span v-if="store.loggedIn && store.user" class="userinformation">
                 <!-- <img v-if="store.user.photo != '' && store.user.photo.includes('https://')" :src="store.user.photo"
-                    @error="imageLoadError" alt="" width="30" height="30"> -->
+                    alt="" width="30" height="30" @error="imageLoadError"> -->
                 <span>{{ store.user.name }}</span>
                 <br />
             </span>
+            <br>
 
-            <router-link to="/">
-                <span>Home</span>
+            <span>
+                <router-link to="/">Home</router-link>
                 <br />
-            </router-link>
+            </span>
 
-            <router-link v-if="store.loggedIn" to="/profile">
-                <span>Profil</span>
-                <br />
-            </router-link>
+            <span>
+                <router-link v-if="store.loggedIn" to="/profile">Profile</router-link>
+                <br>
+            </span>
 
-            <router-link v-if="!store.loggedIn" to="/login">
-                <span>Login</span>
-                <br />
-            </router-link>
+            <span>
+                <router-link v-if="store.loggedIn" to="/login">Login</router-link>
+                <br>
+            </span>
 
             <span v-if="store.loggedIn">
                 <span class="fakelink" @click="logout">Logout</span>
                 <br />
             </span>
 
-            <router-link to="/dsg">
-                <span>Datenschutz</span>
+            <span>
+                <router-link to="/dsg">Datenschutz</router-link>
                 <br />
-            </router-link>
+            </span>
 
-            <router-link to="about">
-                <span>About</span>
+            <span>
+                <router-link to="/about">About</router-link>
                 <br />
-            </router-link>
+            </span>
 
             <br />
             <span>
@@ -225,15 +226,18 @@ export default defineComponent({
 .nav a {
     font-weight: bold;
     color: var(--color-half);
+    /* color: var(--inactive-link-color); */
 }
 
 .nav a.router-link-exact-active {
     color: var(--color-full);
+    /* color: var(--active-link-color); */
 }
 
 .fakelink {
     font-weight: bold;
     color: var(--color-half);
+    /* color: var(--inactive-link-color); */
     text-decoration: underline;
     cursor: pointer;
 }

@@ -1,106 +1,64 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"log"
-	"net/http"
+	"time"
 
+	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/controllers"
-	"github.com/fabiokaelin/f-oauth/initializers"
-	"github.com/fabiokaelin/f-oauth/middleware"
-	"github.com/fabiokaelin/f-oauth/utils"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
+	"github.com/fabiokaelin/f-oauth/pkg/logger"
+	"github.com/fabiokaelin/f-oauth/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
-var server *gin.Engine
-
-func init() {
-	startconfig, err := initializers.LoadConfig(".")
-	initializers.StartConfig = startconfig
-	if err != nil {
-		fmt.Println("Error", err)
-	}
-
-	// initializers.ConnectDB()
-
-	server = gin.Default()
-	utils.UpdateDBConnection()
-
-	// server.Use(CORSMiddleware())
-
-}
-
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// c.Writer.Header().Set("Content-Type", "application/json")
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		origin := c.Request.Header.Get("Origin")
-		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://localhost:3000,http://localhost:8000,http://localhost:5173")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, access-control-allow-origin, Cookie, caches, Pragma, Expires")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
-		// Vary: Origin
-		c.Writer.Header().Set("Vary", "Origin")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
-}
-
-func ipMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		fmt.Println("Client IP:", c.ClientIP())
-		fmt.Println("X-Real-IP:", c.Request.Header.Get("X-Real-IP"))
-		c.Next()
-	}
-}
-
 func main() {
-	// corsConfig := cors.DefaultConfig()
-	// corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
-	// corsConfig.AllowCredentials = true
+	err := config.Load()
 
-	err := utils.UpdateDBConnection()
 	if err != nil {
-		newErr := errors.Join(errors.New("error durring updating db connection"), err)
-		fmt.Println(newErr)
+		fmt.Println("Error in Load config", err)
+		panic(err)
 	}
 
-	// server.Use(cors.New(corsConfig))
-	server.Use(CORSMiddleware())
-	server.Use(ipMiddleware())
+	err = db.UpdateDBConnection()
+	if err != nil {
+		time.Sleep(10 * time.Second)
+		err = db.UpdateDBConnection()
+		if err != nil {
+			time.Sleep(10 * time.Second)
+			err = db.UpdateDBConnection()
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 
-	router := server.Group("/api")
-	router.GET("", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, "This is the backend of the authentication server for F-Products")
-	})
-	router.GET("/healthchecker", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Implement Google OAuth2 in Golang"})
-	})
+	gin.SetMode(config.GinMode)
 
-	auth_router := router.Group("/auth")
-	auth_router.POST("/register", controllers.SignUpUser) // Migrated to sql
-	auth_router.POST("/login", controllers.SignInUser)
-	auth_router.GET("/logout", middleware.DeserializeUser(), controllers.LogoutUser)
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(gin.LoggerWithConfig(logger.LoggerConfig))
+	router.Use(middleware.IPMiddleware())
+	router.Use(middleware.CORSMiddleware())
+	router.ForwardedByClientIP = true
+	router.HandleMethodNotAllowed = true
+	// router.SetTrustedProxies([]string{"127.0.0.1", "localhost", "oauth.fabkli.ch"})
+	router.GET("", controllers.Default)
 
-	router.GET("/sessions/oauth/google", controllers.GoogleOAuth)
-	router.GET("/sessions/oauth/github", controllers.GitHubOAuth)
-	router.GET("/users/me", middleware.DeserializeUser(), controllers.GetMe)
-	router.PUT("/users/me", middleware.DeserializeUser(), controllers.UpdateMe)
+	controllers.InternalRouter(router)
 
-	router.POST("/users/me/image", middleware.DeserializeUser(), controllers.UploadResizeSingleFile)
-	router.GET("/users/:userid/image", controllers.GetProfileImage)
+	apiGroup := router.Group("/api")
 
-	router.StaticFS("/images", http.Dir("public/images"))
-	server.NoRoute(func(ctx *gin.Context) {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Route Not Found"})
-	})
+	apiGroup.GET("", controllers.Default)
 
-	log.Fatal(server.Run(":" + "8001"))
+	controllers.AuthRouter(apiGroup)
+	controllers.OAuth2Router(apiGroup)
+	controllers.UserRouter(apiGroup)
+
+	// router.NoRoute(func(ctx *gin.Context) {
+	// ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Route Not Found"})
+	// })
+
+	fmt.Println("Server is running")
+	router.Run("0.0.0.0:8001")
 }

@@ -109,8 +109,8 @@ jobs:
           cd backend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
-          sed -i "s/latest/${version}/g" resources/deployment.yaml
-          kubectl apply -f resources/deployment.yaml
+          sed -i "s/latest/${version}/g" deployments/deployment.yaml
+          kubectl apply -f deployments/deployment.yaml
           kubectl rollout restart deployment oauth-backend
           kubectl get pods
 

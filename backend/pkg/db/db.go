@@ -1,12 +1,12 @@
-package utils
+package db
 
 import (
-	// "backend/config"
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -15,17 +15,34 @@ import (
 var dbConn *sqlx.DB
 
 func UpdateDBConnection() error {
-	dbNew, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", initializers.StartConfig.DatabaseUser, initializers.StartConfig.DatabasePassword, initializers.StartConfig.DatabaseHost, initializers.StartConfig.DatabasePort, "oauth"))
+	connString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", config.DatabaseUser, config.DatabasePassword, config.DatabaseHost, config.DatabasePort, "oauth")
+	dbNew, err := sqlx.Open("mysql", connString)
 	if err != nil {
 		fmt.Println(err.Error())
+		dbConn = nil
+		return err
+	}
+	if dbNew == nil {
+		err := errors.New("error durring updating db connection")
+		dbConn = nil
+		return err
 	}
 	// test if connection is working
 	err = dbNew.Ping()
 	if err != nil {
 		err := errors.Join(errors.New("error durring updating db connection"), err)
+		dbConn = nil
 		return err
 	}
+	if dbConn != nil {
+		dbConn.Close()
+		dbConn = nil
+	}
 	dbConn = dbNew
+	dbConn.SetMaxOpenConns(30)
+	dbConn.SetMaxIdleConns(5)
+	maxLifeTime := time.Minute * 30
+	dbConn.SetConnMaxLifetime(maxLifeTime)
 	// db.QueryRow("set client_encoding='win1252'")
 	// db.QueryRow("SET CLIENT_ENCODING TO 'LATIN1';")
 	return nil

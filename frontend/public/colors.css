@@ -6,6 +6,8 @@
     /* --color-dark: color-mix(in HSL, var(--color-full) 60%, black); */
     --font-color: color-mix(in srgb, var(--color-full) 30%, white);
     /* --font-color: color-mix(in HSL, var(--color-full) 30%, white); */
+    --active-link-color: color-mix(in srgb, var(--color-full) 40%, white);
+    --inactive-link-color: var(--color-full);
 
     --main-background-color: color-mix(in srgb, var(--color-full) 20%, black);
     /* --main-background-color: color-mix(in HSL, var(--color-full) 30%, black); */

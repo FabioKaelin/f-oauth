@@ -17,9 +17,9 @@ spec:
       memory: 128Mi
   healthCheck:
     livenessProbe:
-      path: "/api/healthchecker"
+      path: "/api/internal/health/live"
     readinessProbe:
-      path: "/api/healthchecker"
+      path: "/api/internal/health/ready"
   host: "oauth.fabkli.ch"
   env:
     - name: GIN_MODE
@@ -52,6 +52,8 @@ spec:
       value: http://dev-backend.tipp.svc.cluster.local
     - name: INTERNAL_IMAGE_SERVICE
       value: http://f-image.f-image.svc.cluster.local
+    - name: NOTIFICATION_ID
+      value: "RHxMmpGcX"
     - name: DATABASE_PASSWORD
       fromSecret:
         name: oauth-secrets
