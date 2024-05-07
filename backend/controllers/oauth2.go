@@ -30,102 +30,29 @@ func oauth2Google(ctx *gin.Context) {
 	fmt.Println(ctx.Request.URL.String())
 	// TODO: Redirect to loginpage when an error occurs with error message
 	code := ctx.Query("code")
+	// ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", config.FrontEndOrigin, "/login?error=already_signed_up_with_different_method"))
+	// return
+	// ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
 	state := ctx.Query("state") // path/url to redirect after login
 
 	if code == "" {
-		fmt.Println(`CODE == ""`)
-		ctx.JSON(http.StatusUnauthorized, `"status": "fail", "message": "Authorization code not provided!"`)
-		// ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Authorization code not provided!"})
+		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", config.FrontEndOrigin, "/login"))
 		return
 	}
 
-	tokenRes, err := google.GetGoogleOauthToken(code)
+	token, errorcode, err := google.LoginWithCode(code)
 
 	if err != nil {
-		fmt.Println("err1", err)
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
-		return
-	}
-
-	google_user, err := google.GetGoogleUser(tokenRes.Access_token, tokenRes.Id_token)
-
-	if err != nil {
-		fmt.Println("err2", err)
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
-		return
-	}
-
-	now := time.Now()
-	email := strings.ToLower(google_user.Email)
-
-	user_data := user_pkg.User{
-		Name:      google_user.Name,
-		Email:     email,
-		Password:  "",
-		Photo:     google_user.Picture,
-		Provider:  "Google",
-		Role:      "user",
-		Verified:  true,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-
-	fmt.Println("email", email)
-	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
-
-	if err != nil {
-		fmt.Println("err3", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
-		return
-	}
-
-	ifExist := rows.Next()
-	rows.Close()
-	fmt.Println("ifExist", ifExist)
-
-	if !ifExist {
-		// config.DB.Create(&user_data)
-		fmt.Println("new user")
-		rows, err := db.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
-
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
+		fmt.Println("error, failed login with google:", err)
+		if errorcode == 2 {
+			ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", config.FrontEndOrigin, "/login?error=already_signed_up_with_different_method"))
+			return
+			// ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
+		} else {
+			ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", config.FrontEndOrigin, "/login?error=error_occured"))
+			// ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": "something went wrong"})
 			return
 		}
-		rows.Close()
-	}
-	rows, err = db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
-	if err != nil {
-		fmt.Println("err4", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
-		return
-	}
-	defer rows.Close()
-
-	var user user_pkg.User
-	for rows.Next() {
-		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
-		break
-	}
-
-	if !ifExist {
-		// get image from google
-		// save image to public/images
-		image.SaveImage(user.Photo, user.ID.String())
-	}
-
-	spew.Dump(user)
-
-	if user.Provider != "Google" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
-		return
-	}
-
-	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
-	if err != nil {
-		fmt.Println("err5", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message4": err.Error()})
-		return
 	}
 
 	if strings.Contains(config.TokenURL, "localhost") {
@@ -137,6 +64,7 @@ func oauth2Google(ctx *gin.Context) {
 	// if pathUrl not begin with http or https
 	fmt.Println("pathUrl", state)
 	if !strings.HasPrefix(state, "http") && !strings.HasPrefix(state, "https") {
+		state = "/profile"
 		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
 	} else {
 		redirectUrl = state
