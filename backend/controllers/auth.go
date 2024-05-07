@@ -113,7 +113,10 @@ func authRegister(ctx *gin.Context) {
 		Type:    "newuser",
 	}
 
-	notificationConfig.Send()
+	err = notificationConfig.Send()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": user_pkg.FilteredResponse(&newUser)}})
 }
