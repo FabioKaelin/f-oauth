@@ -30,28 +30,36 @@ func (n *Config) Send() error {
 		return errors.New("notificationId is required (set in environment variable)")
 	}
 
-	url1 := "https://wirepusher.com/send?id=" + config.NotificationID + "&title=" + n.Title
+	url1 := "https://wirepusher.com/send?id=" + config.NotificationID + "&title=" + url.QueryEscape(n.Title)
 
 	if n.Message != "" {
-		url1 += "&message=" + n.Message
+		url1 += "&message=" + url.QueryEscape(n.Message)
 	}
 	if n.Type != "" {
-		url1 += "&type=" + n.Type
+		url1 += "&type=" + url.QueryEscape(n.Type)
 	}
 	if n.Action != "" {
-		url1 += "&action=" + n.Action
+		url1 += "&action=" + url.QueryEscape(n.Action)
 	}
 	if n.ImageURL != "" {
-		url1 += "&image=" + n.ImageURL
+		url1 += "&image=" + url.QueryEscape(n.ImageURL)
 	}
 
-	// encrypt url
+	// fmt.Println(url1)
 
-	newURL := url.QueryEscape(url1)
-
-	_, err := http.NewRequest("GET", newURL, nil)
+	request, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return err
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return errors.New("status code is not 200")
 	}
 
 	return nil

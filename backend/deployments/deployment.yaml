@@ -17,9 +17,9 @@ spec:
       memory: 128Mi
   healthCheck:
     livenessProbe:
-      path: "/api/internal/health/live"
+      path: "/internal/health/live"
     readinessProbe:
-      path: "/api/internal/health/ready"
+      path: "/internal/health/ready"
   host: "oauth.fabkli.ch"
   env:
     - name: GIN_MODE
