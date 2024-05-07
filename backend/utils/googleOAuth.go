@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 )
 
 type GoogleOauthToken struct {
@@ -32,7 +32,6 @@ type GoogleUserResult struct {
 func GetGoogleOauthToken(code string) (*GoogleOauthToken, error) {
 	const rootURl = "https://oauth2.googleapis.com/token"
 
-	config, _ := initializers.LoadConfig(".")
 	values := url.Values{}
 	values.Add("grant_type", "authorization_code")
 	values.Add("code", code)

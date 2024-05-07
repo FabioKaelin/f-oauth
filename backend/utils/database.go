@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -15,7 +15,7 @@ import (
 var dbConn *sqlx.DB
 
 func UpdateDBConnection() error {
-	dbNew, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", initializers.StartConfig.DatabaseUser, initializers.StartConfig.DatabasePassword, initializers.StartConfig.DatabaseHost, initializers.StartConfig.DatabasePort, "oauth"))
+	dbNew, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", config.DatabaseUser, config.DatabasePassword, config.DatabaseHost, config.DatabasePort, "oauth"))
 	if err != nil {
 		fmt.Println(err.Error())
 	}

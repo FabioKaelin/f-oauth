@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 )
 
 type GitHubOauthToken struct {
@@ -27,7 +27,6 @@ type GitHubUserResult struct {
 func GetGitHubOauthToken(code string) (*GitHubOauthToken, error) {
 	const rootURl = "https://github.com/login/oauth/access_token"
 
-	config, _ := initializers.LoadConfig(".")
 	values := url.Values{}
 	values.Add("code", code)
 	values.Add("client_id", config.GitHubClientID)

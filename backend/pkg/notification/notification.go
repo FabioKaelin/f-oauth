@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 )
 
 // Config is the struct for a notification config
@@ -26,11 +26,11 @@ func (n *Config) Send() error {
 	if n.Title == "" {
 		return errors.New("title is required")
 	}
-	if initializers.StartConfig.NotificationID == "" {
+	if config.NotificationID == "" {
 		return errors.New("notificationId is required (set in environment variable)")
 	}
 
-	url1 := "https://wirepusher.com/send?id=" + initializers.StartConfig.NotificationID + "&title=" + n.Title
+	url1 := "https://wirepusher.com/send?id=" + config.NotificationID + "&title=" + n.Title
 
 	if n.Message != "" {
 		url1 += "&message=" + n.Message

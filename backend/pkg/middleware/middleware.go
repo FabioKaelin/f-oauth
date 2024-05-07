@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fabiokaelin/f-oauth/initializers"
+	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/models"
 	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
 )
 
-func DeserializeUser() gin.HandlerFunc {
+func SetUserToContext() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var token string
 		cookie, err := ctx.Cookie("token")
@@ -32,7 +32,6 @@ func DeserializeUser() gin.HandlerFunc {
 			return
 		}
 
-		config, _ := initializers.LoadConfig(".")
 		sub, err := utils.ValidateToken(token, config.JWTTokenSecret)
 		if err != nil {
 			fmt.Println("error on validate token 2")
@@ -61,5 +60,42 @@ func DeserializeUser() gin.HandlerFunc {
 		ctx.Set("currentUser", user)
 		ctx.Next()
 
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// c.Writer.Header().Set("Content-Type", "application/json")
+		// c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := c.Request.Header.Get("Origin")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://localhost:3000,http://localhost:8000,http://localhost:5173")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, access-control-allow-origin, Cookie, caches, Pragma, Expires")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+		// Vary: Origin
+		c.Writer.Header().Set("Vary", "Origin")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func IPMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/internal") {
+			c.Next()
+			return
+		}
+
+		ip := c.Request.Header.Get("X-Original-Forwarded-For")
+		userAgent := c.Request.UserAgent()
+		output := fmt.Sprintf("IP: '%s' - UserAgent: '%s'", ip, userAgent)
+		fmt.Println(output)
+		c.Next()
 	}
 }
