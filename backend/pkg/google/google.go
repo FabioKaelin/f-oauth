@@ -92,8 +92,6 @@ func LoginWithCode(code string) (string, int, error) {
 	spew.Dump(user)
 
 	if user.Provider != "Google" {
-		// TODO: return to user
-		// ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
 		return "", 2, errors.New("you have already signed up with a different method")
 	}
 
