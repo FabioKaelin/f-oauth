@@ -15,13 +15,13 @@
                 <br />
             </span>
 
-            <span>
-                <router-link v-if="store.loggedIn" to="/profile">Profile</router-link>
+            <span v-if="store.loggedIn">
+                <router-link to="/profile">Profile</router-link>
                 <br>
             </span>
 
-            <span>
-                <router-link v-if="store.loggedIn" to="/login">Login</router-link>
+            <span v-if="!store.loggedIn">
+                <router-link to="/login">Login</router-link>
                 <br>
             </span>
 

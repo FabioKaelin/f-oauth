@@ -30,11 +30,7 @@ func oauth2Google(ctx *gin.Context) {
 	fmt.Println(ctx.Request.URL.String())
 	// TODO: Redirect to loginpage when an error occurs with error message
 	code := ctx.Query("code")
-	var pathUrl string = "/"
-
-	if ctx.Query("state") != "" {
-		pathUrl = ctx.Query("state")
-	}
+	state := ctx.Query("state") // path/url to redirect after login
 
 	if code == "" {
 		fmt.Println(`CODE == ""`)
@@ -132,16 +128,18 @@ func oauth2Google(ctx *gin.Context) {
 		return
 	}
 
-	// ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, false, true)
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	if strings.Contains(config.TokenURL, "localhost") {
+		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", true, true)
+	} else {
+		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, true, true)
+	}
 	redirectUrl := ""
 	// if pathUrl not begin with http or https
-	fmt.Println("pathUrl", pathUrl)
-	if !strings.HasPrefix(pathUrl, "http") && !strings.HasPrefix(pathUrl, "https") {
-		redirectUrl = fmt.Sprint(config.FrontEndOrigin, pathUrl)
+	fmt.Println("pathUrl", state)
+	if !strings.HasPrefix(state, "http") && !strings.HasPrefix(state, "https") {
+		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
 	} else {
-		redirectUrl = pathUrl
+		redirectUrl = state
 	}
 	fmt.Println("redirectUrl", redirectUrl)
 
