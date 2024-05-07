@@ -23,12 +23,11 @@
     /* color: rgb(0, 0, 0); */
 }
 
-[data-theme="blue"] {
+/* [data-theme="blue"] {
     --color-dev: 0, 0, 255 !important;
     --color-full: rgb(var(--color-dev));
-    /* --main-background-color: color-mix(in HSL, var(--color-full) 20%, black); */
     --main-background-color: rgb(0, 0, 50) !important;
-}
+} */
 
 [data-theme="green"] {
     --color-dev: 3, 146, 58 !important;

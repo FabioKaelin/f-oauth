@@ -225,13 +225,14 @@ export default defineComponent({
 
 .nav a {
     font-weight: bold;
-    color: var(--color-half);
+    color: var(--inactive-link-color);
     /* color: var(--inactive-link-color); */
 }
 
 .nav a.router-link-exact-active {
     color: var(--color-full);
     /* color: var(--active-link-color); */
+    color: var(--active-link-color);
 }
 
 .fakelink {
