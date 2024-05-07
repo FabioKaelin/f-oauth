@@ -6,9 +6,9 @@ import (
 
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/controllers"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/logger"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
-	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,13 +20,13 @@ func main() {
 		panic(err)
 	}
 
-	err = utils.UpdateDBConnection()
+	err = db.UpdateDBConnection()
 	if err != nil {
 		time.Sleep(10 * time.Second)
-		err = utils.UpdateDBConnection()
+		err = db.UpdateDBConnection()
 		if err != nil {
 			time.Sleep(10 * time.Second)
-			err = utils.UpdateDBConnection()
+			err = db.UpdateDBConnection()
 			if err != nil {
 				panic(err)
 			}

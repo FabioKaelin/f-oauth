@@ -13,8 +13,8 @@ import (
 
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/models"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
-	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -54,7 +54,7 @@ func userPutMe(ctx *gin.Context) {
 	}
 
 	fmt.Println("id", currentUser.ID)
-	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1", currentUser.ID)
+	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1", currentUser.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
 		return
@@ -69,7 +69,7 @@ func userPutMe(ctx *gin.Context) {
 	}
 
 	// update user
-	rows, err = utils.RunSQL("UPDATE `users` SET `name` = ?, `photo` = ? WHERE `id` = ?", currentUser.Name, currentUser.Photo, currentUser.ID)
+	rows, err = db.RunSQL("UPDATE `users` SET `name` = ?, `photo` = ? WHERE `id` = ?", currentUser.Name, currentUser.Photo, currentUser.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "update user in database failed"})
 		return

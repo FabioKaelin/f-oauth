@@ -10,9 +10,11 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/models"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
 	"github.com/fabiokaelin/f-oauth/pkg/notification"
-	"github.com/fabiokaelin/f-oauth/utils"
+	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -72,7 +74,7 @@ func authRegister(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error appeared"})
 		return
@@ -87,7 +89,7 @@ func authRegister(ctx *gin.Context) {
 		return
 	}
 
-	row, err := utils.RunSQLRow("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
+	row, err := db.RunSQLRow("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
 
 	if err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.email") {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "2message": "User with that email already exists"})
@@ -138,7 +140,7 @@ func authLogin(ctx *gin.Context) {
 
 	var user models.User
 
-	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
@@ -166,7 +168,7 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
+	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return

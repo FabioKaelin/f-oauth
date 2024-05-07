@@ -7,7 +7,8 @@ import (
 
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/models"
-	"github.com/fabiokaelin/f-oauth/utils"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
+	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,7 +33,7 @@ func SetUserToContext() gin.HandlerFunc {
 			return
 		}
 
-		sub, err := utils.ValidateToken(token, config.JWTTokenSecret)
+		sub, err := token_pkg.ValidateToken(token, config.JWTTokenSecret)
 		if err != nil {
 			fmt.Println("error on validate token 2")
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
@@ -41,7 +42,7 @@ func SetUserToContext() gin.HandlerFunc {
 
 		var user models.User
 
-		rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1;", fmt.Sprint(sub))
+		rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1;", fmt.Sprint(sub))
 
 		if err != nil {
 			fmt.Println("the user belonging to this token no logger exists 3")

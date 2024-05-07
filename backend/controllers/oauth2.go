@@ -9,6 +9,9 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/models"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
+	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+
 	"github.com/fabiokaelin/f-oauth/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -67,7 +70,7 @@ func oauth2Google(ctx *gin.Context) {
 	}
 
 	fmt.Println("email", email)
-	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
@@ -81,7 +84,7 @@ func oauth2Google(ctx *gin.Context) {
 	if !ifExist {
 		// config.DB.Create(&user_data)
 		fmt.Println("new user")
-		rows, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+		rows, err := db.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
@@ -89,7 +92,7 @@ func oauth2Google(ctx *gin.Context) {
 		}
 		rows.Close()
 	}
-	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	rows, err = db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
@@ -116,7 +119,7 @@ func oauth2Google(ctx *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
+	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message4": err.Error()})
 		return
@@ -182,7 +185,7 @@ func oauth2GitHub(ctx *gin.Context) {
 	}
 
 	fmt.Println("email", email)
-	rows, err := utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message1": err.Error()})
@@ -196,7 +199,7 @@ func oauth2GitHub(ctx *gin.Context) {
 	if !ifExist {
 		// config.DB.Create(&user_data)
 		fmt.Println("new user")
-		rows, err := utils.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
+		rows, err := db.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message2": err.Error()})
@@ -204,7 +207,7 @@ func oauth2GitHub(ctx *gin.Context) {
 		}
 		rows.Close()
 	}
-	rows, err = utils.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+	rows, err = db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message3": err.Error()})
 		return
@@ -231,7 +234,7 @@ func oauth2GitHub(ctx *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
+	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
