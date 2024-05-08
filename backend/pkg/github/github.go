@@ -10,6 +10,7 @@ import (
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/image"
+	"github.com/fabiokaelin/f-oauth/pkg/notification"
 	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
 	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 )
@@ -45,46 +46,47 @@ func LoginWithCode(code string) (string, int, error) {
 	}
 
 	fmt.Println("email", email)
-	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
+
+	ifExist, err := db.DoesUserExist(email)
 
 	if err != nil {
 		fmt.Println("error, github, failed to get first time user", err)
 		return "", 1, err
 	}
 
-	ifExist := rows.Next()
-	rows.Close()
 	fmt.Println("ifExist", ifExist)
 
 	if !ifExist {
-		// config.DB.Create(&user_data)
 		fmt.Println("new user")
-		rows, err := db.RunSQL("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(),?,?,?,?,?,?,?,?,?) RETURNING id ;", user_data.Name, user_data.Email, user_data.Password, user_data.Role, user_data.Photo, user_data.Verified, user_data.Provider, user_data.CreatedAt, user_data.UpdatedAt)
-
+		dbuser := db.DatabaseUser{
+			Name:      user_data.Name,
+			Email:     user_data.Email,
+			Password:  user_data.Password,
+			Role:      user_data.Role,
+			Photo:     user_data.Photo,
+			Verified:  user_data.Verified,
+			Provider:  user_data.Provider,
+			CreatedAt: user_data.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: user_data.UpdatedAt.Format("2006-01-02 15:04:05"),
+		}
+		_, err := db.CreateUser(dbuser)
 		if err != nil {
-			fmt.Println("error, github, failed to insert new user", err)
+			fmt.Println("error, github, failed to create user", err)
 			return "", 1, err
 		}
-		rows.Close()
-	}
-	rows, err = db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", email)
-	if err != nil {
-		fmt.Println("error, github, failed to get user the second time", err)
-		return "", 1, err
-	}
-	defer rows.Close()
 
-	var user user_pkg.User
-	for rows.Next() {
-		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
-		break
+		notification.NewUserNotification(user_data)
+	}
+
+	user, err := db.GetUserByEmail(email)
+
+	if err != nil {
+		fmt.Println("error, github, failed to get user", err)
+		return "", 1, err
 	}
 
 	if !ifExist {
-		// get image from google
-		// save image to public/images
-		image.SaveImage(user.Photo, user.ID.String())
-
+		image.SaveImage(user.Photo, user.ID)
 	}
 
 	spew.Dump(user)
@@ -93,7 +95,7 @@ func LoginWithCode(code string) (string, int, error) {
 		return "", 2, errors.New("you have already signed up with a different method")
 	}
 
-	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID.String(), config.JWTTokenSecret)
+	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
 	if err != nil {
 		fmt.Println("error, github, failed to generate access token", err)
 		return "", 1, err

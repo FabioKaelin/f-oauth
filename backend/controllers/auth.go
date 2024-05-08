@@ -10,9 +10,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/auth"
-	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
-	"github.com/fabiokaelin/f-oauth/pkg/notification"
 	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
 	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 
@@ -74,48 +72,10 @@ func authRegister(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	newUser, err = auth.RegisterUser(newUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error appeared"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
-	}
-	defer rows.Close()
-
-	isExisting := rows.Next()
-
-	if isExisting {
-		// TODO: Redirect to loginpage with error message
-		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists"})
-		return
-	}
-
-	row, err := db.RunSQLRow("INSERT INTO `users`(`id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at`) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id ;", newUser.Name, newUser.Email, newUser.Password, newUser.Role, newUser.Photo, newUser.Verified, newUser.Provider, newUser.CreatedAt, newUser.UpdatedAt)
-
-	if err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.email") {
-		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "2message": "User with that email already exists"})
-		return
-	} else if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "3message": "Something bad happened"})
-		return
-	}
-
-	err = row.Scan(&newUser.ID)
-
-	if err != nil {
-		fmt.Println(err)
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "4message": "Something bad happened"})
-		return
-	}
-
-	notificationConfig := notification.Config{
-		Title:   fmt.Sprintf("New User: %s", newUser.Name),
-		Message: fmt.Sprintf("Provider: %s\nEmail: %s", newUser.Provider, newUser.Email),
-		Type:    "newuser",
-	}
-
-	err = notificationConfig.Send()
-	if err != nil {
-		fmt.Println(err)
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": user_pkg.FilteredResponse(&newUser)}})
@@ -141,33 +101,9 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
-	var user user_pkg.User
-
-	rows, err := db.RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `email` = ? LIMIT 1", strings.ToLower(payload.Email))
+	user, err := auth.LoginUser(payload.Email, payload.Password)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
-		return
-	}
-	defer rows.Close()
-	isExisting := rows.Next()
-
-	if !isExisting {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
-		return
-	}
-
-	rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
-
-	equal := auth.ComparePasswords(user.Password, []byte(payload.Password))
-
-	if !equal {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Invalid email or Password"})
-		return
-	}
-
-	if user.Provider != "local" {
-		// TODO: Redirect to loginpage with error message
-		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You have already signed up with a different method"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
