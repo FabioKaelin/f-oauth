@@ -25,24 +25,16 @@
                 </tr>
             </table>
             <br />
-            <button
-                type="button"
-                value="menu"
-                class="clickButton"
-                @click="
-                    () => {
-                        isShow = true
-                        newUsername = me.name
-                        file = null
-                    }
+            <button type="button" value="menu" class="clickButton" @click="() => {
+                    isShow = true
+                    newUsername = me.name
+                    file = null
+                }
                 ">
                 Bearbeiten
-                <Modal
-                    v-model="isShow"
-                    :close="
-                        () => {
-                            isShow = false
-                        }
+                <Modal v-model="isShow" :close="() => {
+                        isShow = false
+                    }
                     ">
                     <div class="modal">
                         Name:
@@ -54,13 +46,10 @@
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
                         &ensp;
-                        <button
-                            class="clickButton"
-                            @click="
-                                () => {
-                                    updateUser()
-                                    isShow = false
-                                }
+                        <button class="clickButton" @click="() => {
+                                updateUser()
+                                isShow = false
+                            }
                             ">
                             Aktualisieren
                         </button>
@@ -272,10 +261,6 @@ tr:nth-child(even) {
     font-size: normal;
 }
 
-img {
-    border-radius: 40%;
-    height: 100px;
-}
 
 .applicationlink {
     text-decoration: none;
