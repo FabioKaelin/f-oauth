@@ -237,7 +237,7 @@ export default defineComponent({
 
 .fakelink {
     font-weight: bold;
-    color: var(--color-half);
+    color: var(--inactive-link-color);
     /* color: var(--inactive-link-color); */
     text-decoration: underline;
     cursor: pointer;
