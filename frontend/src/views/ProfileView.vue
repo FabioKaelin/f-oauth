@@ -227,6 +227,11 @@ export default defineComponent({
 //     display: block;
 // }
 
+img {
+    border-radius: 40%;
+    height: 100px;
+}
+
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
@@ -254,7 +259,7 @@ tr:nth-child(even) {
     padding: 30px;
     border-radius: 10px;
     box-sizing: border-box;
-    background-color: rgb(15, 90, 77);
+    background-color: var(--color-dark);
     font-size: 20px;
     text-align: center;
     color: var(--font-color);
