@@ -65,11 +65,10 @@ spec:
                 secretKeyRef:
                   name: oauth-secrets
                   key: DATABASE_PASSWORD
-
           resources:
             requests:
               memory: "128Mi"
-              cpu: "50m"
+              cpu: "5m"
             limits:
               memory: "1024Mi"
               cpu: "200m"

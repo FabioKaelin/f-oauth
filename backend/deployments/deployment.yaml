@@ -11,10 +11,10 @@ spec:
   resources:
     limits:
       cpu: 200m
-      memory: 1024Mi
+      memory: 512Mi
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 25m
+      memory: 32Mi
   healthCheck:
     livenessProbe:
       path: "/internal/health/live"
