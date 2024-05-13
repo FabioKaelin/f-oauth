@@ -2,10 +2,12 @@ package notification
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/fabiokaelin/f-oauth/config"
+	"github.com/fabiokaelin/f-oauth/pkg/user"
 )
 
 // Config is the struct for a notification config
@@ -62,5 +64,20 @@ func (n *Config) Send() error {
 		return errors.New("status code is not 200")
 	}
 
+	return nil
+}
+
+func NewUserNotification(newUser user.User) error {
+	notificationConfig := Config{
+		Title:   fmt.Sprintf("New User: %s", newUser.Name),
+		Message: fmt.Sprintf("Provider: %s\nEmail: %s", newUser.Provider, newUser.Email),
+		Type:    "newuser",
+	}
+
+	err := notificationConfig.Send()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 	return nil
 }

@@ -1,190 +1,105 @@
 package github
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
+	"github.com/fabiokaelin/f-oauth/pkg/image"
+	"github.com/fabiokaelin/f-oauth/pkg/notification"
+	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 )
 
-type (
-	GitHubOauthToken struct {
-		Access_token string
-	}
-	GitHubUserResult struct {
-		Name  string
-		Photo string
-		Email string
-	}
-)
+func LoginWithCode(code string) (string, int, error) {
+	tokenRes, err := getGitHubOauthToken(code)
 
-func GetGitHubOauthToken(code string) (*GitHubOauthToken, error) {
-	const rootURl = "https://github.com/login/oauth/access_token"
-
-	values := url.Values{}
-	values.Add("code", code)
-	values.Add("client_id", config.GitHubClientID)
-	values.Add("client_secret", config.GitHubClientSecret)
-
-	query := values.Encode()
-
-	queryString := fmt.Sprintf("%s?%s", rootURl, bytes.NewBufferString(query))
-	req, err := http.NewRequest("POST", queryString, nil)
 	if err != nil {
-		return nil, err
+		fmt.Println("error, github failed to get token:", err)
+		return "", 1, err
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	client := http.Client{
-		Timeout: time.Second * 30,
-	}
+	github_user, err := getGitHubUser(tokenRes.Access_token)
 
-	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		fmt.Println("error, github failed to get user with token", err)
+		return "", 1, err
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("could not retrieve token")
-	}
+	now := time.Now()
+	email := strings.ToLower(github_user.Email)
 
-	var resBody bytes.Buffer
-	_, err = io.Copy(&resBody, res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	parsedQuery, err := url.ParseQuery(resBody.String())
-	if err != nil {
-		return nil, err
-	}
-
-	tokenBody := &GitHubOauthToken{
-		Access_token: parsedQuery["access_token"][0],
-	}
-
-	return tokenBody, nil
-}
-
-func GetGitHubUser(access_token string) (*GitHubUserResult, error) {
-	rootUrl := "https://api.github.com/user"
-
-	req, err := http.NewRequest("GET", rootUrl, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
-
-	client := http.Client{
-		Timeout: time.Second * 30,
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("could not retrieve user")
-	}
-
-	var resBody bytes.Buffer
-	_, err = io.Copy(&resBody, res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var GitHubUserRes map[string]interface{}
-
-	if err := json.Unmarshal(resBody.Bytes(), &GitHubUserRes); err != nil {
-		return nil, err
-	}
-
-	spew.Dump(GitHubUserRes)
-	email := ""
-
-	email, ok := GitHubUserRes["email"].(string)
-
-	if !ok {
-		fmt.Println("email not found")
-		rootUrl := "https://api.github.com/user/emails"
-
-		req, err := http.NewRequest("GET", rootUrl, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
-
-		client := http.Client{
-			Timeout: time.Second * 30,
-		}
-
-		res, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		if res.StatusCode != http.StatusOK {
-			return nil, errors.New("could not retrieve user")
-		}
-
-		var resBody bytes.Buffer
-		_, err = io.Copy(&resBody, res.Body)
-		if err != nil {
-			return nil, err
-		}
-		// [
-		// 	{
-		// 	  "email": "supermae206@gmail.com",
-		// 	  "primary": true,
-		// 	  "verified": true,
-		// 	  "visibility": "private"
-		// 	},
-		// 	{
-		// 	  "email": "90179796+FabioKaelin@users.noreply.github.com",
-		// 	  "primary": false,
-		// 	  "verified": true,
-		// 	  "visibility": null
-		// 	}
-		//   ]
-
-		var GitHubUserEmailRes []map[string]interface{}
-
-		if err := json.Unmarshal(resBody.Bytes(), &GitHubUserEmailRes); err != nil {
-			return nil, err
-		}
-
-		spew.Dump(GitHubUserEmailRes)
-
-		for _, emailRes := range GitHubUserEmailRes {
-			spew.Dump(emailRes)
-			if emailRes["primary"].(bool) {
-				email, ok = emailRes["email"].(string)
-				fmt.Println("email found", email)
-				if !ok {
-					return nil, errors.New("email not found")
-				}
-				break
-			}
-		}
+	user_data := user_pkg.User{
+		Name:      github_user.Name,
+		Email:     email,
+		Password:  "",
+		Photo:     github_user.Photo,
+		Provider:  "GitHub",
+		Role:      "user",
+		Verified:  true,
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	fmt.Println("email", email)
 
-	userBody := &GitHubUserResult{
-		Email: email,
-		Name:  GitHubUserRes["login"].(string),
-		Photo: GitHubUserRes["avatar_url"].(string),
+	ifExist, err := db.DoesUserExist(email)
+
+	if err != nil {
+		fmt.Println("error, github, failed to get first time user", err)
+		return "", 1, err
 	}
 
-	return userBody, nil
+	fmt.Println("ifExist", ifExist)
+
+	if !ifExist {
+		fmt.Println("new user")
+		dbuser := db.DatabaseUser{
+			Name:      user_data.Name,
+			Email:     user_data.Email,
+			Password:  user_data.Password,
+			Role:      user_data.Role,
+			Photo:     user_data.Photo,
+			Verified:  user_data.Verified,
+			Provider:  user_data.Provider,
+			CreatedAt: user_data.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: user_data.UpdatedAt.Format("2006-01-02 15:04:05"),
+		}
+		_, err := db.CreateUser(dbuser)
+		if err != nil {
+			fmt.Println("error, github, failed to create user", err)
+			return "", 1, err
+		}
+
+		notification.NewUserNotification(user_data)
+	}
+
+	user, err := db.GetUserByEmail(email)
+
+	if err != nil {
+		fmt.Println("error, github, failed to get user", err)
+		return "", 1, err
+	}
+
+	if !ifExist {
+		image.SaveImage(user.Photo, user.ID)
+	}
+
+	spew.Dump(user)
+
+	if user.Provider != "GitHub" {
+		return "", 2, errors.New("you have already signed up with a different method")
+	}
+
+	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
+	if err != nil {
+		fmt.Println("error, github, failed to generate access token", err)
+		return "", 1, err
+	}
+
+	return token, 0, nil
 }

@@ -15,13 +15,13 @@
                 <br />
             </span>
 
-            <span>
-                <router-link v-if="store.loggedIn" to="/profile">Profile</router-link>
+            <span v-if="store.loggedIn">
+                <router-link to="/profile">Profile</router-link>
                 <br>
             </span>
 
-            <span>
-                <router-link v-if="store.loggedIn" to="/login">Login</router-link>
+            <span v-if="!store.loggedIn">
+                <router-link to="/login">Login</router-link>
                 <br>
             </span>
 
@@ -225,18 +225,19 @@ export default defineComponent({
 
 .nav a {
     font-weight: bold;
-    color: var(--color-half);
+    color: var(--inactive-link-color);
     /* color: var(--inactive-link-color); */
 }
 
 .nav a.router-link-exact-active {
     color: var(--color-full);
     /* color: var(--active-link-color); */
+    color: var(--active-link-color);
 }
 
 .fakelink {
     font-weight: bold;
-    color: var(--color-half);
+    color: var(--inactive-link-color);
     /* color: var(--inactive-link-color); */
     text-decoration: underline;
     cursor: pointer;

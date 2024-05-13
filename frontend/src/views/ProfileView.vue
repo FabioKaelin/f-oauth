@@ -25,24 +25,16 @@
                 </tr>
             </table>
             <br />
-            <button
-                type="button"
-                value="menu"
-                class="clickButton"
-                @click="
-                    () => {
-                        isShow = true
-                        newUsername = me.name
-                        file = null
-                    }
+            <button type="button" value="menu" class="clickButton" @click="() => {
+                    isShow = true
+                    newUsername = me.name
+                    file = null
+                }
                 ">
                 Bearbeiten
-                <Modal
-                    v-model="isShow"
-                    :close="
-                        () => {
-                            isShow = false
-                        }
+                <Modal v-model="isShow" :close="() => {
+                        isShow = false
+                    }
                     ">
                     <div class="modal">
                         Name:
@@ -54,13 +46,10 @@
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
                         &ensp;
-                        <button
-                            class="clickButton"
-                            @click="
-                                () => {
-                                    updateUser()
-                                    isShow = false
-                                }
+                        <button class="clickButton" @click="() => {
+                                updateUser()
+                                isShow = false
+                            }
                             ">
                             Aktualisieren
                         </button>
@@ -238,6 +227,11 @@ export default defineComponent({
 //     display: block;
 // }
 
+img {
+    border-radius: 40%;
+    height: 100px;
+}
+
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
@@ -265,17 +259,13 @@ tr:nth-child(even) {
     padding: 30px;
     border-radius: 10px;
     box-sizing: border-box;
-    background-color: rgb(15, 90, 77);
+    background-color: var(--color-dark);
     font-size: 20px;
     text-align: center;
     color: var(--font-color);
     font-size: normal;
 }
 
-img {
-    border-radius: 40%;
-    height: 100px;
-}
 
 .applicationlink {
     text-decoration: none;

@@ -3,59 +3,46 @@
     --color-half: rgba(var(--color-dev), 0.5);
     --color-full: rgb(var(--color-dev));
     --color-dark: color-mix(in srgb, var(--color-full) 60%, black);
-    /* --color-dark: color-mix(in HSL, var(--color-full) 60%, black); */
     --font-color: color-mix(in srgb, var(--color-full) 30%, white);
-    /* --font-color: color-mix(in HSL, var(--color-full) 30%, white); */
     --active-link-color: color-mix(in srgb, var(--color-full) 40%, white);
     --inactive-link-color: var(--color-full);
-
     --main-background-color: color-mix(in srgb, var(--color-full) 20%, black);
-    /* --main-background-color: color-mix(in HSL, var(--color-full) 30%, black); */
 
-    --color-dev: 30, 143, 143;
     /* color: rgb(30, 143, 143); */
-    /* color: rgb(25, 28, 189); */
-    /* color: rgb(3, 146, 58); */
-    /* color: rgb(209, 125, 0); */
-    /* color: rgb(139, 30, 143); */
-    /* color: rgb(143, 30, 30); */
-    /* color: rgb(223, 226, 43); */
-    /* color: rgb(0, 0, 0); */
-}
-
-[data-theme="blue"] {
-    --color-dev: 0, 0, 255 !important;
-    --color-full: rgb(var(--color-dev));
-    /* --main-background-color: color-mix(in HSL, var(--color-full) 20%, black); */
-    --main-background-color: rgb(0, 0, 50) !important;
+    --color-dev: 30, 143, 143;
 }
 
 [data-theme="green"] {
+    /* color: rgb(3, 146, 58); */
     --color-dev: 3, 146, 58 !important;
 }
 
 [data-theme="orange"] {
+    /* color: rgb(209, 125, 0); */
     --color-dev: 209, 125, 0 !important;
 }
 
 [data-theme="purple"] {
+    /* color: rgb(139, 30, 143); */
     --color-dev: 139, 30, 143 !important;
 }
 
 [data-theme="red"] {
+    /* color: rgb(143, 30, 30); */
     --color-dev: 143, 30, 30 !important;
 }
 
 [data-theme="yellow"] {
+    /* color: rgb(223, 226, 43); */
     --color-dev: 223, 226, 43 !important;
 }
 
 [data-theme="black"] {
+    /* color: rgb(80, 80, 80); */
     --color-dev: 80, 80, 80 !important;
     --main-background-color: black !important;
 }
 
 html {
     background-color: var(--main-background-color);
-    color: var(--font-color);
 }

@@ -1,6 +1,11 @@
 <template>
     <div class="login">
         <h1>Login</h1>
+        <span v-if="errorHeader != ''" class="error">
+            {{ errorHeader }}
+            <br>
+        </span>
+
         <button type="button" class="login-with-google-button" @click="goToGoogle">Sign in with Google</button>
         <br />
         <button type="button" class="login-with-github-button" @click="goToGitHub">Sign in with GitHub</button>
@@ -21,11 +26,13 @@
         <br />
         <hr />
         <br />
-        <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google oder GitHub einloggen möchtest (was ohne Account funktioniert) kannst du dich hier registrieren</span>
+        <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google oder GitHub einloggen möchtest
+            (was ohne Account funktioniert) kannst du dich hier registrieren</span>
         <br />
         <input v-model="rname" class="textInput" type="text" placeholder="Name" />
         <br v-if="!usernameValid && rname.length != 0" />
-        <span v-if="!usernameValid && rname.length != 0" style="color: red">Der Name darf nur Buchstaben, Zahlen, Leerzeichen, - und _ enthalten und mindestens 3 und maximal 20 Zeichen lang sein</span>
+        <span v-if="!usernameValid && rname.length != 0" style="color: red">Der Name darf nur Buchstaben, Zahlen,
+            Leerzeichen, - und _ enthalten und mindestens 3 und maximal 20 Zeichen lang sein</span>
         <br />
         <input v-model="remail" class="textInput" type="email" placeholder="Email" />
         <br v-if="!emailrValid && remail.length != 0" />
@@ -33,13 +40,17 @@
         <br />
         <input v-model="rpassword" class="textInput" type="password" placeholder="Password" />
         <br v-if="!passwordrValid && rpassword.length != 0" />
-        <span v-if="!passwordrValid && rpassword.length != 0" style="color: red">Das Passwort muss mindestens 8 Zeichen lang sein und mindestens eine Großbuchstabe, eine Kleinbuchstabe, eine Zahl und ein Sonderzeichen enthalten.</span>
+        <span v-if="!passwordrValid && rpassword.length != 0" style="color: red">Das Passwort muss mindestens 8 Zeichen
+            lang sein und mindestens eine Großbuchstabe, eine Kleinbuchstabe, eine Zahl und ein Sonderzeichen
+            enthalten.</span>
         <br />
         <input v-model="rpasswordConfirm" class="textInput" type="password" placeholder="Password confirm" />
         <br v-if="!passwordMatch && rpasswordConfirm.length != 0" />
-        <span v-if="!passwordMatch && rpasswordConfirm.length != 0" style="color: red">Die Passwörter stimmen nicht überein</span>
+        <span v-if="!passwordMatch && rpasswordConfirm.length != 0" style="color: red">Die Passwörter stimmen nicht
+            überein</span>
         <br />
-        <button v-if="showRegister && usernameValid && emailrValid && passwordrValid" class="textInput" @click="register">Register</button>
+        <button v-if="showRegister && usernameValid && emailrValid && passwordrValid" class="textInput"
+            @click="register">Register</button>
     </div>
 </template>
 
@@ -63,6 +74,7 @@ export default defineComponent({
             email: "",
             password: "",
             error: "",
+            errorHeader: "",
             rname: "",
             remail: "",
             rpassword: "",
@@ -136,6 +148,17 @@ export default defineComponent({
         console.log(this.from)
         if (store.loggedIn) {
             document.location.href = window.location.origin + "?from=" + this.from
+        }
+
+        let errorHeader = this.$route.query.error
+        if (errorHeader != undefined) {
+            let errorHeaderStr = errorHeader.toString()
+            if (errorHeaderStr == "already_signed_up_with_different_method") {
+                this.errorHeader = "Du hast dich bereits mit einer anderen Methode angemeldet. Bitte melde dich mit der gleichen Methode an."
+            } else if (errorHeaderStr == "error_occured") {
+                this.errorHeader = "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+            }
+            this.$router.replace({ query: {} })
         }
     },
     methods: {

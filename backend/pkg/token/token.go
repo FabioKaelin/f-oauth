@@ -19,6 +19,7 @@ func GenerateToken(ttl time.Duration, payload interface{}, secretJWTKey string) 
 	claims["nbf"] = now.Unix()
 
 	tokenString, err := token.SignedString([]byte(secretJWTKey))
+	fmt.Println(tokenString)
 
 	if err != nil {
 		return "", fmt.Errorf("generating JWT Token failed: %w", err)

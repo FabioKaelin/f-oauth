@@ -1,132 +1,109 @@
 package google
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/fabiokaelin/f-oauth/config"
+	"github.com/fabiokaelin/f-oauth/pkg/db"
+	"github.com/fabiokaelin/f-oauth/pkg/image"
+	"github.com/fabiokaelin/f-oauth/pkg/notification"
+	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 )
 
-type (
-	GoogleOauthToken struct {
-		Access_token string
-		Id_token     string
-	}
+// LoginWithCode return a token the errorcode and an error
+// 0 no error
+// 1 normal error
+// 2 user already signed up with a different method
+func LoginWithCode(code string) (string, int, error) {
+	tokenRes, err := getGoogleOauthToken(code)
 
-	GoogleUserResult struct {
-		Id             string
-		Email          string
-		Verified_email bool
-		Name           string
-		Given_name     string
-		Family_name    string
-		Picture        string
-		Locale         string
-	}
-)
-
-func GetGoogleOauthToken(code string) (*GoogleOauthToken, error) {
-	const rootURl = "https://oauth2.googleapis.com/token"
-
-	values := url.Values{}
-	values.Add("grant_type", "authorization_code")
-	values.Add("code", code)
-	values.Add("client_id", config.GoogleClientID)
-	values.Add("client_secret", config.GoogleClientSecret)
-	values.Add("redirect_uri", config.GoogleOAuthRedirectUrl)
-
-	query := values.Encode()
-
-	req, err := http.NewRequest("POST", rootURl, bytes.NewBufferString(query))
 	if err != nil {
-		return nil, err
+		fmt.Println("error, google failed to get token:", err)
+		return "", 1, err
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	client := http.Client{
-		Timeout: time.Second * 30,
-	}
+	google_user, err := getGoogleUser(tokenRes.Access_token, tokenRes.Id_token)
 
-	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		fmt.Println("error, google failed to get user with token", err)
+		return "", 1, err
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("could not retrieve token")
+	now := time.Now()
+	email := strings.ToLower(google_user.Email)
+
+	user_data := user_pkg.User{
+		Name:      google_user.Name,
+		Email:     email,
+		Password:  "",
+		Photo:     google_user.Picture,
+		Provider:  "Google",
+		Role:      "user",
+		Verified:  true,
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
-	var resBody bytes.Buffer
-	_, err = io.Copy(&resBody, res.Body)
+	fmt.Println("email", email)
+
+	ifExist, err := db.DoesUserExist(email)
+
 	if err != nil {
-		return nil, err
+		fmt.Println("error, google, failed to get first time user", err)
+		return "", 1, err
 	}
 
-	var GoogleOauthTokenRes map[string]interface{}
+	fmt.Println("ifExist", ifExist)
 
-	if err := json.Unmarshal(resBody.Bytes(), &GoogleOauthTokenRes); err != nil {
-		return nil, err
+	if !ifExist {
+		fmt.Println("new user")
+		dbuser := db.DatabaseUser{
+			Name:      user_data.Name,
+			Email:     user_data.Email,
+			Password:  user_data.Password,
+			Role:      user_data.Role,
+			Photo:     user_data.Photo,
+			Verified:  user_data.Verified,
+			Provider:  user_data.Provider,
+			CreatedAt: user_data.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: user_data.UpdatedAt.Format("2006-01-02 15:04:05"),
+		}
+		_, err := db.CreateUser(dbuser)
+		if err != nil {
+			fmt.Println("error, google, failed to create user", err)
+			return "", 1, err
+		}
+
+		notification.NewUserNotification(user_data)
+
 	}
+	user, err := db.GetUserByEmail(email)
 
-	tokenBody := &GoogleOauthToken{
-		Access_token: GoogleOauthTokenRes["access_token"].(string),
-		Id_token:     GoogleOauthTokenRes["id_token"].(string),
-	}
-
-	return tokenBody, nil
-}
-
-func GetGoogleUser(access_token string, id_token string) (*GoogleUserResult, error) {
-	rootUrl := fmt.Sprintf("https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=%s", access_token)
-
-	req, err := http.NewRequest("GET", rootUrl, nil)
 	if err != nil {
-		return nil, err
+		fmt.Println("error, google, failed to get user", err)
+		return "", 1, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", id_token))
-
-	client := http.Client{
-		Timeout: time.Second * 30,
+	if !ifExist {
+		image.SaveImage(user.Photo, user.ID)
 	}
 
-	res, err := client.Do(req)
+	spew.Dump(user)
+
+	if user.Provider != "Google" {
+		return "", 2, errors.New("you have already signed up with a different method")
+	}
+
+	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
 	if err != nil {
-		return nil, err
+		fmt.Println("error, google, failed to generate access token", err)
+		return "", 1, err
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("could not retrieve user")
-	}
-
-	var resBody bytes.Buffer
-	_, err = io.Copy(&resBody, res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var GoogleUserRes map[string]interface{}
-
-	if err := json.Unmarshal(resBody.Bytes(), &GoogleUserRes); err != nil {
-		return nil, err
-	}
-
-	userBody := &GoogleUserResult{
-		Id:             GoogleUserRes["id"].(string),
-		Email:          GoogleUserRes["email"].(string),
-		Verified_email: GoogleUserRes["verified_email"].(bool),
-		Name:           GoogleUserRes["name"].(string),
-		Given_name:     GoogleUserRes["given_name"].(string),
-		Picture:        GoogleUserRes["picture"].(string),
-	}
-
-	userBody.Locale = "Google"
-
-	return userBody, nil
+	return token, 0, nil
 }
