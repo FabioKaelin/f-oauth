@@ -10,11 +10,11 @@ spec:
   tag: "latest"
   resources:
     limits:
-      cpu: 200m
-      memory: 1024Mi
+      cpu: 100m
+      memory: 512Mi
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 5m
+      memory: 8Mi
   healthCheck:
     livenessProbe:
       path: "/"
