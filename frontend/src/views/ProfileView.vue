@@ -57,7 +57,7 @@
                         &ensp;
                         <button class="clickButton" @click="() => {
                                 updateUser()
-                                isShow = false
+                                // isShow = false
                             }
                             ">
                             Aktualisieren
@@ -195,7 +195,9 @@ export default defineComponent({
             this.uploadStatus = this.file
         },
         saveImage() {
+            this.uploadStatus = "saveImage"
             if (this.file) {
+                this.uploadStatus = "file exists"
                 try {
                     let formData = new FormData()
                     formData.append("image", this.file)
@@ -214,6 +216,9 @@ export default defineComponent({
                 } finally {
                     console.log("finally")
                 }
+            } else{
+                this.uploadStatus = "file does not exist"
+
             }
         }
     }
