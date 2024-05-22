@@ -200,7 +200,9 @@ export default defineComponent({
                 ctx.drawImage(newImage, 0, 0, 400, 400)
                 const dataUrl = canvas.toDataURL("image/jpeg")
                 // convert to html input element
-                const newFile: File = new File([dataUrl], "image.png", { type: "image/png" })
+                // const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpg" })
+                const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpeg" })
+                // const newFile: File = new File([dataUrl], "image.png", { type: "image/png" })
                 this.file = newFile
                 this.uploadStatus = this.file
             }
