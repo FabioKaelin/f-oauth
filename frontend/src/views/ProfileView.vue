@@ -51,6 +51,7 @@
                             <br>
                             4<input type="file" accept="image/*" capture @change="onFileChanged($event)" />
                         </div>
+                        <span v-if="uploadStatus!=null">{{ uploadStatus }}</span>
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
                         &ensp;
@@ -105,7 +106,8 @@ export default defineComponent({
             file: ref<File | null>(),
             imageUrl: "",
             loaded: false,
-            error: ""
+            error: "",
+            uploadStatus: null as any
         }
     },
     mounted() {
@@ -186,9 +188,11 @@ export default defineComponent({
         },
         onFileChanged($event: Event) {
             const target = $event.target as HTMLInputElement
+            this.uploadStatus = target
             if (target && target.files) {
                 this.file = target.files[0]
             }
+            this.uploadStatus = this.file
         },
         saveImage() {
             if (this.file) {
