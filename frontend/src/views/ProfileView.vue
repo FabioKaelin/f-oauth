@@ -58,7 +58,7 @@
                         &ensp;
                         <button class="clickButton" @click="() => {
                                 updateUser()
-                                // isShow = false
+                                isShow = false
                             }
                             ">
                             Aktualisieren
