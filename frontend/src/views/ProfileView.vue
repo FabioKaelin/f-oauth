@@ -189,28 +189,32 @@ export default defineComponent({
         onFileChanged($event: Event) {
             const target = $event.target as HTMLInputElement
             // convert to image
-            const newImage = new Image()
-            newImage.src = URL.createObjectURL(target.files![0])
-            // scale image down to 400x400
-            newImage.onload = () => {
-                const canvas = document.createElement("canvas")
-                const ctx = canvas.getContext("2d")!
-                canvas.width = 400
-                canvas.height = 400
-                ctx.drawImage(newImage, 0, 0, 400, 400)
-                const dataUrl = canvas.toDataURL("image/jpeg")
-                // convert to html input element
-                // const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpg" })
-                const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpeg" })
-                // const newFile: File = new File([dataUrl], "image.png", { type: "image/png" })
-                this.file = newFile
-                this.uploadStatus = this.file
-            }
-            // this.uploadStatus = target
-            // if (target && target.files) {
-                // this.file = target.files[0]
+
+
+            // const newImage = new Image()
+            // newImage.src = URL.createObjectURL(target.files![0])
+            // // scale image down to 400x400
+            // newImage.onload = () => {
+            //     const canvas = document.createElement("canvas")
+            //     const ctx = canvas.getContext("2d")!
+            //     canvas.width = 400
+            //     canvas.height = 400
+            //     ctx.drawImage(newImage, 0, 0, 400, 400)
+            //     const dataUrl = canvas.toDataURL("image/jpeg")
+            //     // convert to html input element
+            //     // const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpg" })
+            //     const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpeg" })
+            //     // const newFile: File = new File([dataUrl], "image.png", { type: "image/png" })
+            //     this.file = newFile
+            //     this.uploadStatus = this.file
             // }
-            // this.uploadStatus = this.file
+
+
+            this.uploadStatus = target
+            if (target && target.files) {
+                this.file = target.files[0]
+            }
+            this.uploadStatus = this.file
         },
         saveImage() {
             this.uploadStatus = "saveImage"
