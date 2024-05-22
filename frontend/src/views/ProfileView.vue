@@ -41,7 +41,8 @@
                         <input v-model="newUsername" type="text" />
                         <br />
                         <div>
-                            <input type="file" accept="image/*;capture=camera" capture @change="onFileChanged($event)" />
+                            <input type="file" accept="image/*,capture=camera" capture @change="onFileChanged($event)" />
+                            <!-- <input type="file" accept="image/*;capture=camera" capture @change="onFileChanged($event)" /> -->
                             <!-- <input type="file" accept="image/*" capture @change="onFileChanged($event)" /> -->
                         </div>
                         <br />
