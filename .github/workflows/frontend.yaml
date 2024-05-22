@@ -47,6 +47,10 @@ jobs:
           echo ${{ env.IMAGE_NAME }}
           echo ${{ github.actor }}
           echo ${version}
+
+
+          echo "VITE_F_VERSION=${version}" > .env
+
           docker buildx ls
           docker buildx rm fdeployer || true
           docker buildx create --name fdeployer

@@ -45,6 +45,15 @@
                 Theme:
                 <ThemeSelect />
             </span>
+            <span v-if="frontendVersion != '' || backendVersion != ''"> <br /><br /> </span>
+            <span v-if="frontendVersion != ''">
+                <br />
+                <span>Frontend: {{ frontendVersion }}</span>
+            </span>
+            <span v-if="backendVersion != ''">
+                <br />
+                <span>Backend: {{ backendVersion }}</span>
+            </span>
         </span>
     </Slide>
     <div class="content1">
@@ -78,6 +87,8 @@ export default defineComponent({
     },
     data() {
         return {
+            frontendVersion: "",
+            backendVersion: "",
             store
             // theme: ""
         }
@@ -103,6 +114,30 @@ export default defineComponent({
         //     this.theme = localStorage.theme
         //     this.setTheme()
         // }
+        axios
+            .request(getAxiosConfig("/version"))
+            .then(response => {
+                if (response.data.version && response.data.version != "") {
+                    let backendVersion = response.data.version
+                    if (backendVersion != "latest") {
+                        backendVersion = "v" + backendVersion
+                    }
+                    this.backendVersion = backendVersion
+                }
+            })
+            .catch(error => {
+                console.log("error", error)
+            })
+
+        let frontendVersion = import.meta.env.VITE_F_VERSION
+
+        if (frontendVersion && frontendVersion != "") {
+            if (frontendVersion != "latest") {
+                frontendVersion = "v" + frontendVersion
+            }
+            console.log("frontendVersion: '" + frontendVersion + "'")
+            this.frontendVersion = frontendVersion
+        }
     },
     methods: {
         imageLoadError() {

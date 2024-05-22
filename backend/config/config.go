@@ -37,6 +37,7 @@ var (
 	InternalImageService string
 
 	NotificationID string
+	FVersion       string
 )
 
 func getString(key string) (string, error) {
@@ -174,6 +175,11 @@ func Load() error {
 	}
 
 	NotificationID, err = getString("NOTIFICATION_ID")
+	if err != nil {
+		return err
+	}
+
+	FVersion, err = getString("F_VERSION")
 	if err != nil {
 		return err
 	}

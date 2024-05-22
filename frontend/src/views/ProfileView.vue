@@ -41,9 +41,15 @@
                         <input v-model="newUsername" type="text" />
                         <br />
                         <div>
-                            <input type="file" accept="image/*,capture=camera" @change="onFileChanged($event)" />
-                            <!-- <input type="file" accept="image/*;capture=camera" capture @change="onFileChanged($event)" /> -->
-                            <!-- <input type="file" accept="image/*" capture @change="onFileChanged($event)" /> -->
+                            1<input type="file" accept="image/*" @change="onFileChanged($event)" />
+                            <br>
+                            2<input type="file" accept="image/*;capture=camera" @change="onFileChanged($event)" />
+                            <br>
+                            3<input type="file" accept="image/*,capture=camera" @change="onFileChanged($event)" />
+                            <br>
+                            4<input type="file" accept="image/*" capture @change="onFileChanged($event)" />
+                            <br>
+                            5<input type="file" accept="image/*" @change="onFileChanged($event)" />
                         </div>
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>

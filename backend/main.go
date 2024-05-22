@@ -50,6 +50,10 @@ func main() {
 	apiGroup := router.Group("/api")
 
 	apiGroup.GET("", controllers.Default)
+	apiGroup.GET("/version", func(c *gin.Context) {
+		version := config.FVersion
+		c.IndentedJSON(200, gin.H{"version": version})
+	})
 
 	controllers.AuthRouter(apiGroup)
 	controllers.OAuth2Router(apiGroup)
