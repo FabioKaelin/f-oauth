@@ -40,18 +40,19 @@
                         Name:
                         <input v-model="newUsername" type="text" />
                         <br>
-                        Aktuell hat es mehrere optionen für das Bild hochladen. Da es nicht auf allen Geräten funktioniert. Sobald es auf allen Geräten funktioniert, wird es auf eine Option reduziert.
-                        <br>
+                        <!-- Aktuell hat es mehrere optionen für das Bild hochladen. Da es nicht auf allen Geräten funktioniert. Sobald es auf allen Geräten funktioniert, wird es auf eine Option reduziert. -->
+                        <!-- <br> -->
                         <div>
-                            1<input type="file" accept="image/*" @change="onFileChanged($event)" />
-                            <br>
-                            2<input type="file" accept="image/*;capture=camera" @change="onFileChanged($event)" />
-                            <br>
-                            3<input type="file" accept="image/*,capture=camera" @change="onFileChanged($event)" />
-                            <br>
-                            4<input type="file" accept="image/*" capture @change="onFileChanged($event)" />
+                            <!-- 1 -->
+                            <input type="file" accept="image/*" @change="onFileChanged($event)" />
+                            <!-- <br> -->
+                            <!-- 2<input type="file" accept="image/*;capture=camera" @change="onFileChanged($event)" /> -->
+                            <!-- <br> -->
+                            <!-- 3<input type="file" accept="image/*,capture=camera" @change="onFileChanged($event)" /> -->
+                            <!-- <br> -->
+                            <!-- 4<input type="file" accept="image/*" capture @change="onFileChanged($event)" /> -->
                         </div>
-                        <span v-if="uploadStatus!=null">{{ uploadStatus }}</span>
+                        <!-- <span v-if="uploadStatus!=null">{{ uploadStatus }}</span> -->
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
                         &ensp;
