@@ -12,8 +12,10 @@ import (
 var (
 	// LoggerConfig is the config for the logger
 	LoggerConfig = gin.LoggerConfig{
-		SkipPaths: []string{"/internal"},
 		Formatter: DefaultLogFormatter,
+		Skip: func(c *gin.Context) bool {
+			return strings.HasPrefix(c.Request.URL.Path, "/internal")
+		},
 	}
 )
 
