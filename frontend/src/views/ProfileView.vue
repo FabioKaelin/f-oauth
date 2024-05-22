@@ -39,7 +39,9 @@
                     <div class="modal">
                         Name:
                         <input v-model="newUsername" type="text" />
-                        <br />
+                        <br>
+                        Aktuell hat es mehrere optionen für das Bild hochladen. Da es nicht auf allen Geräten funktioniert. Sobald es auf allen Geräten funktioniert, wird es auf eine Option reduziert.
+                        <br>
                         <div>
                             1<input type="file" accept="image/*" @change="onFileChanged($event)" />
                             <br>
@@ -48,8 +50,6 @@
                             3<input type="file" accept="image/*,capture=camera" @change="onFileChanged($event)" />
                             <br>
                             4<input type="file" accept="image/*" capture @change="onFileChanged($event)" />
-                            <br>
-                            5<input type="file" accept="image/*" @change="onFileChanged($event)" />
                         </div>
                         <br />
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
