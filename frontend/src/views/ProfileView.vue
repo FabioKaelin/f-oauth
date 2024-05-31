@@ -40,8 +40,8 @@
                         Name:
                         <input v-model="newUsername" type="text" />
                         <br>
-                        <!-- Aktuell hat es mehrere optionen für das Bild hochladen. Da es nicht auf allen Geräten funktioniert. Sobald es auf allen Geräten funktioniert, wird es auf eine Option reduziert. -->
-                        <!-- <br> -->
+                        <span class="hint">Bitte kleine Bilder hochladen, ansonsten wird es nicht aktuallisiert. <br> Falls du es bereits versucht hat und es nicht funktioniert hat versuche das Bild zuzuschneiden oder </span>
+                        <br>
                         <div>
                             <!-- 1 -->
                             <input type="file" accept="image/*" @change="onFileChanged($event)" />
@@ -253,6 +253,11 @@ export default defineComponent({
     background-color: var(--color);
     border-radius: 10px;
     padding: 5px;
+}
+
+.hint {
+    font-size: smaller;
+    color: var(--font-color);
 }
 
 .error {
