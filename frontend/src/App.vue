@@ -39,6 +39,10 @@
                 <router-link to="/about">About</router-link>
                 <br />
             </span>
+            <span>
+                <span class="fakelink" @click="toGuessGame">Zum Tippspiel</span>
+                <br />
+            </span>
 
             <br />
             <span>
@@ -169,6 +173,10 @@ export default defineComponent({
                 // this.$router.push('/')
                 window.location.reload()
             })
+        },
+        toGuessGame() {
+            // https://tipp.fabkli.ch
+            window.location.href = "https://tipp.fabkli.ch"
         },
         setTheme() {
             // document.firstElementChild?.setAttribute("data-theme", this.theme)
