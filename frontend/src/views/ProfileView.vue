@@ -1,6 +1,6 @@
 <template>
     <div class="profile">
-        <h1>Profile</h1>
+        <h1>Profil</h1>
         <div v-if="error && loaded" class="error">{{ error }}</div>
         <div v-if="!loaded" class="loader"></div>
         <div v-if="loaded">
@@ -26,21 +26,23 @@
             </table>
             <br />
             <button type="button" value="menu" class="clickButton" @click="() => {
-                    isShow = true
-                    newUsername = me.name
-                    file = null
-                }
+                isShow = true
+                newUsername = me.name
+                file = null
+            }
                 ">
                 Bearbeiten
                 <Modal v-model="isShow" :close="() => {
-                        isShow = false
-                    }
+                    isShow = false
+                }
                     ">
                     <div class="modal">
                         Name:
                         <input v-model="newUsername" type="text" />
                         <br>
-                        <span class="hint">Bitte kleine Bilder hochladen, ansonsten wird es nicht aktuallisiert. <br> Falls du es bereits versucht hat und es nicht funktioniert hat versuche das Bild zuzuschneiden oder </span>
+                        <span class="hint">Bitte kleine Bilder hochladen, ansonsten wird es nicht aktuallisiert. <br>
+                            Falls du es bereits versucht hat und es nicht funktioniert hat versuche das Bild
+                            zuzuschneiden oder </span>
                         <br>
                         <div>
                             <!-- 1 -->
@@ -57,9 +59,9 @@
                         <button class="clickButton" @click="isShow = false">Abbrechen</button>
                         &ensp;
                         <button class="clickButton" @click="() => {
-                                updateUser()
-                                isShow = false
-                            }
+                            updateUser()
+                            isShow = false
+                        }
                             ">
                             Aktualisieren
                         </button>
@@ -93,6 +95,30 @@ import { defineComponent, ref } from "vue"
 import axios from "axios"
 import { User } from "../structs"
 import { getAxiosConfig, getAxiosConfigMethod } from "../func"
+
+function dataURLToBlob(dataURL) {
+    var BASE64_MARKER = ';base64,';
+    if (dataURL.indexOf(BASE64_MARKER) == -1) {
+        var parts = dataURL.split(',');
+        var contentType = parts[0].split(':')[1];
+        var raw = parts[1];
+
+        return new Blob([raw], { type: contentType });
+    }
+
+    parts = dataURL.split(BASE64_MARKER);
+    contentType = parts[0].split(':')[1];
+    raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], { type: contentType });
+}
 
 export default defineComponent({
     name: "ProfileView",
@@ -189,27 +215,6 @@ export default defineComponent({
         },
         onFileChanged($event: Event) {
             const target = $event.target as HTMLInputElement
-            // convert to image
-
-
-            // const newImage = new Image()
-            // newImage.src = URL.createObjectURL(target.files![0])
-            // // scale image down to 400x400
-            // newImage.onload = () => {
-            //     const canvas = document.createElement("canvas")
-            //     const ctx = canvas.getContext("2d")!
-            //     canvas.width = 400
-            //     canvas.height = 400
-            //     ctx.drawImage(newImage, 0, 0, 400, 400)
-            //     const dataUrl = canvas.toDataURL("image/jpeg")
-            //     // convert to html input element
-            //     // const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpg" })
-            //     const newFile: File = new File([dataUrl], "image.jpg", { type: "image/jpeg" })
-            //     // const newFile: File = new File([dataUrl], "image.png", { type: "image/png" })
-            //     this.file = newFile
-            //     this.uploadStatus = this.file
-            // }
-
 
             this.uploadStatus = target
             if (target && target.files) {
@@ -221,25 +226,59 @@ export default defineComponent({
             this.uploadStatus = "saveImage"
             if (this.file) {
                 this.uploadStatus = "file exists"
-                try {
-                    let formData = new FormData()
-                    formData.append("image", this.file)
-                    axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then(() => {
-                        const userId = this.me.id
-                        const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
-                        if (userId) {
-                            this.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
-                        } else {
-                            this.imageUrl = `${backendUrl}/api/users/nouser/image`
+                if (this.file.type.match(/image.*/)) {
+                    console.log('An image has been loaded');
+                    // Load the image
+                    let fakeThis = this
+                    var reader = new FileReader();
+                    reader.onload = function (readerEvent) {
+                        var image = new Image();
+                        image.onload = function (imageEvent) {
+                            console.log("image loaded");
+                            console.log(imageEvent);
+
+                            // Resize the image
+                            var canvas = document.createElement('canvas'),
+                                max_size = 200,// TODO : pull max size from a site config
+                                width = image.width,
+                                height = image.height;
+                            if (width > height) {
+                                if (width > max_size) {
+                                    height *= max_size / width;
+                                    width = max_size;
+                                }
+                            } else {
+                                if (height > max_size) {
+                                    width *= max_size / height;
+                                    height = max_size;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            canvas.getContext('2d')?.drawImage(image, 0, 0, width, height);
+                            var dataUrl = canvas.toDataURL('image/jpeg');
+                            var resizedImage = dataURLToBlob(dataUrl);
+                            console.log(resizedImage);
+                            console.log(resizedImage.size);
+                            let formData = new FormData()
+                            formData.append("image", resizedImage)
+                            // formData.append("image", file)
+                            axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then((response: any) => {
+                                console.log(response)
+                                const userId = fakeThis.me.id
+                                const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
+                                if (userId) {
+                                    fakeThis.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
+                                } else {
+                                    fakeThis.imageUrl = `${backendUrl}/api/users/nouser/image`
+                                }
+                            })
                         }
-                    })
-                } catch (error) {
-                    console.error(error)
-                    this.file = null
-                } finally {
-                    console.log("finally")
+                        image.src = readerEvent.target?.result as string;
+                    }
+                    reader.readAsDataURL(this.file);
                 }
-            } else{
+            } else {
                 this.uploadStatus = "file does not exist"
 
             }

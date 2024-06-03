@@ -16,7 +16,7 @@
             </span>
 
             <span v-if="store.loggedIn">
-                <router-link to="/profile">Profile</router-link>
+                <router-link to="/profile">Profil</router-link>
                 <br>
             </span>
 
@@ -37,6 +37,10 @@
 
             <span>
                 <router-link to="/about">About</router-link>
+                <br />
+            </span>
+            <span>
+                <span class="fakelink" @click="toGuessGame">Zum Tippspiel</span>
                 <br />
             </span>
 
@@ -169,6 +173,10 @@ export default defineComponent({
                 // this.$router.push('/')
                 window.location.reload()
             })
+        },
+        toGuessGame() {
+            // https://tipp.fabkli.ch
+            window.location.href = "https://tipp.fabkli.ch"
         },
         setTheme() {
             // document.firstElementChild?.setAttribute("data-theme", this.theme)
