@@ -16,7 +16,7 @@
             </span>
 
             <span v-if="store.loggedIn">
-                <router-link to="/profile">Profile</router-link>
+                <router-link to="/profile">Profil</router-link>
                 <br>
             </span>
 
