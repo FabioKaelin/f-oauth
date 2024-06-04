@@ -40,10 +40,11 @@
                         Name:
                         <input v-model="newUsername" type="text" />
                         <br>
-                        <span class="hint">Bitte kleine Bilder hochladen, ansonsten wird es nicht aktuallisiert. <br>
+                        <!-- <span class="hint">Bitte kleine Bilder hochladen, ansonsten wird es nicht aktuallisiert. <br>
                             Falls du es bereits versucht hat und es nicht funktioniert hat versuche das Bild
                             zuzuschneiden oder </span>
                         <br>
+                        -->
                         <div>
                             <!-- 1 -->
                             <input type="file" accept="image/*" @change="onFileChanged($event)" />
