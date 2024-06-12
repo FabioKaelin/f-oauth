@@ -62,3 +62,28 @@ func DoesUserExist(email string) (bool, error) {
 	ifExist := rows.Next()
 	return ifExist, nil
 }
+
+func GetUserByID(id string) (DatabaseUser, error) {
+	rows, err := RunSQL("SELECT `id`, `name`, `email`, `password`, `role`, `photo`, `verified`, `provider`, `created_at`, `updated_at` FROM `users` WHERE `id` = ? LIMIT 1", id)
+	if err != nil {
+		return DatabaseUser{}, err
+	}
+
+	defer rows.Close()
+
+	var user DatabaseUser
+	for rows.Next() {
+		rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.Photo, &user.Verified, &user.Provider, &user.CreatedAt, &user.UpdatedAt)
+	}
+
+	return user, nil
+}
+
+func UpdatePassword(id string, password string) error {
+	_, err := RunSQL("UPDATE `users` SET `password` = ? WHERE `id` = ?", password, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
