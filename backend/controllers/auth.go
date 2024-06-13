@@ -118,7 +118,7 @@ func authLogin(ctx *gin.Context) {
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, false, true)
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})
 }
 
 // authLogout
