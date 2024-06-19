@@ -84,6 +84,7 @@ func authRegister(ctx *gin.Context) {
 // authLogin
 func authLogin(ctx *gin.Context) {
 	// TODO: Redirect to loginpage when an error occurs with error message
+	fmt.Println("try to login")
 	var payload *user_pkg.LoginUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
@@ -93,22 +94,27 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Println("user", payload.Email)
+
 	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	emailRegex := regexp.MustCompile(emailPattern)
 
 	if !emailRegex.MatchString(payload.Email) {
+		fmt.Println("invalid email address pattern", payload.Email)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email address pattern"})
 		return
 	}
 
 	user, err := auth.LoginUser(payload.Email, payload.Password)
 	if err != nil {
+		fmt.Println("2", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
 	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
 	if err != nil {
+		fmt.Println("3", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
@@ -116,7 +122,7 @@ func authLogin(ctx *gin.Context) {
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, false, true)
 	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})
 }
 
 // authLogout

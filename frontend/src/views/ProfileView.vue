@@ -234,9 +234,13 @@ export default defineComponent({
                     var reader = new FileReader();
                     reader.onload = function (readerEvent) {
                         var image = new Image();
+                        console.debug("4 reader loaded")
+                        image.onloadeddata = function (imageEvent) {
+                            console.debug("10", imageEvent);
+                        }
                         image.onload = function (imageEvent) {
-                            console.log("image loaded");
-                            console.log(imageEvent);
+                            console.debug("3 image loaded");
+                            console.debug("5", imageEvent);
 
                             // Resize the image
                             var canvas = document.createElement('canvas'),
@@ -259,13 +263,13 @@ export default defineComponent({
                             canvas.getContext('2d')?.drawImage(image, 0, 0, width, height);
                             var dataUrl = canvas.toDataURL('image/jpeg');
                             var resizedImage = dataURLToBlob(dataUrl);
-                            console.log(resizedImage);
-                            console.log(resizedImage.size);
+                            console.debug("6",resizedImage);
+                            console.debug("7",resizedImage.size);
                             let formData = new FormData()
                             formData.append("image", resizedImage)
                             // formData.append("image", file)
                             axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then((response: any) => {
-                                console.log(response)
+                                console.debug("8",response)
                                 const userId = fakeThis.me.id
                                 const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
                                 if (userId) {
@@ -275,8 +279,11 @@ export default defineComponent({
                                 }
                             })
                         }
+                        console.debug("1", readerEvent.target?.result)
                         image.src = readerEvent.target?.result as string;
+                        console.debug("9", image.complete)
                     }
+                    console.debug("2", this.file)
                     reader.readAsDataURL(this.file);
                 }
             } else {
