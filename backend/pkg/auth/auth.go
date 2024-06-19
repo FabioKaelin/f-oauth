@@ -72,6 +72,7 @@ func LoginUser(email string, password string) (user.User, error) {
 	}
 
 	if !ifExist {
+		fmt.Println("user does not exist (searched my mail)")
 		return user.User{}, errors.New("invalid email or password")
 	}
 
@@ -87,6 +88,7 @@ func LoginUser(email string, password string) (user.User, error) {
 
 	equal := ComparePasswords(currentUser.Password, []byte(password))
 	if !equal {
+		fmt.Println("passwords do not match")
 		return user.User{}, errors.New("invalid email or password")
 	}
 
