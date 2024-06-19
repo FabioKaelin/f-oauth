@@ -245,6 +245,7 @@ export default defineComponent({
                         console.log(err.response.data)
                         this.error = err.response.data.message
                     } else {
+                        this.error = err.response.data.message
                         console.log("catch")
                         console.log(err)
                     }

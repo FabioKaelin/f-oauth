@@ -108,14 +108,14 @@ func authLogin(ctx *gin.Context) {
 	user, err := auth.LoginUser(payload.Email, payload.Password)
 	if err != nil {
 		fmt.Println("2", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
 	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
 	if err != nil {
 		fmt.Println("3", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
