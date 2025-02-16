@@ -163,7 +163,7 @@ func userGetProfileImage(ctx *gin.Context) {
 	userID := ctx.Param("userid")
 	fmt.Println("userID", userID)
 
-	url := config.InternalImageService + "/api/users/" + userID
+	url := config.InternalImageService + "/api/profile/" + userID
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("error", err)
@@ -172,22 +172,7 @@ func userGetProfileImage(ctx *gin.Context) {
 	}
 	defer resp.Body.Close()
 
-	// Decode the image
-	imageFile, _, err := image.Decode(resp.Body)
-	if err != nil {
-		fmt.Println("error", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "image decode failed"})
-		return
-	}
-
-	buf := new(bytes.Buffer)
-	if err := png.Encode(buf, imageFile); err != nil {
-		fmt.Println("error", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "png encode failed"})
-		return
-	}
-
-	ctx.Data(http.StatusOK, "image/png", buf.Bytes())
+	ctx.DataFromReader(http.StatusOK, resp.ContentLength, "image/png", resp.Body, nil)
 
 }
 

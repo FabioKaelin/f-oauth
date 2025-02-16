@@ -1,13 +1,16 @@
 {
 	"folders": [
         {
-            "path": "."
+            "path": ".",
+            "name": "F-OAuth"
         },
         {
-            "path": "backend"
+            "path": "backend",
+            "name": "Backend"
         },
         {
-            "path": "frontend"
+            "path": "frontend",
+            "name": "Frontend"
         }
     ],
     "settings": {}

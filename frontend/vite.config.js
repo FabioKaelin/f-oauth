@@ -37,11 +37,11 @@ export default defineConfig(({ mode }) => ({
         // ssr: true,
     },
     server: {
-        port: 5173,
+        port: 8081,
         open: true
     },
     preview: {
-        port: 5173,
+        port: 8081,
         host: "0.0.0.0",
         cors: true
         // proxy: {
