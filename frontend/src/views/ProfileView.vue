@@ -275,7 +275,7 @@ export default defineComponent({
                                 if (userId) {
                                     fakeThis.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
                                 } else {
-                                    fakeThis.imageUrl = `${backendUrl}/api/users/nouser/image`
+                                    fakeThis.imageUrl = `${backendUrl}/api/users/default/image`
                                 }
                             })
                         }
