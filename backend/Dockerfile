@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.22-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS build
 LABEL org.opencontainers.image.source https://github.com/fabiokaelin/f-oauth
 WORKDIR /src
 ARG TARGETOS TARGETARCH
