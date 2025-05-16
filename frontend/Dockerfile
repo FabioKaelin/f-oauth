@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
 FROM --platform=$BUILDPLATFORM node:lts AS build
-LABEL org.opencontainers.image.source https://github.com/fabiokaelin/f-oauth
 WORKDIR /app
 # cache packages in layer
 COPY package.json /app/package.json
@@ -18,7 +17,9 @@ RUN echo $TARGETOS $TARGETARCH
 
 # production stage
 FROM nginx:stable-alpine as production
-LABEL org.opencontainers.image.source https://github.com/fabiokaelin/f-oauth
+LABEL org.opencontainers.image.source="https://github.com/FabioKaelin/f-oauth"
+LABEL org.opencontainers.image.authors="FabioKaelin"
+LABEL org.opencontainers.image.title="F-OAuth-Frontend"
 COPY --from=build /app/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
 COPY resources/nginx.conf /etc/nginx/conf.d

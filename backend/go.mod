@@ -1,6 +1,6 @@
 module github.com/fabiokaelin/f-oauth
 
-go 1.23.0
+go 1.24.3
 
 require (
 	github.com/davecgh/go-spew v1.1.1
@@ -35,7 +35,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.17.0 // indirect
-	golang.org/x/net v0.39.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
