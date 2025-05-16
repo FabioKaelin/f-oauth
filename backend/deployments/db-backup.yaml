@@ -28,36 +28,12 @@ spec:
       targetPort: 3306
   clusterIP: None
 ---
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: dev-db-config
-#   namespace: oauth
-# data:
-#   MARIADB_DATABASE: oauth
-#   MARIADB_ROOT_HOST: "localhost"
-#   MARIADB_USER: oauthuser
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mariadb-config
-  namespace: oauth
-data:
-  custom.cnf: |
-    [mysqld]
-    innodb_buffer_pool_size=64M
-    innodb_log_buffer_size=8M
-    query_cache_size=16M
-#    max_connections=50
----
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: db
   namespace: oauth
 spec:
-  serviceName: "db"
   replicas: 1
   selector:
     matchLabels:
@@ -75,10 +51,6 @@ spec:
           env:
             - name: MARIADB_DATABASE
               value: oauth
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: dev-db-config
-              #     key: MARIADB_DATABASE
             - name: MARIADB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -86,16 +58,8 @@ spec:
                   key: DATABASE_ROOT_PASSWORD
             - name: MARIADB_ROOT_HOST
               value: "localhost"
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: dev-db-config
-              #     key: MARIADB_ROOT_HOST
             - name: MARIADB_USER
               value: oauthuser
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: dev-db-config
-              #     key: MARIADB_USER
             - name: MARIADB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -116,20 +80,16 @@ spec:
             runAsNonRoot: true
             runAsUser: 1001
             runAsGroup: 1001
+
           volumeMounts:
-            - name: db-pv
+            - name: db
               mountPath: /var/lib/mysql
               readOnly: false
-            - name: mariadb-config
-              mountPath: /etc/mysql/conf.d
-              readOnly: true
+              mountPropagation: None
       volumes:
-        - name: db-pv
+        - name: db
           persistentVolumeClaim:
             claimName: db
-        - name: mariadb-config
-          configMap:
-            name: mariadb-config
 
       tolerations:
         - effect: NoSchedule
