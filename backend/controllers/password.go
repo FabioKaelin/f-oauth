@@ -4,17 +4,18 @@ import (
 	"net/http"
 
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
-	"github.com/fabiokaelin/f-oauth/pkg/resetpassword"
+	"github.com/fabiokaelin/f-oauth/pkg/password"
 	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 	"github.com/gin-gonic/gin"
 )
 
-func ResetPassword(apiGroup *gin.RouterGroup) {
-	resetPasswordGroup := apiGroup.Group("/reset-password")
-	resetPasswordGroup.Use(middleware.SetUserToContext())
+func Password(apiGroup *gin.RouterGroup) {
+	PasswordGroup := apiGroup.Group("/password")
+	PasswordGroup.Use(middleware.SetUserToContext())
 	{
-		resetPasswordGroup.POST("/", resetPasswordPost)
-		resetPasswordGroup.POST("/:secret", resetPasswordUse)
+		PasswordGroup.POST("/reset", resetPasswordPost)
+		PasswordGroup.POST("/reset/:secret", resetPasswordUse)
+		PasswordGroup.POST("/change", changePassword)
 	}
 }
 
@@ -31,7 +32,7 @@ func resetPasswordPost(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "User ID is required"})
 		return
 	}
-	resetPassword, err := resetpassword.CreateResetPassword(userid)
+	resetPassword, err := password.CreateResetPassword(userid)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
@@ -51,7 +52,7 @@ func resetPasswordUse(ctx *gin.Context) {
 		return
 	}
 
-	err := resetpassword.UseResetPassword(secret, body.Password)
+	err := password.UseResetPassword(secret, body.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -59,4 +60,24 @@ func resetPasswordUse(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 
+}
+
+func changePassword(ctx *gin.Context) {
+	currentUser := ctx.MustGet("currentUser").(user_pkg.User)
+
+	body := struct {
+		Password string `json:"password"`
+	}{}
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	err := password.ChangePassword(currentUser.ID.String(), body.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }

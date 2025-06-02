@@ -1,4 +1,4 @@
-package resetpassword
+package password
 
 import (
 	"math/rand"
