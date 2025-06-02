@@ -58,7 +58,7 @@ func main() {
 	controllers.AuthRouter(apiGroup)
 	controllers.OAuth2Router(apiGroup)
 	controllers.UserRouter(apiGroup)
-	// controllers.ResetPassword(apiGroup) //TODO - Implement reset password
+	// controllers.Password(apiGroup) //TODO - Implement reset password
 
 	// router.NoRoute(func(ctx *gin.Context) {
 	// ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Route Not Found"})

@@ -11,11 +11,10 @@ import (
 
 func Password(apiGroup *gin.RouterGroup) {
 	PasswordGroup := apiGroup.Group("/password")
-	PasswordGroup.Use(middleware.SetUserToContext())
 	{
-		PasswordGroup.POST("/reset", resetPasswordPost)
+		PasswordGroup.POST("/reset", middleware.SetUserToContext(), resetPasswordPost)
 		PasswordGroup.POST("/reset/:secret", resetPasswordUse)
-		PasswordGroup.POST("/change", changePassword)
+		PasswordGroup.POST("/change", middleware.SetUserToContext(), changePassword)
 	}
 }
 
