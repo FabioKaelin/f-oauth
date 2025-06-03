@@ -101,6 +101,29 @@ spec:
                 secretKeyRef:
                   name: oauth-secrets
                   key: DATABASE_PASSWORD
+
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e 'SELECT 1;'"
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 16
+            timeoutSeconds: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "mariadb -u${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e 'SHOW TABLES;'"
+            initialDelaySeconds: 40
+            periodSeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 5
+
           resources:
             requests:
               memory: "128Mi"
