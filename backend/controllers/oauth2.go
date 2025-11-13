@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/fabiokaelin/f-oauth/config"
@@ -18,6 +19,33 @@ func OAuth2Router(apiGroup *gin.RouterGroup) {
 		oauth2Group.GET("/google", oauth2Google)
 		oauth2Group.GET("/github", oauth2GitHub)
 	}
+}
+
+// isValidRedirectURL validates that the redirect URL is safe
+func isValidRedirectURL(redirectURL string, allowedOrigin string) bool {
+	if redirectURL == "" {
+		return false
+	}
+
+	// Parse the redirect URL
+	parsedURL, err := url.Parse(redirectURL)
+	if err != nil {
+		return false
+	}
+
+	// Parse the allowed origin
+	allowedURL, err := url.Parse(allowedOrigin)
+	if err != nil {
+		return false
+	}
+
+	// Allow relative URLs (they start with /)
+	if parsedURL.Scheme == "" && parsedURL.Host == "" {
+		return strings.HasPrefix(redirectURL, "/")
+	}
+
+	// For absolute URLs, check if the host matches the allowed origin
+	return parsedURL.Scheme == allowedURL.Scheme && parsedURL.Host == allowedURL.Host
 }
 
 func oauth2Google(ctx *gin.Context) {
@@ -51,14 +79,20 @@ func oauth2Google(ctx *gin.Context) {
 	} else {
 		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, true, true)
 	}
+	
+	// Validate and sanitize the redirect URL
 	redirectUrl := ""
-	// if pathUrl not begin with http or https
-	fmt.Println("pathUrl", state)
-	if !strings.HasPrefix(state, "http") && !strings.HasPrefix(state, "https") {
-		state = "/profile"
-		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
+	if state != "" && isValidRedirectURL(state, config.FrontEndOrigin) {
+		// If state is a relative path, prepend the frontend origin
+		if strings.HasPrefix(state, "/") {
+			redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
+		} else {
+			// If it's an absolute URL that passed validation, use it
+			redirectUrl = state
+		}
 	} else {
-		redirectUrl = state
+		// Default to profile page if state is invalid or empty
+		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, "/profile")
 	}
 	fmt.Println("redirectUrl", redirectUrl)
 
@@ -96,14 +130,20 @@ func oauth2GitHub(ctx *gin.Context) {
 	} else {
 		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, true, true)
 	}
+	
+	// Validate and sanitize the redirect URL
 	redirectUrl := ""
-	// if pathUrl not begin with http or https
-	fmt.Println("pathUrl", state)
-	if !strings.HasPrefix(state, "http") && !strings.HasPrefix(state, "https") {
-		state = "/profile"
-		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
+	if state != "" && isValidRedirectURL(state, config.FrontEndOrigin) {
+		// If state is a relative path, prepend the frontend origin
+		if strings.HasPrefix(state, "/") {
+			redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
+		} else {
+			// If it's an absolute URL that passed validation, use it
+			redirectUrl = state
+		}
 	} else {
-		redirectUrl = state
+		// Default to profile page if state is invalid or empty
+		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, "/profile")
 	}
 	fmt.Println("redirectUrl", redirectUrl)
 

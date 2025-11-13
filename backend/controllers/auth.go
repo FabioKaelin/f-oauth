@@ -119,15 +119,17 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, false, true)
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	// Set secure cookie - always use Secure flag for production
+	isSecure := !strings.Contains(config.TokenURL, "localhost")
+	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, isSecure, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})
 }
 
 // authLogout
 func authLogout(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", config.TokenURL, false, true)
-	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
+	// Clear cookie with proper domain handling
+	isSecure := !strings.Contains(config.TokenURL, "localhost")
+	ctx.SetCookie("token", "", -1, "/", config.TokenURL, isSecure, true)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }
