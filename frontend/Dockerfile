@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM --platform=$BUILDPLATFORM node:lts AS build
+FROM --platform=$BUILDPLATFORM node:26 AS build
 WORKDIR /app
 # cache packages in layer
 COPY package.json /app/package.json
