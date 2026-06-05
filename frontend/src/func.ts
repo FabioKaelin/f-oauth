@@ -49,7 +49,10 @@ function loadUser(): Promise<any> {
     return axios
         .request(getAxiosConfig("/users/me"))
         .then(response1 => {
-            store.user = response1.data
+            store.user = {
+                ...response1.data,
+                privileges: response1.data.privileges ?? (response1.data.role === "admin" || response1.data.role === "test-admin" ? 13 : 1)
+            }
             store.loggedIn = true
             store.userLoaded = true
         })

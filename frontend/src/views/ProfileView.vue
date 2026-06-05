@@ -179,7 +179,11 @@ export default defineComponent({
             this.uploadError = ""
             try {
                 const response: any = await axios.request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
-                this.me = response.data
+                this.me = {
+                    ...this.me,
+                    ...response.data,
+                    privileges: response.data.privileges ?? this.me.privileges
+                }
                 if (this.file) {
                     try {
                         await this.saveImage()
