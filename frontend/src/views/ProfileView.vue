@@ -25,14 +25,12 @@
                 </tr>
             </table>
             <br />
-            <button type="button" value="menu" class="clickButton" @click="() => {
-                isShow = true
-                newUsername = me.name
-                file = null
-            }
-                ">
+            <button type="button" value="menu" class="clickButton" @click="openEditModal">
                 Bearbeiten
                 <Modal v-model="isShow" :close="() => {
+                    if (isSaving) {
+                        return
+                    }
                     isShow = false
                 }
                     ">
@@ -57,14 +55,12 @@
                         </div>
                         <!-- <span v-if="uploadStatus!=null">{{ uploadStatus }}</span> -->
                         <br />
-                        <button class="clickButton" @click="isShow = false">Abbrechen</button>
+                        <span v-if="uploadError" class="error">{{ uploadError }}</span>
+                        <br v-if="uploadError" />
+                        <button class="clickButton" :disabled="isSaving" @click="isShow = false">Abbrechen</button>
                         &ensp;
-                        <button class="clickButton" @click="() => {
-                            updateUser()
-                            isShow = false
-                        }
-                            ">
-                            Aktualisieren
+                        <button class="clickButton" :disabled="isSaving" @click="updateUser">
+                            {{ isSaving ? "Speichern..." : "Aktualisieren" }}
                         </button>
                     </div>
                 </Modal>
@@ -92,34 +88,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue"
+import { defineComponent } from "vue"
 import axios from "axios"
 import { User } from "../structs"
 import { getAxiosConfig, getAxiosConfigMethod } from "../func"
-
-function dataURLToBlob(dataURL) {
-    var BASE64_MARKER = ';base64,';
-    if (dataURL.indexOf(BASE64_MARKER) == -1) {
-        var parts = dataURL.split(',');
-        var contentType = parts[0].split(':')[1];
-        var raw = parts[1];
-
-        return new Blob([raw], { type: contentType });
-    }
-
-    parts = dataURL.split(BASE64_MARKER);
-    contentType = parts[0].split(':')[1];
-    raw = window.atob(parts[1]);
-    var rawLength = raw.length;
-
-    var uInt8Array = new Uint8Array(rawLength);
-
-    for (var i = 0; i < rawLength; ++i) {
-        uInt8Array[i] = raw.charCodeAt(i);
-    }
-
-    return new Blob([uInt8Array], { type: contentType });
-}
 
 export default defineComponent({
     name: "ProfileView",
@@ -131,11 +103,13 @@ export default defineComponent({
             readableProvider: "",
             isShow: false,
             newUsername: "",
-            file: ref<File | null>(),
+            file: null as File | null,
             imageUrl: "",
             loaded: false,
             error: "",
-            uploadStatus: null as any
+            uploadStatus: null as any,
+            isSaving: false,
+            uploadError: ""
         }
     },
     mounted() {
@@ -172,6 +146,12 @@ export default defineComponent({
             })
     },
     methods: {
+        openEditModal() {
+            this.isShow = true
+            this.newUsername = this.me.name
+            this.file = null
+            this.uploadError = ""
+        },
         getReadableRole() {
             let role = this.me.role
             if (role == undefined) return "Unbekannt"
@@ -202,17 +182,20 @@ export default defineComponent({
                     return "Unbekannt"
             }
         },
-        updateUser() {
-            this.saveImage()
-            axios
-                .request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
-                .then((response: any) => {
-                    let me = response.data
-                    this.me = me
-                })
-                .catch((error: any) => {
-                    console.log(error)
-                })
+        async updateUser() {
+            this.isSaving = true
+            this.uploadError = ""
+            try {
+                await this.saveImage()
+                const response: any = await axios.request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
+                this.me = response.data
+                this.isShow = false
+            } catch (error: any) {
+                console.log(error)
+                this.uploadError = error?.response?.data?.message || "Fehler beim Aktualisieren des Profils"
+            } finally {
+                this.isSaving = false
+            }
         },
         onFileChanged($event: Event) {
             const target = $event.target as HTMLInputElement
@@ -223,73 +206,74 @@ export default defineComponent({
             }
             this.uploadStatus = this.file
         },
-        saveImage() {
+        async saveImage() {
             this.uploadStatus = "saveImage"
-            if (this.file) {
-                this.uploadStatus = "file exists"
-                if (this.file.type.match(/image.*/)) {
-                    console.log('An image has been loaded');
-                    // Load the image
-                    let fakeThis = this
-                    var reader = new FileReader();
-                    reader.onload = function (readerEvent) {
-                        var image = new Image();
-                        console.debug("4 reader loaded")
-                        image.onloadeddata = function (imageEvent) {
-                            console.debug("10", imageEvent);
-                        }
-                        image.onload = function (imageEvent) {
-                            console.debug("3 image loaded");
-                            console.debug("5", imageEvent);
-
-                            // Resize the image
-                            var canvas = document.createElement('canvas'),
-                                max_size = 200,// TODO : pull max size from a site config
-                                width = image.width,
-                                height = image.height;
-                            if (width > height) {
-                                if (width > max_size) {
-                                    height *= max_size / width;
-                                    width = max_size;
-                                }
-                            } else {
-                                if (height > max_size) {
-                                    width *= max_size / height;
-                                    height = max_size;
-                                }
-                            }
-                            canvas.width = width;
-                            canvas.height = height;
-                            canvas.getContext('2d')?.drawImage(image, 0, 0, width, height);
-                            var dataUrl = canvas.toDataURL('image/jpeg');
-                            var resizedImage = dataURLToBlob(dataUrl);
-                            console.debug("6",resizedImage);
-                            console.debug("7",resizedImage.size);
-                            let formData = new FormData()
-                            formData.append("image", resizedImage)
-                            // formData.append("image", file)
-                            axios.request(getAxiosConfigMethod("/users/me/image", "post", formData)).then((response: any) => {
-                                console.debug("8",response)
-                                const userId = fakeThis.me.id
-                                const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
-                                if (userId) {
-                                    fakeThis.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
-                                } else {
-                                    fakeThis.imageUrl = `${backendUrl}/api/users/default/image`
-                                }
-                            })
-                        }
-                        console.debug("1", readerEvent.target?.result)
-                        image.src = readerEvent.target?.result as string;
-                        console.debug("9", image.complete)
-                    }
-                    console.debug("2", this.file)
-                    reader.readAsDataURL(this.file);
-                }
-            } else {
-                this.uploadStatus = "file does not exist"
-
+            if (!this.file) {
+                return
             }
+
+            if (!this.file.type.match(/image.*/)) {
+                throw new Error("Bitte ein gültiges Bild auswählen")
+            }
+
+            // Keep uploads user-friendly: cap huge camera images before sending
+            const resizedImage = await this.resizeImage(this.file, 1200, 0.85)
+            const formData = new FormData()
+            formData.append("image", resizedImage, "profile.jpg")
+
+            await axios.request(getAxiosConfigMethod("/users/me/image", "post", formData))
+
+            const userId = this.me.id
+            const backendUrl = import.meta.env.VITE_SERVER_ENDPOINT
+            if (userId) {
+                this.imageUrl = `${backendUrl}/api/users/${userId}/image?date=${Date.now()}`
+            } else {
+                this.imageUrl = `${backendUrl}/api/users/default/image`
+            }
+        },
+
+        resizeImage(file: File, maxSize: number, quality: number): Promise<Blob> {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = event => {
+                    const image = new Image()
+                    image.onload = () => {
+                        let width = image.width
+                        let height = image.height
+
+                        if (width > height) {
+                            if (width > maxSize) {
+                                height *= maxSize / width
+                                width = maxSize
+                            }
+                        } else if (height > maxSize) {
+                            width *= maxSize / height
+                            height = maxSize
+                        }
+
+                        const canvas = document.createElement("canvas")
+                        canvas.width = width
+                        canvas.height = height
+                        canvas.getContext("2d")?.drawImage(image, 0, 0, width, height)
+
+                        canvas.toBlob(
+                            blob => {
+                                if (!blob) {
+                                    reject(new Error("Bild konnte nicht verarbeitet werden"))
+                                    return
+                                }
+                                resolve(blob)
+                            },
+                            "image/jpeg",
+                            quality
+                        )
+                    }
+                    image.onerror = () => reject(new Error("Bild konnte nicht gelesen werden"))
+                    image.src = event.target?.result as string
+                }
+                reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"))
+                reader.readAsDataURL(file)
+            })
         }
     }
 })
