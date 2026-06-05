@@ -307,7 +307,6 @@ export default defineComponent({
 img {
     border-radius: 40%;
     height: 100px;
-    border: 3px solid color-mix(in srgb, var(--color-half) 55%, white 45%);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
