@@ -38,6 +38,15 @@ var (
 
 	NotificationID string
 	FVersion       string
+
+	EmailSMTPHost     string
+	EmailSMTPPort     string
+	EmailFromAddress  string
+	EmailFromName     string
+	EmailSMTPPassword string
+
+	ResetPasswordTokenExpiry int
+	FrontendResetPasswordURL string
 )
 
 func getString(key string) (string, error) {
@@ -182,6 +191,19 @@ func Load() error {
 	FVersion, err = getString("F_VERSION")
 	if err != nil {
 		return err
+	}
+
+	// Email config (optional — app starts without them, email feature fails gracefully)
+	EmailSMTPHost = os.Getenv("EMAIL_SMTP_HOST")
+	EmailSMTPPort = os.Getenv("EMAIL_SMTP_PORT")
+	EmailFromAddress = os.Getenv("EMAIL_FROM_ADDRESS")
+	EmailFromName = os.Getenv("EMAIL_FROM_NAME")
+	EmailSMTPPassword = os.Getenv("EMAIL_SMTP_PASSWORD")
+	FrontendResetPasswordURL = os.Getenv("FRONTEND_RESET_PASSWORD_URL")
+
+	ResetPasswordTokenExpiry = 3 * 60 * 60 // default: 3 hours
+	if expiry, err := getInt("RESET_PASSWORD_TOKEN_EXPIRY"); err == nil {
+		ResetPasswordTokenExpiry = expiry
 	}
 
 	return nil

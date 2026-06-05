@@ -24,6 +24,8 @@
         <br />
         <button v-if="password != '' && email != ''" @click="login">Login</button>
         <br />
+        <router-link to="/forgot-password" class="text" style="font-size: medium">Passwort vergessen?</router-link>
+        <br />
         <hr />
         <br />
         <span class="text">oder wenn du noch kein Account hast und dich nicht mit Google oder GitHub einloggen möchtest
