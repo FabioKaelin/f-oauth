@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/textproto"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/fabiokaelin/f-oauth/config"
@@ -77,7 +79,7 @@ func TestUserPostMeImage_SuccessForwardsToImageService(t *testing.T) {
 		t.Fatalf("expected request to be forwarded to image service")
 	}
 
-	expectedPath := "/api/users/" + currentUserID.String()
+	expectedPath := "/api/profile/" + currentUserID.String()
 	if forwardedPath != expectedPath {
 		t.Fatalf("expected forwarded path %s, got %s", expectedPath, forwardedPath)
 	}
@@ -128,5 +130,54 @@ func TestUserPostMeImage_RejectsNonImageContentType(t *testing.T) {
 
 	if !bytes.Contains(w.Body.Bytes(), []byte("invalid file type")) {
 		t.Fatalf("expected invalid file type message, got: %s", w.Body.String())
+	}
+}
+
+func TestUserPostMeImage_FallsBackToLocalStorageWhenImageServiceIsDown(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	currentUserID := uuid.NewV4()
+	tmpDir := t.TempDir()
+	oldWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
+	defer func() {
+		if chdirErr := os.Chdir(oldWd); chdirErr != nil {
+			t.Fatalf("failed to restore working directory: %v", chdirErr)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to chdir to temp dir: %v", err)
+	}
+
+	config.InternalImageService = "http://127.0.0.1:1"
+
+	r := gin.New()
+	r.POST("/upload", func(c *gin.Context) {
+		c.Set("currentUser", user_pkg.User{ID: currentUserID})
+		userPostMeImage(c)
+	})
+
+	req := makeMultipartUploadRequest(t, "/upload", "image", "avatar.jpg", "image/jpeg", []byte("fake-jpeg-content"))
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+
+	if !bytes.Contains(w.Body.Bytes(), []byte("fallback")) {
+		t.Fatalf("expected fallback response, got: %s", w.Body.String())
+	}
+
+	localFilePattern := filepath.Join("public", "images", "profileimage-"+currentUserID.String()+".*")
+	matches, err := filepath.Glob(localFilePattern)
+	if err != nil {
+		t.Fatalf("failed to glob local image: %v", err)
+	}
+	if len(matches) == 0 {
+		t.Fatalf("expected local image file to be created with pattern %s", localFilePattern)
 	}
 }

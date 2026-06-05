@@ -7,64 +7,56 @@
             <span> <img :src="imageUrl" alt="Profilbild" width="100" height="100" /> <br /> </span>
             <!-- <span> <img :src="me.photo" alt="Profilbild" width="100" height="100" /> <br /> </span> -->
             <table>
-                <tr>
-                    <td>Name</td>
-                    <td>{{ me.name }}</td>
-                </tr>
-                <tr>
-                    <td>Email</td>
-                    <td>{{ me.email }}</td>
-                </tr>
-                <tr>
-                    <td>Loginmethode</td>
-                    <td>{{ getRealableProvider() }}</td>
-                </tr>
-                <tr>
-                    <td>Rolle</td>
-                    <td>{{ getReadableRole() }}</td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>Name</td>
+                        <td>{{ me.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>{{ me.email }}</td>
+                    </tr>
+                    <tr>
+                        <td>Loginmethode</td>
+                        <td>{{ getRealableProvider() }}</td>
+                    </tr>
+                    <tr>
+                        <td>Rolle</td>
+                        <td>{{ getReadableRole() }}</td>
+                    </tr>
+                </tbody>
             </table>
             <br />
-            <button type="button" value="menu" class="clickButton" @click="openEditModal">
+            <button type="button" value="menu" class="clickButton editButton" @click="openEditModal">
                 Bearbeiten
-                <Modal v-model="isShow" :close="() => {
-                    if (isSaving) {
-                        return
-                    }
-                    isShow = false
+            </button>
+            <Modal v-model="isShow" :close="() => {
+                if (isSaving) {
+                    return
                 }
-                    ">
-                    <div class="modal">
-                        Name:
-                        <input v-model="newUsername" type="text" />
-                        <br>
-                        <!-- <span class="hint">Bitte kleine Bilder hochladen, ansonsten wird es nicht aktuallisiert. <br>
-                            Falls du es bereits versucht hat und es nicht funktioniert hat versuche das Bild
-                            zuzuschneiden oder </span>
-                        <br>
-                        -->
-                        <div>
-                            <!-- 1 -->
-                            <input type="file" accept="image/*" @change="onFileChanged($event)" />
-                            <!-- <br> -->
-                            <!-- 2<input type="file" accept="image/*;capture=camera" @change="onFileChanged($event)" /> -->
-                            <!-- <br> -->
-                            <!-- 3<input type="file" accept="image/*,capture=camera" @change="onFileChanged($event)" /> -->
-                            <!-- <br> -->
-                            <!-- 4<input type="file" accept="image/*" capture @change="onFileChanged($event)" /> -->
-                        </div>
-                        <!-- <span v-if="uploadStatus!=null">{{ uploadStatus }}</span> -->
-                        <br />
-                        <span v-if="uploadError" class="error">{{ uploadError }}</span>
-                        <br v-if="uploadError" />
-                        <button class="clickButton" :disabled="isSaving" @click="isShow = false">Abbrechen</button>
-                        &ensp;
-                        <button class="clickButton" :disabled="isSaving" @click="updateUser">
+                isShow = false
+            }
+                ">
+                <div class="modal">
+                    <div class="modalTitle">Profil bearbeiten</div>
+                    <label class="field">
+                        <span>Name</span>
+                        <input v-model="newUsername" class="profileInput" type="text" />
+                    </label>
+                    <label class="field">
+                        <span>Profilbild</span>
+                        <input class="fileInput" type="file" accept="image/*" @change="onFileChanged($event)" />
+                    </label>
+                    <p class="hint">Bild auswählen, speichern und wir passen Vorschau und Profil automatisch an.</p>
+                    <span v-if="uploadError" class="error">{{ uploadError }}</span>
+                    <div class="actions">
+                        <button class="secondaryButton" :disabled="isSaving" @click="isShow = false">Abbrechen</button>
+                        <button class="primaryButton" :disabled="isSaving" @click="updateUser">
                             {{ isSaving ? "Speichern..." : "Aktualisieren" }}
                         </button>
                     </div>
-                </Modal>
-            </button>
+                </div>
+            </Modal>
         </div>
         <br />
         <br />
@@ -186,9 +178,16 @@ export default defineComponent({
             this.isSaving = true
             this.uploadError = ""
             try {
-                await this.saveImage()
                 const response: any = await axios.request(getAxiosConfigMethod("/users/me", "put", { name: this.newUsername }))
                 this.me = response.data
+                if (this.file) {
+                    try {
+                        await this.saveImage()
+                    } catch (uploadError: any) {
+                        this.uploadError = uploadError?.response?.data?.message || uploadError?.message || "Bild konnte nicht gespeichert werden"
+                        return
+                    }
+                }
                 this.isShow = false
             } catch (error: any) {
                 console.log(error)
@@ -281,9 +280,10 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .profile {
-    background-color: var(--color);
-    border-radius: 10px;
-    padding: 5px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color) 88%, #ffffff 12%), var(--color));
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
 }
 
 .hint {
@@ -292,7 +292,8 @@ export default defineComponent({
 }
 
 .error {
-    color: red;
+    color: #ff8b8b;
+    font-weight: 700;
 }
 
 // img {
@@ -306,6 +307,8 @@ export default defineComponent({
 img {
     border-radius: 40%;
     height: 100px;
+    border: 3px solid color-mix(in srgb, var(--color-half) 55%, white 45%);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 table {
@@ -326,20 +329,94 @@ tr:nth-child(even) {
     background-color: #dddddd1f;
 }
 
-.clickButton {
+.clickButton,
+.primaryButton,
+.secondaryButton {
     font-size: larger;
 }
 
+.editButton {
+    margin-top: 12px;
+}
+
 .modal {
-    // width: 300px;
-    padding: 30px;
-    border-radius: 10px;
+    width: min(92vw, 460px);
+    padding: 28px;
+    border-radius: 20px;
     box-sizing: border-box;
-    background-color: var(--color-dark);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-dark) 94%, white 6%), var(--color-dark));
+    border: 1px solid color-mix(in srgb, var(--color-half) 40%, white 60%);
     font-size: 20px;
-    text-align: center;
+    text-align: left;
     color: var(--font-color);
     font-size: normal;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.modalTitle {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 18px;
+    text-align: center;
+    letter-spacing: 0.03em;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.field span {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.profileInput,
+.fileInput {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--color-half) 45%, white 55%);
+    background-color: color-mix(in srgb, var(--color-dark) 78%, white 22%);
+    color: var(--font-color);
+    padding: 12px 14px;
+    font-size: 1rem;
+}
+
+.profileInput:focus,
+.fileInput:focus {
+    outline: 2px solid color-mix(in srgb, var(--color-half) 65%, white 35%);
+    outline-offset: 2px;
+}
+
+.fileInput {
+    padding: 10px 12px;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.secondaryButton,
+.primaryButton {
+    min-width: 140px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: none;
+}
+
+.secondaryButton {
+    background-color: color-mix(in srgb, var(--color-half) 50%, black 50%);
+}
+
+.primaryButton {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color) 90%, white 10%), color-mix(in srgb, var(--color-half) 75%, white 25%));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
 }
 
 

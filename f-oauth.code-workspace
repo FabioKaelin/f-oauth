@@ -11,6 +11,9 @@
         {
             "path": "frontend",
             "name": "Frontend"
+        },
+        {
+            "path": "../f-image"
         }
     ],
     "settings": {}

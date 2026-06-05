@@ -56,7 +56,7 @@ func SaveImage(url string, userid string) error {
 	}
 
 	// Create a new HTTP request
-	req, err := http.NewRequest("POST", config.InternalImageService+"/api/users/"+userid, &b)
+	req, err := http.NewRequest("POST", config.InternalImageService+"/api/profile/"+userid, &b)
 	if err != nil {
 		return err
 	}

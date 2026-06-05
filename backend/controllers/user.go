@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -120,6 +121,12 @@ func userPostMeImage(ctx *gin.Context) {
 		return
 	}
 
+	if err := saveProfileImageLocally(newFileName, uploadBytes); err != nil {
+		fmt.Println("error", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": "save local image failed"})
+		return
+	}
+
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 
@@ -146,7 +153,7 @@ func userPostMeImage(ctx *gin.Context) {
 	}
 
 	// Create a new HTTP request
-	req, err := http.NewRequest("POST", config.InternalImageService+"/api/users/"+currentUser.ID.String(), &b)
+	req, err := http.NewRequest("POST", config.InternalImageService+"/api/profile/"+currentUser.ID.String(), &b)
 	if err != nil {
 		fmt.Println("error", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "create new http request failed"})
@@ -161,13 +168,13 @@ func userPostMeImage(ctx *gin.Context) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println("error", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "do request failed"})
+		ctx.JSON(http.StatusOK, gin.H{"worked": true, "fallback": true})
 		return
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		fmt.Printf("bad status: %s\n", res.Status)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "image service returned bad status"})
+		ctx.JSON(http.StatusOK, gin.H{"worked": true, "fallback": true})
 		return
 	}
 
@@ -182,13 +189,63 @@ func userGetProfileImage(ctx *gin.Context) {
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("error", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "get image from image service failed"})
+		localBytes, contentType, localErr := loadLocalProfileImage(userID)
+		if localErr != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "get image from image service failed"})
+			return
+		}
+		ctx.Data(http.StatusOK, contentType, localBytes)
 		return
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		localBytes, contentType, localErr := loadLocalProfileImage(userID)
+		if localErr != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "get image from image service failed"})
+			return
+		}
+		ctx.Data(http.StatusOK, contentType, localBytes)
+		return
+	}
 
 	ctx.DataFromReader(http.StatusOK, resp.ContentLength, "image/png", resp.Body, nil)
 
+}
+
+func saveProfileImageLocally(fileName string, imageBytes []byte) error {
+	if err := os.MkdirAll("public/images", 0o755); err != nil {
+		return err
+	}
+
+	return os.WriteFile(filepath.Join("public/images", fileName), imageBytes, 0o644)
+}
+
+func loadLocalProfileImage(userID string) ([]byte, string, error) {
+	matches, err := filepath.Glob(filepath.Join("public/images", "profileimage-"+userID+".*"))
+	if err != nil {
+		return nil, "", err
+	}
+	if len(matches) == 0 {
+		return nil, "", fmt.Errorf("no local image found")
+	}
+
+	localPath := matches[0]
+	imageBytes, err := os.ReadFile(localPath)
+	if err != nil {
+		return nil, "", err
+	}
+
+	contentType := "image/png"
+	switch strings.ToLower(filepath.Ext(localPath)) {
+	case ".jpg", ".jpeg":
+		contentType = "image/jpeg"
+	case ".gif":
+		contentType = "image/gif"
+	case ".webp":
+		contentType = "image/webp"
+	}
+
+	return imageBytes, contentType, nil
 }
 
 func updateInAllFProducts(currentUser user_pkg.User) {
