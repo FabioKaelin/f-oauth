@@ -1,6 +1,0 @@
-//go:build ignore
-
-package controllers
-
-// Deprecated placeholder.
-// Active upload tests live in user_image_handler_test.go.
