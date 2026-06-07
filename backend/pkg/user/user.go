@@ -33,27 +33,38 @@ type LoginUserInput struct {
 }
 
 type UserResponse struct {
-	ID       string `json:"id,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Role     string `json:"role,omitempty"`
-	Provider string `json:"provider,omitempty"`
-	Photo    string `json:"photo,omitempty"`
-	Verified bool   `json:"verified,omitempty"`
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Email      string `json:"email,omitempty"`
+	Role       string `json:"role,omitempty"`
+	Privileges int    `json:"privileges,omitempty"`
+	Provider   string `json:"provider,omitempty"`
+	Photo      string `json:"photo,omitempty"`
+	Verified   bool   `json:"verified,omitempty"`
 	// CreatedAt time.Time
 	// UpdatedAt time.Time
 }
 
 func FilteredResponse(user *User) UserResponse {
 	return UserResponse{
-		ID:       user.ID.String(),
-		Email:    user.Email,
-		Name:     user.Name,
-		Role:     user.Role,
-		Verified: user.Verified,
-		Photo:    user.Photo,
-		Provider: user.Provider,
+		ID:         user.ID.String(),
+		Email:      user.Email,
+		Name:       user.Name,
+		Role:       user.Role,
+		Privileges: privilegesForRole(user.Role),
+		Verified:   user.Verified,
+		Photo:      user.Photo,
+		Provider:   user.Provider,
 		// CreatedAt: user.CreatedAt,
 		// UpdatedAt: user.UpdatedAt,
+	}
+}
+
+func privilegesForRole(role string) int {
+	switch role {
+	case "admin", "test-admin":
+		return 13
+	default:
+		return 1
 	}
 }
