@@ -6,7 +6,7 @@ RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg \
     GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /out/app .
 
-FROM alpine:3.22.4 as production
+FROM alpine:3.24.1 as production
 LABEL org.opencontainers.image.source="https://github.com/FabioKaelin/f-oauth"
 LABEL org.opencontainers.image.authors="FabioKaelin"
 LABEL org.opencontainers.image.title="F-OAuth-Backend"
