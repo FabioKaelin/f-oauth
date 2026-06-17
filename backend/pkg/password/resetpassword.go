@@ -1,8 +1,12 @@
 package password
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
+	"time"
 
+	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/auth"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/user"
@@ -18,11 +22,20 @@ type (
 
 // CreateResetPassword creates a new reset password entry in the database
 func CreateResetPassword(userId string) (ResetPassword, error) {
-	secret := randStringBytes(16)
+	secret, err := generateSecureToken(32)
+	if err != nil {
+		return ResetPassword{}, err
+	}
+
+	now := time.Now()
+	expiresAt := now.Add(time.Duration(config.ResetPasswordTokenExpiry) * time.Second)
 
 	resetPasswordDB := db.DatabaseResetPassword{
-		Secret: secret,
-		UserID: userId,
+		Secret:    secret,
+		UserID:    userId,
+		ExpiresAt: expiresAt,
+		Used:      false,
+		CreatedAt: now,
 	}
 
 	id, err := db.CreateResetPassword(resetPasswordDB)
@@ -30,33 +43,39 @@ func CreateResetPassword(userId string) (ResetPassword, error) {
 		return ResetPassword{}, err
 	}
 
-	resetPassword2 := ResetPassword{
+	return ResetPassword{
 		ID:     id,
 		Secret: secret,
-
-		// User: user.User{
-		// 	ID: userId,
-		// },
-	}
-
-	return resetPassword2, nil
+	}, nil
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyz0123456789"
-
-func randStringBytes(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+// generateSecureToken generates a cryptographically secure random hex token of 2*length characters
+func generateSecureToken(length int) (string, error) {
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
 	}
-	return string(b)
+	return hex.EncodeToString(b), nil
 }
 
-// UseResetPassword resets the password of a user
+// UseResetPassword resets the password of a user using a valid, unexpired, unused token
 func UseResetPassword(secret string, newPassword string) error {
 	resetPassword2, err := db.GetResetPasswordBySecret(secret)
 	if err != nil {
 		return err
+	}
+
+	if resetPassword2.ID == "" {
+		return errors.New("invalid token")
+	}
+
+	if resetPassword2.Used {
+		return errors.New("token already used")
+	}
+
+	if time.Now().After(resetPassword2.ExpiresAt) {
+		return errors.New("token expired")
 	}
 
 	user, err := db.GetUserByID(resetPassword2.UserID)
@@ -72,12 +91,11 @@ func UseResetPassword(secret string, newPassword string) error {
 	user.Password = string(hashedpassword)
 
 	err = db.UpdatePassword(user.ID, user.Password)
-
 	if err != nil {
 		return err
 	}
 
-	err = db.DeleteResetPassword(resetPassword2.ID)
+	err = db.MarkResetPasswordUsed(resetPassword2.ID)
 	if err != nil {
 		return err
 	}
