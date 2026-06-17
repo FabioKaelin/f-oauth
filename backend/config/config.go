@@ -46,7 +46,6 @@ var (
 	EmailSMTPPassword string
 
 	ResetPasswordTokenExpiry int
-	FrontendResetPasswordURL string
 )
 
 func getString(key string) (string, error) {
@@ -199,7 +198,6 @@ func Load() error {
 	EmailFromAddress = os.Getenv("EMAIL_FROM_ADDRESS")
 	EmailFromName = os.Getenv("EMAIL_FROM_NAME")
 	EmailSMTPPassword = os.Getenv("EMAIL_SMTP_PASSWORD")
-	FrontendResetPasswordURL = os.Getenv("FRONTEND_RESET_PASSWORD_URL")
 
 	ResetPasswordTokenExpiry = 3 * 60 * 60 // default: 3 hours
 	if expiry, err := getInt("RESET_PASSWORD_TOKEN_EXPIRY"); err == nil {
