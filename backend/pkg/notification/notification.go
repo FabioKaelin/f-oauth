@@ -81,3 +81,18 @@ func NewUserNotification(newUser user.User) error {
 	}
 	return nil
 }
+
+func ForgotPasswordNotification(userObj user.User) error {
+	notificationConfig := Config{
+		Title:   "Password Reset Request",
+		Message: fmt.Sprintf("Email: %s, Name: %s", userObj.Email, userObj.Name),
+		Type:    "forgotpassword",
+	}
+
+	err := notificationConfig.Send()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}

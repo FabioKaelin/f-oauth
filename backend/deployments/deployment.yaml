@@ -84,5 +84,3 @@ spec:
         key: EMAIL_SMTP_PASSWORD
     - name: RESET_PASSWORD_TOKEN_EXPIRY
       values: 10800
-    - name: FRONTEND_RESET_PASSWORD_URL
-      values: "https://oauth.fabkli.ch/reset-password"

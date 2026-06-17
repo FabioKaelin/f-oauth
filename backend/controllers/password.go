@@ -35,23 +35,33 @@ func forgotPasswordPost(ctx *gin.Context) {
 
 	genericResponse := gin.H{"status": "success", "message": "If that email is registered, you will receive a reset link shortly."}
 
-	// Lookup user by email — always return generic response to avoid email enumeration
-	user, err := db.GetUserByEmail(body.Email)
-	if err != nil || user.ID == "" {
+	// Lookup userObj by email — always return generic response to avoid email enumeration
+	userObj, err := db.GetUserByEmail(body.Email)
+	if err != nil || userObj.ID == "" {
 		ctx.JSON(http.StatusOK, genericResponse)
 		return
 	}
 
 	// Rate limiting: max 3 reset requests per user per hour
 	oneHourAgo := time.Now().Add(-time.Hour)
-	count, err := db.CountRecentResetPasswordsByUserID(user.ID, oneHourAgo)
+	count, err := db.CountRecentResetPasswordsByUserID(userObj.ID, oneHourAgo)
 	if err == nil && count >= 3 {
 		ctx.JSON(http.StatusOK, genericResponse)
 		return
 	}
 
+	notification.ForgotPasswordNotification(user_pkg.ConvertDBUserToUser(userObj))
+
+	if userObj.Provider != "local" {
+		body := fmt.Sprintf("Hi\n\nYour account is registered with %s.\nPlease use that provider to log in. If you did not request a password reset, you can safely ignore this email.\n\nRegards,\n%s", userObj.Provider, config.EmailFromName)
+		notification.SendEmail(userObj.Email, "Password Reset Request", body)
+
+		ctx.JSON(http.StatusOK, genericResponse)
+		return
+	}
+
 	// Create reset token
-	resetPasswordToken, err := password.CreateResetPassword(user.ID)
+	resetPasswordToken, err := password.CreateResetPassword(userObj.ID)
 	if err != nil {
 		fmt.Println("forgotPasswordPost: failed to create reset token:", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": "Failed to create reset token"})
@@ -59,7 +69,7 @@ func forgotPasswordPost(ctx *gin.Context) {
 	}
 
 	// Build reset link and send email asynchronously (errors are logged, not exposed to client)
-	resetLink := config.FrontendResetPasswordURL + "?token=" + resetPasswordToken.Secret + "&id=" + resetPasswordToken.ID
+	resetLink := config.FrontEndOrigin + "/reset-password?token=" + resetPasswordToken.Secret + "&id=" + resetPasswordToken.ID
 	go func() {
 		if err := notification.SendPasswordResetEmail(body.Email, resetLink); err != nil {
 			fmt.Println("forgotPasswordPost: failed to send reset email:", err)
