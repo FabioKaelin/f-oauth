@@ -70,3 +70,17 @@ spec:
       fromSecret:
         name: oauth-secrets
         key: JWT_SECRET
+    - name: EMAIL_SMTP_HOST
+      values: "smtp.gmail.com"
+    - name: EMAIL_SMTP_PORT
+      values: 587
+    - name: EMAIL_FROM_ADDRESS
+      values: "prod.fabkli@gmail.com"
+    - name: EMAIL_FROM_NAME
+      values: "F-OAuth"
+    - name: EMAIL_SMTP_PASSWORD
+      fromSecret:
+        name: oauth-secrets
+        key: EMAIL_SMTP_PASSWORD
+    - name: RESET_PASSWORD_TOKEN_EXPIRY
+      values: 10800

@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"github.com/fabiokaelin/f-oauth/pkg/db"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -66,5 +67,27 @@ func privilegesForRole(role string) int {
 		return 13
 	default:
 		return 1
+	}
+}
+
+func ConvertDBUserToUser(dbUser db.DatabaseUser) User {
+	userID, _ := uuid.FromString(dbUser.ID)
+	return User{
+		ID:       userID,
+		Name:     dbUser.Name,
+		Email:    dbUser.Email,
+		Password: dbUser.Password,
+		Role:     dbUser.Role,
+		Photo:    dbUser.Photo,
+		Verified: dbUser.Verified,
+		Provider: dbUser.Provider,
+		CreatedAt: func() time.Time {
+			t, _ := time.Parse(time.RFC3339, dbUser.CreatedAt)
+			return t
+		}(),
+		UpdatedAt: func() time.Time {
+			t, _ := time.Parse(time.RFC3339, dbUser.UpdatedAt)
+			return t
+		}(),
 	}
 }

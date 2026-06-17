@@ -32,6 +32,16 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("../views/AboutView.vue")
     },
     {
+        path: "/forgot-password",
+        name: "forgot-password",
+        component: () => import("../views/ForgotPasswordView.vue")
+    },
+    {
+        path: "/reset-password",
+        name: "reset-password",
+        component: () => import("../views/ResetPasswordView.vue")
+    },
+    {
         path: "/:pathMatch(.*)",
         name: "404",
         component: PageNotFoundView
