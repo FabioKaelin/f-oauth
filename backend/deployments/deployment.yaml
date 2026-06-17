@@ -53,7 +53,9 @@ spec:
     - name: INTERNAL_IMAGE_SERVICE
       value: http://f-image.f-image.svc.cluster.local
     - name: NOTIFICATION_ID
-      value: "RHxMmpGcX"
+      fromSecret:
+        name: oauth-secrets
+        key: NOTIFICATION_ID
     - name: DATABASE_PASSWORD
       fromSecret:
         name: oauth-secrets
