@@ -4,6 +4,11 @@ metadata:
   name: oauth-frontend
   namespace: oauth
 spec:
+  security:
+    # Standard NGINX needs a root master to initialize files and switch workers.
+    nginxCompatibility: true
+    privileged: false
+    runAsNonRoot: false
   path: "/"
   replicas: 1
   port: 80
