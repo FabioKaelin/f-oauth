@@ -61,6 +61,17 @@
         <br />
         <br />
         <hr />
+        <section v-if="loaded && me.provider === 'local'" class="profile password-section">
+            <h2>Passwort ändern</h2>
+            <form @submit.prevent="changePassword">
+                <label class="field"><span>Aktuelles Passwort</span><input v-model="currentPassword" class="profileInput" type="password" autocomplete="current-password" required maxlength="72" /></label>
+                <label class="field"><span>Neues Passwort</span><input v-model="newPassword" class="profileInput" type="password" autocomplete="new-password" required minlength="8" maxlength="72" /></label>
+                <label class="field"><span>Neues Passwort bestätigen</span><input v-model="confirmPassword" class="profileInput" type="password" autocomplete="new-password" required minlength="8" maxlength="72" /></label>
+                <p class="hint">Mindestens 8 Zeichen, höchstens 72 UTF-8-Bytes. Danach wirst du auf allen Geräten abgemeldet.</p>
+                <p v-if="passwordError" class="error" role="alert">{{ passwordError }}</p>
+                <button type="submit" class="primaryButton" :disabled="changingPassword">{{ changingPassword ? 'Wird geändert …' : 'Passwort ändern' }}</button>
+            </form>
+        </section>
         <h2>Applications</h2>
         <!-- link to https://tipp.fabkli.ch as button -->
         <a class="applicationlink" href="https://tipp.fabkli.ch" target="_blank" rel="noopener noreferrer">
@@ -101,7 +112,8 @@ export default defineComponent({
             error: "",
             uploadStatus: null as any,
             isSaving: false,
-            uploadError: ""
+            uploadError: "",
+            currentPassword: "", newPassword: "", confirmPassword: "", passwordError: "", changingPassword: false
         }
     },
     mounted() {
@@ -138,6 +150,20 @@ export default defineComponent({
             })
     },
     methods: {
+        async changePassword() {
+            this.passwordError = ""
+            if (this.newPassword !== this.confirmPassword) { this.passwordError = "Die neuen Passwörter stimmen nicht überein."; return }
+            if ([...this.newPassword].length < 8 || new TextEncoder().encode(this.newPassword).length > 72) { this.passwordError = "Bitte 8 Zeichen bis höchstens 72 UTF-8-Bytes verwenden."; return }
+            this.changingPassword = true
+            try {
+                await axios.request(getAxiosConfigMethod("/password/change", "post", { current_password: this.currentPassword, password: this.newPassword }))
+                this.currentPassword = this.newPassword = this.confirmPassword = ""
+                localStorage.removeItem("token")
+                window.location.assign("/login?from=" + encodeURIComponent(window.location.origin + "/profile"))
+            } catch (error: any) {
+                this.passwordError = error?.response?.status === 400 ? "Aktuelles Passwort oder neue Passwortangabe prüfen." : "Passwort konnte nicht geändert werden. Bitte erneut versuchen."
+            } finally { this.changingPassword = false }
+        },
         openEditModal() {
             this.isShow = true
             this.newUsername = this.me.name
@@ -429,4 +455,5 @@ tr:nth-child(even) {
     font-size: larger;
     color: var(--font-color);
 }
+.password-section{margin:24px 0;text-align:left;max-width:620px}.password-section input{min-height:48px}
 </style>

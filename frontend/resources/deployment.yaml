@@ -4,10 +4,16 @@ metadata:
   name: oauth-frontend
   namespace: oauth
 spec:
+  security:
+    # Standard NGINX needs a root master to initialize files and switch workers.
+    nginxCompatibility: true
+    privileged: false
+    runAsNonRoot: false
+  priorityClassName: fabkli-foauth
   path: "/"
   replicas: 1
   port: 80
-  tag: "latest"
+  tag: "1.3.0"
   resources:
     limits:
       cpu: 100m

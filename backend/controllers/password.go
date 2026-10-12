@@ -10,6 +10,7 @@ import (
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
 	"github.com/fabiokaelin/f-oauth/pkg/notification"
 	"github.com/fabiokaelin/f-oauth/pkg/password"
+	"github.com/fabiokaelin/f-oauth/pkg/session"
 	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 	"github.com/gin-gonic/gin"
 )
@@ -128,18 +129,24 @@ func changePassword(ctx *gin.Context) {
 	currentUser := ctx.MustGet("currentUser").(user_pkg.User)
 
 	body := struct {
-		Password string `json:"password"`
+		Password        string `json:"password"`
+		CurrentPassword string `json:"current_password"`
 	}{}
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	err := password.ChangePassword(currentUser.ID.String(), body.Password)
+	if currentUser.Provider != "local" || body.CurrentPassword == "" || len(body.CurrentPassword) > 72 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Current local password required"})
+		return
+	}
+	err := password.ChangePasswordVerified(currentUser.ID.String(), body.CurrentPassword, body.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
+	session.ClearCookie(ctx.Writer)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }

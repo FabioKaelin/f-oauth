@@ -8,6 +8,8 @@ on:
     branches:
     - "main"
     paths:
+    - "project-meta.jsonc"
+    - ".github/actions/**"
     - "backend/**"
     - ".github/workflows/backend.yaml"
     # Publish semver tags as releases.
@@ -21,86 +23,57 @@ env:
   IMAGE_NAME: "oauth-backend"
 
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: go test ./...
+        working-directory: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-fund --no-audit && npm run build
+        working-directory: frontend
   build:
+    needs: check
 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
-      - name: login ghcr.io
-        run: |
-          echo $CR_PAT | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        env:
-          CR_PAT: ${{ secrets.CR_PAT }}
 
-      - name: install tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install jq
 
-      - name: build and push
-        run: |
-          export version=$(cat project-meta.jsonc | jq -r ."backend_version")
-
-          cd backend
-          echo ${{ env.REGISTRY }}
-          echo ${{ env.IMAGE_NAME }}
-          echo ${{ github.actor }}
-          echo ${version}
-          docker buildx ls
-          docker buildx create --name fdeployer
-          docker buildx use fdeployer
-          docker buildx inspect --bootstrap
-          export username=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${{ env.REGISTRY }}/${username}/${{ env.IMAGE_NAME }}:${version} --push .
+      - name: Component version
+        id: component
+        run: echo "version=$(jq -r .backend_version project-meta.jsonc)" >> "$GITHUB_OUTPUT"
+      - name: Build and push
+        uses: ./.github/actions/docker-build
+        with:
+          version: ${{ steps.component.outputs.version }}
+          imageName: ${{ env.IMAGE_NAME }}
+          codePath: backend
+          dockerPAT: ${{ secrets.CR_PAT }}
 
       # - uses: actions-hub/kubectl@master
       #   name: connect to k8s-cluster
       #   env:
       #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      - uses: azure/setup-kubectl@v3
-        # with:
-          # version: '<version>' # default is latest stable
-        id: install
-
-      - name: set kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "apiVersion: v1" > ~/.kube/config
-          echo "clusters:" >> ~/.kube/config
-          echo "- cluster:" >> ~/.kube/config
-          echo "    extensions:" >> ~/.kube/config
-          echo "    - extension:" >> ~/.kube/config
-          echo "        last-update: Thu, 22 Jun 2023 19:21:36 CEST" >> ~/.kube/config
-          echo "        provider: minikube.sigs.k8s.io" >> ~/.kube/config
-          echo "        version: v1.30.1" >> ~/.kube/config
-          echo "      name: cluster_info" >> ~/.kube/config
-          echo "    server: https://k8s.fabkli.ch" >> ~/.kube/config
-          echo "  name: minikube" >> ~/.kube/config
-          echo "contexts:" >> ~/.kube/config
-          echo "- context:" >> ~/.kube/config
-          echo "    cluster: minikube" >> ~/.kube/config
-          echo "    extensions:" >> ~/.kube/config
-          echo "    - extension:" >> ~/.kube/config
-          echo "        last-update: Thu, 22 Jun 2023 19:21:36 CEST" >> ~/.kube/config
-          echo "        provider: minikube.sigs.k8s.io" >> ~/.kube/config
-          echo "        version: v1.30.1" >> ~/.kube/config
-          echo "      name: context_info" >> ~/.kube/config
-          echo "    namespace: test" >> ~/.kube/config
-          echo "    user: minikube" >> ~/.kube/config
-          echo "  name: minikube" >> ~/.kube/config
-          echo "current-context: minikube" >> ~/.kube/config
-          echo "kind: Config" >> ~/.kube/config
-          echo "preferences: {}" >> ~/.kube/config
-          echo "users:" >> ~/.kube/config
-          echo "- name: minikube" >> ~/.kube/config
-          echo "  user:" >> ~/.kube/config
-          echo "    password: ${KUBE_PWD}" >> ~/.kube/config
-          echo "    username: minikube" >> ~/.kube/config
-        env:
-          KUBE_PWD: ${{ secrets.KUBE_PWD }}
+      - name: Setup Kubernetes access
+        uses: ./.github/actions/setup-kube
+        with:
+          kube_pwd: ${{ secrets.KUBE_PWD }}
 
       - name: deploy
         run: |
@@ -109,8 +82,9 @@ jobs:
           cd backend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
-          sed -i "s/latest/${version}/g" deployments/deployment.yaml
+          sed -i -E "s/^(  tag:).*/\1 \"${version}\"/" deployments/deployment.yaml
           kubectl apply -f deployments/deployment.yaml
           kubectl rollout restart deployment oauth-backend
+          kubectl rollout status deployment/oauth-backend --timeout=300s
           kubectl get pods
 

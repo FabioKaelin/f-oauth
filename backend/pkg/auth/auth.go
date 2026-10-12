@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/notification"
@@ -10,6 +11,15 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// ValidateNewPassword enforces the minimum and bcrypt byte limit server-side.
+// Existing passwords can still log in; validation applies only to new passwords.
+func ValidateNewPassword(password string) error {
+	if utf8.RuneCountInString(password) < 8 || len(password) > 72 {
+		return errors.New("Password must contain at least 8 characters and at most 72 UTF-8 bytes")
+	}
+	return nil
+}
 
 func HashAndSalt(pwd []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(pwd, 12)

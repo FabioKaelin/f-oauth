@@ -80,10 +80,13 @@ func GetUserByID(id string) (DatabaseUser, error) {
 }
 
 func UpdatePassword(id string, password string) error {
-	_, err := RunSQL("UPDATE `users` SET `password` = ? WHERE `id` = ?", password, id)
+	tx, err := dbConn.Begin()
 	if err != nil {
 		return err
 	}
-
-	return nil
+	defer tx.Rollback()
+	if err = updatePasswordTx(tx, id, password); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

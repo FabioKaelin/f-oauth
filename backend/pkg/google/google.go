@@ -6,12 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
 	"github.com/fabiokaelin/f-oauth/pkg/image"
 	"github.com/fabiokaelin/f-oauth/pkg/notification"
-	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	"github.com/fabiokaelin/f-oauth/pkg/session"
 	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 )
 
@@ -93,13 +91,11 @@ func LoginWithCode(code string) (string, int, error) {
 		image.SaveImage(user.Photo, user.ID)
 	}
 
-	spew.Dump(user)
-
 	if user.Provider != "Google" {
 		return "", 2, errors.New("you have already signed up with a different method")
 	}
 
-	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
+	token, err := session.Create(user.ID)
 	if err != nil {
 		fmt.Println("error, google, failed to generate access token", err)
 		return "", 1, err

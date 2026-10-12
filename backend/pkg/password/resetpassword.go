@@ -3,7 +3,6 @@ package password
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"time"
 
 	"github.com/fabiokaelin/f-oauth/config"
@@ -61,44 +60,12 @@ func generateSecureToken(length int) (string, error) {
 
 // UseResetPassword resets the password of a user using a valid, unexpired, unused token
 func UseResetPassword(secret string, newPassword string) error {
-	resetPassword2, err := db.GetResetPasswordBySecret(secret)
+	if err := auth.ValidateNewPassword(newPassword); err != nil {
+		return err
+	}
+	hash, err := auth.HashAndSalt([]byte(newPassword))
 	if err != nil {
 		return err
 	}
-
-	if resetPassword2.ID == "" {
-		return errors.New("invalid token")
-	}
-
-	if resetPassword2.Used {
-		return errors.New("token already used")
-	}
-
-	if time.Now().After(resetPassword2.ExpiresAt) {
-		return errors.New("token expired")
-	}
-
-	user, err := db.GetUserByID(resetPassword2.UserID)
-	if err != nil {
-		return err
-	}
-
-	hashedpassword, err := auth.HashAndSalt([]byte(newPassword))
-	if err != nil {
-		return err
-	}
-
-	user.Password = string(hashedpassword)
-
-	err = db.UpdatePassword(user.ID, user.Password)
-	if err != nil {
-		return err
-	}
-
-	err = db.MarkResetPasswordUsed(resetPassword2.ID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.CompletePasswordReset(secret, hash)
 }

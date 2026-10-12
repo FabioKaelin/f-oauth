@@ -7,11 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/auth"
 	"github.com/fabiokaelin/f-oauth/pkg/middleware"
-	token_pkg "github.com/fabiokaelin/f-oauth/pkg/token"
+	"github.com/fabiokaelin/f-oauth/pkg/session"
 	user_pkg "github.com/fabiokaelin/f-oauth/pkg/user"
 
 	"github.com/gin-gonic/gin"
@@ -22,14 +20,14 @@ func AuthRouter(apiGroup *gin.RouterGroup) {
 	{
 		oauthGroup.POST("/register", authRegister)
 		oauthGroup.POST("/login", authLogin)
-		oauthGroup.GET("/logout", middleware.SetUserToContext(), authLogout)
+		oauthGroup.POST("/logout", middleware.SetUserToContext(), authLogout)
 	}
 }
 
 // authRegister
 func authRegister(ctx *gin.Context) {
 	// TODO: Redirect to loginpage when an error occurs with error message
-	var payload *user_pkg.RegisterUserInput
+	var payload user_pkg.RegisterUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		fmt.Println("1", err)
@@ -55,9 +53,14 @@ func authRegister(ctx *gin.Context) {
 
 	// hashpassword := sha512.Sum512([]byte(payload.Password))
 	// hashpasswordValue := hex.EncodeToString(hashpassword[:])
+	if err := auth.ValidateNewPassword(payload.Password); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
 	hashPassword, err := auth.HashAndSalt([]byte(payload.Password))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "error in hashing password"})
+		return
 	}
 
 	now := time.Now()
@@ -85,10 +88,9 @@ func authRegister(ctx *gin.Context) {
 func authLogin(ctx *gin.Context) {
 	// TODO: Redirect to loginpage when an error occurs with error message
 	fmt.Println("try to login")
-	var payload *user_pkg.LoginUserInput
+	var payload user_pkg.LoginUserInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		spew.Dump(payload)
 		fmt.Println("1", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -112,22 +114,25 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
-	token, err := token_pkg.GenerateToken(config.TokenExpiresIn, user.ID, config.JWTTokenSecret)
+	token, err := session.Create(user.ID.String(), user.Password)
 	if err != nil {
 		fmt.Println("3", err)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, false, true)
-	ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", false, true)
+	session.SetCookie(ctx.Writer, token)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})
 }
 
 // authLogout
 func authLogout(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", config.TokenURL, false, true)
-	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
+	token := ctx.GetString("sessionToken")
+	if err := session.Revoke(token); err != nil {
+		ctx.JSON(503, gin.H{"status": "fail", "message": "Session revocation unavailable"})
+		return
+	}
+	session.ClearCookie(ctx.Writer)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }

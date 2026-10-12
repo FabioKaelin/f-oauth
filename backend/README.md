@@ -1,5 +1,17 @@
 # F-OAuth Backend
 
+## Rolling sessions
+
+Authentication uses random opaque 256-bit tokens with a 30-day inactivity timeout. Only SHA-256 token hashes are stored in the `sessions` table, which is created idempotently at startup. Successful validation through `/api/users/me` extends database expiry to 30 days from the request and returns a renewed shared `token` cookie (Domain=fabkli.ch, Path=/, Secure, HttpOnly, SameSite=Lax). No absolute lifetime is imposed: users who keep returning within 30 days remain signed in.
+
+Tipp, media, gallery and the gateway use `github.com/fabiokaelin/fcommon v1.2.6` to validate sessions and relay the renewal cookie back to the browser. `/api/sessions/check` validates without extending expiry and is used for passive WebSocket revocation checks. It does not send a renewal cookie. Expired sessions cannot be revived; cleanup removes expired records hourly.
+
+Logout deletes the current session. Password changes and completed password resets update the password and revoke all user sessions in one transaction. Reset-token consumption is atomic, preventing reuse. A racing local login authenticated with an old password is rejected when creating the session. Initial password-reset requests do not revoke sessions until a valid reset is completed.
+
+Legacy JWT authentication and TOKEN_EXPIRED_IN/TOKEN_MAXAGE/JWT_SECRET configuration are retired. Existing users must log in once after migration. `TOKEN_URL=fabkli.ch` still controls the shared cookie domain. GitHub and Google login must start through `/api/sessions/oauth/start/{provider}?from=...`; callbacks validate host-only browser-bound state cookies and accept only HTTPS FabKli return URLs. The frontend uses these start endpoints. Token values, provider codes, OAuth state and password-reset secrets are redacted from backend logs. Credentialed CORS accepts HTTPS FabKli origins only.
+
+Tests: `go test ./...` and `go vet ./...`. To exercise real transaction/expiry behaviour, run `OAUTH_SESSION_TEST_DSN='root:password@tcp(127.0.0.1:13376)/oauth_session_test?parseTime=true' go test ./pkg/db`. The database must be an isolated `oauth_session_test` schema; its test tables are recreated. Never point this test DSN at production. The live verification scripts are in `/home/admin/code/f-gateway/deploy/`, with database fixtures cleaned up automatically.
+
 ## Links
 
 * [File Upload](https://codevoweb.com/how-to-upload-single-and-multiple-files-in-golang/)
