@@ -2,7 +2,6 @@ package logger
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -43,7 +42,7 @@ func DefaultLogFormatter(param gin.LogFormatterParams) string {
 	u, err := param.Request.URL.Parse(param.Path)
 	// u, err := param.Request.URL.Parse(param.Request.RequestURI)
 	if err != nil {
-		return "[GIN] " + err.Error()
+		return "[GIN] invalid request path"
 	}
 
 	cuttedPath := u.Path
@@ -57,23 +56,13 @@ func DefaultLogFormatter(param gin.LogFormatterParams) string {
 		cuttedPath = cuttedPath[4:]
 	}
 
+	if strings.HasPrefix(cuttedPath, "/password/reset/") {
+		cuttedPath = "/password/reset/[redacted]"
+	}
 	queryParams := ""
 
-	m, err := url.ParseQuery(u.RawQuery)
-	if err == nil {
-		for k, v := range m {
-			value := strings.Join(v, ",")
-			if param.IsOutputColor() {
-				if value == "true" {
-					value = "\033[97;42mtrue\033[0m"
-				}
-				if value == "false" {
-					value = "\033[97;41mfalse\033[0m"
-				}
-			}
-			queryParams = queryParams + fmt.Sprintf("%s=%s  ", k, value)
-		}
-	}
+	// Authentication queries can contain authorization codes, reset secrets and nested URLs.
+	// Log the route and status only; never retain query values.
 	username := param.Request.Context().Value(UserNameKey)
 	if username == nil {
 		username = "<nil>"

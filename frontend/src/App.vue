@@ -76,7 +76,7 @@
 <script lang="ts">
 import { Slide } from "vue3-burger-menu" //   import the CSS transitions you wish to use, in this case we are using `Slide`
 
-import { getAxiosConfig, loadUser, getLocation } from "@/func"
+import { getAxiosConfig, getAxiosConfigMethod, loadUser, getLocation } from "@/func"
 
 import { defineComponent } from "vue"
 import axios from "axios"
@@ -167,7 +167,7 @@ export default defineComponent({
             window.location.href = "/register" + "?from=" + getLocation()
         },
         logout() {
-            axios.request(getAxiosConfig("/auth/logout")).then(response => {
+            axios.request(getAxiosConfigMethod("/auth/logout", "POST", {})).then(response => {
                 console.log(response)
                 localStorage.removeItem("loggedin")
                 // this.$router.push('/')

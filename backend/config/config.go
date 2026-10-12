@@ -14,10 +14,7 @@ var (
 
 	FrontEndOrigin string
 
-	JWTTokenSecret string
-	TokenExpiresIn time.Duration
-	TokenMaxAge    int
-	TokenURL       string
+	TokenURL string
 
 	GoogleClientID         string
 	GoogleClientSecret     string
@@ -93,21 +90,6 @@ func Load() error {
 	GinMode = ginmode
 
 	FrontEndOrigin, err = getString("FRONTEND_ORIGIN")
-	if err != nil {
-		return err
-	}
-
-	JWTTokenSecret, err = getString("JWT_SECRET")
-	if err != nil {
-		return err
-	}
-
-	TokenExpiresIn, err = getDuration("TOKEN_EXPIRED_IN")
-	if err != nil {
-		return err
-	}
-
-	TokenMaxAge, err = getInt("TOKEN_MAXAGE")
 	if err != nil {
 		return err
 	}

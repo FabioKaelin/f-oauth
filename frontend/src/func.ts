@@ -69,39 +69,11 @@ function loadUser(): Promise<any> {
 
 export { loadUser }
 
-export const getGoogleUrl = (from: string) => {
-    const rootUrl = `https://accounts.google.com/o/oauth2/v2/auth`
-
-    const options = {
-        redirect_uri: import.meta.env.VITE_GOOGLE_OAUTH_REDIRECT as string,
-        client_id: import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string,
-        access_type: "offline",
-        response_type: "code",
-        prompt: "consent",
-        scope: ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"].join(" "),
-        state: from
-    }
-
-    const qs = new URLSearchParams(options)
-
-    return `${rootUrl}?${qs.toString()}`
+// F-OAuth creates and validates a browser-bound OAuth state before provider login.
+const getProviderUrl = (provider: string, from: string) => {
+    const backend = import.meta.env.VITE_SERVER_ENDPOINT || "https://oauth.fabkli.ch"
+    const qs = new URLSearchParams({ from })
+    return `${backend}/api/sessions/oauth/start/${provider}?${qs.toString()}`
 }
-
-export const getGithubUrl = (from: string) => {
-    const rootURl = `https://github.com/login/oauth/authorize`
-
-    console.log("import.meta.env.VITE_GITHUB_OAUTH_CLIENT_ID", import.meta.env.VITE_GITHUB_OAUTH_CLIENT_ID)
-    console.log("import.meta.env.VITE_GITHUB_OAUTH_CLIENT_ID as string", import.meta.env.VITE_GITHUB_OAUTH_CLIENT_ID as string)
-    console.log("import.meta.env.VITE_GITHUB_OAUTH_REDIRECT_URL", import.meta.env.VITE_GITHUB_OAUTH_REDIRECT_URL)
-
-    const options = {
-        client_id: import.meta.env.VITE_GITHUB_OAUTH_CLIENT_ID as string,
-        redirect_uri: import.meta.env.VITE_GITHUB_OAUTH_REDIRECT_URL as string,
-        scope: "user:email",
-        state: from
-    }
-
-    const qs = new URLSearchParams(options)
-
-    return `${rootURl}?${qs.toString()}`
-}
+export const getGoogleUrl = (from: string) => getProviderUrl("google", from)
+export const getGithubUrl = (from: string) => getProviderUrl("github", from)

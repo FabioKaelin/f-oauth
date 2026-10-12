@@ -3,28 +3,35 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/github"
 	"github.com/fabiokaelin/f-oauth/pkg/google"
+	"github.com/fabiokaelin/f-oauth/pkg/middleware"
+	"github.com/fabiokaelin/f-oauth/pkg/session"
 
 	"github.com/gin-gonic/gin"
 )
 
 func OAuth2Router(apiGroup *gin.RouterGroup) {
+	apiGroup.GET("/sessions/check", middleware.SetUserToContext(false), userGetMe)
 	oauth2Group := apiGroup.Group("/sessions/oauth")
 	{
 		oauth2Group.GET("/google", oauth2Google)
 		oauth2Group.GET("/github", oauth2GitHub)
+		oauth2Group.GET("/start/:provider", startOAuth)
 	}
 }
 
 func oauth2Google(ctx *gin.Context) {
-	fmt.Println(ctx.Request.URL.String())
+
 	// TODO: Redirect to loginpage when an error occurs with error message
 	code := ctx.Query("code")
-	state := ctx.Query("state") // path/url to redirect after login
+	state, valid := oauthReturn(ctx, "google")
+	if !valid {
+		ctx.AbortWithStatusJSON(400, gin.H{"message": "Invalid or expired login state; please start login again"})
+		return
+	}
 
 	if code == "" {
 		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", config.FrontEndOrigin, "/login"))
@@ -46,30 +53,19 @@ func oauth2Google(ctx *gin.Context) {
 		}
 	}
 
-	if strings.Contains(config.TokenURL, "localhost") {
-		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", true, true)
-	} else {
-		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, true, true)
-	}
-	redirectUrl := ""
-	// if pathUrl not begin with http or https
-	fmt.Println("pathUrl", state)
-	if !strings.HasPrefix(state, "http") && !strings.HasPrefix(state, "https") {
-		state = "/profile"
-		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
-	} else {
-		redirectUrl = state
-	}
-	fmt.Println("redirectUrl", redirectUrl)
-
-	ctx.Redirect(http.StatusTemporaryRedirect, redirectUrl)
+	session.SetCookie(ctx.Writer, token)
+	ctx.Redirect(http.StatusSeeOther, state)
 }
 
 func oauth2GitHub(ctx *gin.Context) {
-	fmt.Println(ctx.Request.URL.String())
+
 	// TODO: Redirect to loginpage when an error occurs with error message
 	code := ctx.Query("code")
-	state := ctx.Query("state") // path/url to redirect after login
+	state, valid := oauthReturn(ctx, "github")
+	if !valid {
+		ctx.AbortWithStatusJSON(400, gin.H{"message": "Invalid or expired login state; please start login again"})
+		return
+	}
 
 	if code == "" {
 		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", config.FrontEndOrigin, "/login"))
@@ -91,21 +87,6 @@ func oauth2GitHub(ctx *gin.Context) {
 		}
 	}
 
-	if strings.Contains(config.TokenURL, "localhost") {
-		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", "localhost", true, true)
-	} else {
-		ctx.SetCookie("token", token, config.TokenMaxAge*60, "/", config.TokenURL, true, true)
-	}
-	redirectUrl := ""
-	// if pathUrl not begin with http or https
-	fmt.Println("pathUrl", state)
-	if !strings.HasPrefix(state, "http") && !strings.HasPrefix(state, "https") {
-		state = "/profile"
-		redirectUrl = fmt.Sprintf("%s%s", config.FrontEndOrigin, state)
-	} else {
-		redirectUrl = state
-	}
-	fmt.Println("redirectUrl", redirectUrl)
-
-	ctx.Redirect(http.StatusTemporaryRedirect, redirectUrl)
+	session.SetCookie(ctx.Writer, token)
+	ctx.Redirect(http.StatusSeeOther, state)
 }

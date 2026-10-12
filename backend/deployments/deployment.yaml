@@ -4,10 +4,11 @@ metadata:
   name: oauth-backend
   namespace: oauth
 spec:
+  priorityClassName: fabkli-foauth
   path: "/api"
   replicas: 1
   port: 8001
-  tag: "latest"
+  tag: "1.3.0"
   resources:
     limits:
       cpu: 200m
@@ -26,10 +27,6 @@ spec:
       value: release
     - name: FRONTEND_ORIGIN
       value: https://oauth.fabkli.ch
-    - name: TOKEN_EXPIRED_IN
-      value: 10080m # 7 days
-    - name: TOKEN_MAXAGE
-      value: "10080" # 7 days
     - name: TOKEN_URL
       value: "fabkli.ch"
     - name: GOOGLE_OAUTH_CLIENT_ID
@@ -53,7 +50,9 @@ spec:
     - name: INTERNAL_IMAGE_SERVICE
       value: http://f-image.f-image.svc.cluster.local
     - name: NOTIFICATION_ID
-      value: "RHxMmpGcX"
+      fromSecret:
+        name: oauth-secrets
+        key: NOTIFICATION_ID
     - name: DATABASE_PASSWORD
       fromSecret:
         name: oauth-secrets
@@ -66,21 +65,17 @@ spec:
       fromSecret:
         name: oauth-secrets
         key: GITHUB_OAUTH_CLIENT_SECRET
-    - name: JWT_SECRET
-      fromSecret:
-        name: oauth-secrets
-        key: JWT_SECRET
     - name: EMAIL_SMTP_HOST
-      values: "smtp.gmail.com"
+      value: "smtp.gmail.com"
     - name: EMAIL_SMTP_PORT
-      values: 587
+      value: "587"
     - name: EMAIL_FROM_ADDRESS
-      values: "prod.fabkli@gmail.com"
+      value: "prod.fabkli@gmail.com"
     - name: EMAIL_FROM_NAME
-      values: "F-OAuth"
+      value: "F-OAuth"
     - name: EMAIL_SMTP_PASSWORD
       fromSecret:
         name: oauth-secrets
         key: EMAIL_SMTP_PASSWORD
     - name: RESET_PASSWORD_TOKEN_EXPIRY
-      values: 10800
+      value: "10800"

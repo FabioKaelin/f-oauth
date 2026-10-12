@@ -3,7 +3,8 @@ package main
 // API with gin
 
 import (
-	"encoding/json"
+	"errors"
+	"github.com/fabiokaelin/fcommon/pkg/oauthsession"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 
 func main() {
 	server := gin.Default()
+	client := oauthsession.NewClient()
 
 	server.GET("", func(ctx *gin.Context) {
 		cookie, err := ctx.Cookie("token")
@@ -18,26 +20,17 @@ func main() {
 			ctx.JSON(200, "no token")
 			return
 		}
-		client := http.Client{}
-		req, err := http.NewRequest("GET", "https://oauth.fabkli.ch/api/users/me", nil)
+		result, err := client.Validate(ctx.Request.Context(), "https://oauth.fabkli.ch/api/users/me", cookie)
 		if err != nil {
-			ctx.JSON(200, "error"+err.Error())
+			status := http.StatusServiceUnavailable
+			if errors.Is(err, oauthsession.ErrUnauthenticated) {
+				status = http.StatusUnauthorized
+			}
+			ctx.AbortWithStatus(status)
 			return
 		}
-
-		req.Header = http.Header{
-			// "Host":          {"www.host.com"},
-			"Content-Type":  {"application/json"},
-			"Authorization": {"Bearer " + cookie},
-		}
-
-		res, err := client.Do(req)
-		if err != nil {
-			ctx.JSON(200, "error"+err.Error())
-			return
-		}
-		responseJson := UserResponse{}
-		json.NewDecoder(res.Body).Decode(&responseJson)
+		result.ForwardCookies(ctx.Writer)
+		responseJson := result.User
 
 		responseBody := ""
 		responseBody += "ID: " + responseJson.ID + "\n"

@@ -1,0 +1,35 @@
+name: OAuth checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: isolated-test-only
+          MARIADB_DATABASE: oauth_session_test
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: go test ./...
+        working-directory: backend
+        env:
+          OAUTH_SESSION_TEST_DSN: root:isolated-test-only@tcp(127.0.0.1:3306)/oauth_session_test?parseTime=true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-fund --no-audit && npm run build
+        working-directory: frontend

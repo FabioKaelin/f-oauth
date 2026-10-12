@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/fabiokaelin/f-oauth/config"
@@ -33,6 +34,19 @@ func main() {
 		}
 	}
 
+	if err := db.EnsureSessions(); err != nil {
+		panic(err)
+	}
+
+	go func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := db.DeleteExpiredSessions(); err != nil {
+				fmt.Println("Session cleanup unavailable")
+			}
+		}
+	}()
 	gin.SetMode(config.GinMode)
 
 	router := gin.New()
@@ -40,7 +54,12 @@ func main() {
 	router.Use(gin.LoggerWithConfig(logger.LoggerConfig))
 	router.Use(middleware.IPMiddleware())
 	router.Use(middleware.CORSMiddleware())
-	router.ForwardedByClientIP = true
+	router.Use(middleware.ProtectWrites())
+	router.ForwardedByClientIP = false
+	if err := router.SetTrustedProxies(nil); err != nil {
+		panic(err)
+	}
+	router.Use(func(c *gin.Context) { c.Header("X-Content-Type-Options", "nosniff"); c.Next() })
 	router.HandleMethodNotAllowed = true
 	// router.SetTrustedProxies([]string{"127.0.0.1", "localhost", "oauth.fabkli.ch"})
 	router.GET("", controllers.Default)
@@ -48,6 +67,7 @@ func main() {
 	controllers.InternalRouter(router)
 
 	apiGroup := router.Group("/api")
+	apiGroup.Use(func(c *gin.Context) { c.Header("Cache-Control", "no-store"); c.Next() })
 
 	apiGroup.GET("", controllers.Default)
 	apiGroup.GET("/version", func(c *gin.Context) {
@@ -65,5 +85,8 @@ func main() {
 	// })
 
 	fmt.Println("Server is running")
-	router.Run("0.0.0.0:8001")
+	httpServer := &http.Server{Addr: "0.0.0.0:8001", Handler: router, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
+	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
 }
