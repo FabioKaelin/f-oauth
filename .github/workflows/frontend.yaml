@@ -8,6 +8,8 @@ on:
     branches:
     - "main"
     paths:
+    - "project-meta.jsonc"
+    - ".github/actions/**"
     - "frontend/**"
     - ".github/workflows/frontend.yaml"
     # Publish semver tags as releases.
@@ -26,7 +28,25 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: go test ./...
+        working-directory: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-fund --no-audit && npm run build
+        working-directory: frontend
   build:
+    needs: check
     #runs-on: self-hosted
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +88,7 @@ jobs:
           cd frontend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
-          sed -i "s/latest/${version}/g" resources/deployment.yaml
+          sed -i -E "s/^(  tag:).*/\1 \"${version}\"/" resources/deployment.yaml
           kubectl apply -f resources/deployment.yaml
           kubectl rollout restart deployment oauth-frontend
           kubectl rollout status deployment/oauth-frontend --timeout=300s
