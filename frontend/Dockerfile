@@ -17,6 +17,7 @@ RUN echo $TARGETOS $TARGETARCH
 
 # production stage
 FROM nginx:stable-alpine as production
+RUN apk upgrade --no-cache
 LABEL org.opencontainers.image.source="https://github.com/FabioKaelin/f-oauth"
 LABEL org.opencontainers.image.authors="FabioKaelin"
 LABEL org.opencontainers.image.title="F-OAuth-Frontend"
