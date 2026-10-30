@@ -1,103 +1,197 @@
-apiVersion: k8s.fabkli.ch/v1
-kind: Fdeployment
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: oauth-backend
   namespace: oauth
 spec:
-  priorityClassName: fabkli-foauth
-  path: "/api"
-  replicas: 1
-  port: 8001
-  tag: "1.3.0"
-  resources:
-    limits:
-      cpu: 200m
-      memory: 512Mi
-    requests:
-      cpu: 25m
-      memory: 32Mi
-  healthCheck:
-    livenessProbe:
-      path: "/internal/health/live"
-    readinessProbe:
-      path: "/internal/health/ready"
-  host: "oauth.fabkli.ch"
-  env:
-    - name: GIN_MODE
-      value: release
-    - name: FRONTEND_ORIGIN
-      value: https://oauth.fabkli.ch
-    - name: TOKEN_URL
-      value: "fabkli.ch"
-    - name: GOOGLE_OAUTH_CLIENT_ID
-      value: 755737563752-u021il7839sit5gt4k11ag3poa9opu84.apps.googleusercontent.com
-    - name: GITHUB_OAUTH_CLIENT_ID
-      value: cac7086fb2c1848886c9
-    - name: GOOGLE_OAUTH_REDIRECT_URL
-      value: https://oauth.fabkli.ch/api/sessions/oauth/google
-    - name: GITHUB_OAUTH_REDIRECT_URL
-      value: https://oauth.fabkli.ch/api/sessions/oauth/github
-    - name: DATABASE_HOST
-      value: db.oauth.svc.cluster.local
-    - name: DATABASE_USER
-      value: oauthuser
-    - name: DATABASE_PORT
-      value: "3306"
-    - name: INTERNAL_TIPP_URL
-      value: http://prod-backend.tipp.svc.cluster.local
-    - name: INTERNAL_DEV_TIPP_URL
-      value: http://dev-backend.tipp.svc.cluster.local
-    - name: INTERNAL_IMAGE_SERVICE
-      value: http://f-image.f-image.svc.cluster.local
-    - name: NOTIFICATION_ID
-      fromSecret:
-        name: oauth-secrets
-        key: NOTIFICATION_ID
-    - name: DATABASE_PASSWORD
-      fromSecret:
-        name: oauth-secrets
-        key: DATABASE_PASSWORD
-    - name: GOOGLE_OAUTH_CLIENT_SECRET
-      fromSecret:
-        name: oauth-secrets
-        key: GOOGLE_OAUTH_CLIENT_SECRET
-    - name: GITHUB_OAUTH_CLIENT_SECRET
-      fromSecret:
-        name: oauth-secrets
-        key: GITHUB_OAUTH_CLIENT_SECRET
-    - name: EMAIL_SMTP_HOST
-      value: "smtp.gmail.com"
-    - name: EMAIL_SMTP_PORT
-      value: "587"
-    - name: EMAIL_FROM_ADDRESS
-      value: "prod.fabkli@gmail.com"
-    - name: EMAIL_FROM_NAME
-      value: "F-OAuth"
-    - name: EMAIL_SMTP_PASSWORD
-      fromSecret:
-        name: oauth-secrets
-        key: EMAIL_SMTP_PASSWORD
-    - name: RESET_PASSWORD_TOKEN_EXPIRY
-      value: "10800"
-    - name: RATELIMIT_MODE
-      value: enforce
-    - name: RATELIMIT_NAMESPACE
-      value: "oauth"
-    - name: RATELIMIT_REDIS_ADDR
-      value: redis.rate-limiting.svc.cluster.local:6379
-    - name: RATELIMIT_KEY
-      fromSecret:
-        name: api-ratelimit
-        key: RATELIMIT_KEY
-    - name: RATELIMIT_REDIS_PASSWORD
-      fromSecret:
-        name: api-ratelimit
-        key: RATELIMIT_REDIS_PASSWORD
-    - name: RATELIMIT_EDGE_KEY
-      fromSecret:
-        name: api-ratelimit
-        key: RATELIMIT_EDGE_KEY
-    - name: RATELIMIT_SERVICE_KEY
-      fromSecret:
-        name: api-ratelimit
-        key: RATELIMIT_SERVICE_KEY
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: oauth-backend
+      app.kubernetes.io/name: oauth-backend
+      app.kubernetes.io/part-of: f-operator
+      app.kubernetes.io/version: 1.0.6
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations: {}
+      labels:
+        app.kubernetes.io/instance: oauth-backend
+        app.kubernetes.io/name: oauth-backend
+        app.kubernetes.io/part-of: f-operator
+        app.kubernetes.io/version: 1.0.6
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: oauth-backend
+                app.kubernetes.io/name: oauth-backend
+                app.kubernetes.io/part-of: f-operator
+            topologyKey: kubernetes.io/hostname
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: GIN_MODE
+          value: release
+        - name: FRONTEND_ORIGIN
+          value: https://oauth.fabkli.ch
+        - name: TOKEN_URL
+          value: fabkli.ch
+        - name: GOOGLE_OAUTH_CLIENT_ID
+          value: 755737563752-u021il7839sit5gt4k11ag3poa9opu84.apps.googleusercontent.com
+        - name: GITHUB_OAUTH_CLIENT_ID
+          value: cac7086fb2c1848886c9
+        - name: GOOGLE_OAUTH_REDIRECT_URL
+          value: https://oauth.fabkli.ch/api/sessions/oauth/google
+        - name: GITHUB_OAUTH_REDIRECT_URL
+          value: https://oauth.fabkli.ch/api/sessions/oauth/github
+        - name: DATABASE_HOST
+          value: db.oauth.svc.cluster.local
+        - name: DATABASE_USER
+          value: oauthuser
+        - name: DATABASE_PORT
+          value: '3306'
+        - name: INTERNAL_TIPP_URL
+          value: http://prod-backend.tipp.svc.cluster.local
+        - name: INTERNAL_DEV_TIPP_URL
+          value: http://dev-backend.tipp.svc.cluster.local
+        - name: INTERNAL_IMAGE_SERVICE
+          value: http://f-image.f-image.svc.cluster.local
+        - name: NOTIFICATION_ID
+          valueFrom:
+            secretKeyRef:
+              key: NOTIFICATION_ID
+              name: oauth-secrets
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: DATABASE_PASSWORD
+              name: oauth-secrets
+        - name: GOOGLE_OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: GOOGLE_OAUTH_CLIENT_SECRET
+              name: oauth-secrets
+        - name: GITHUB_OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: GITHUB_OAUTH_CLIENT_SECRET
+              name: oauth-secrets
+        - name: EMAIL_SMTP_HOST
+          value: smtp.gmail.com
+        - name: EMAIL_SMTP_PORT
+          value: '587'
+        - name: EMAIL_FROM_ADDRESS
+          value: prod.fabkli@gmail.com
+        - name: EMAIL_FROM_NAME
+          value: F-OAuth
+        - name: EMAIL_SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: EMAIL_SMTP_PASSWORD
+              name: oauth-secrets
+        - name: RESET_PASSWORD_TOKEN_EXPIRY
+          value: '10800'
+        - name: RATELIMIT_MODE
+          value: enforce
+        - name: RATELIMIT_NAMESPACE
+          value: oauth
+        - name: RATELIMIT_REDIS_ADDR
+          value: redis.rate-limiting.svc.cluster.local:6379
+        - name: RATELIMIT_KEY
+          valueFrom:
+            secretKeyRef:
+              key: RATELIMIT_KEY
+              name: api-ratelimit
+        - name: RATELIMIT_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: RATELIMIT_REDIS_PASSWORD
+              name: api-ratelimit
+        - name: RATELIMIT_EDGE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: RATELIMIT_EDGE_KEY
+              name: api-ratelimit
+        - name: RATELIMIT_SERVICE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: RATELIMIT_SERVICE_KEY
+              name: api-ratelimit
+        - name: F_VERSION
+          value: 1.4.0
+        - name: VITE_F_VERSION
+          value: 1.4.0
+        image: ghcr.io/fabiokaelin/oauth-backend:1.4.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /internal/health/live
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 3
+        name: oauth-backend
+        ports:
+        - containerPort: 8001
+          name: containerport
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /internal/health/ready
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 200m
+            ephemeral-storage: 512Mi
+            memory: 512Mi
+          requests:
+            cpu: 25m
+            ephemeral-storage: 32Mi
+            memory: 32Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          runAsNonRoot: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: regcred
+      nodeSelector:
+        fabkli.ch/production: 'true'
+      priorityClassName: fabkli-essential
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsNonRoot: false
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: oauth-backend
+      serviceAccountName: oauth-backend
+      terminationGracePeriodSeconds: 120
+      tolerations:
+      - effect: NoSchedule
+        key: kubernetes.azure.com/scalesetpriority
+        operator: Equal
+        value: spot

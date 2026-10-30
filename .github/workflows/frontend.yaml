@@ -89,7 +89,8 @@ jobs:
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
           sed -i -E "s/^(  tag:).*/\1 \"${version}\"/" resources/deployment.yaml
-          kubectl apply -f resources/deployment.yaml
+          python3 "$GITHUB_WORKSPACE/.github/scripts/prepare-k3s-manifest.py" resources/deployment.yaml /tmp/target-manifest.json
+          kubectl apply -f /tmp/target-manifest.json
           kubectl rollout restart deployment oauth-frontend
           kubectl rollout status deployment/oauth-frontend --timeout=300s
           kubectl get pods
