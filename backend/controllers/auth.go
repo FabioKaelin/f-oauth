@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/fabiokaelin/fcommon/pkg/ratelimit"
 	"net/http"
 	"regexp"
 	"strings"
@@ -96,17 +97,23 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("user", payload.Email)
+	// Recipient details are not logged.
 
 	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	emailRegex := regexp.MustCompile(emailPattern)
 
 	if !emailRegex.MatchString(payload.Email) {
-		fmt.Println("invalid email address pattern", payload.Email)
+		fmt.Println("invalid email address pattern")
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email address pattern"})
 		return
 	}
 
+	finish, allowed := ratelimit.ReserveLogin(ctx, payload.Email)
+	if !allowed {
+		return
+	}
+	success := false
+	defer func() { finish(success) }()
 	user, err := auth.LoginUser(payload.Email, payload.Password)
 	if err != nil {
 		fmt.Println("2", err)
@@ -121,6 +128,7 @@ func authLogin(ctx *gin.Context) {
 		return
 	}
 
+	success = true
 	session.SetCookie(ctx.Writer, token)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})

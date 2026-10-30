@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/fabiokaelin/fcommon/pkg/ratelimit"
 	"net/http"
-	"time"
 
 	"github.com/fabiokaelin/f-oauth/config"
 	"github.com/fabiokaelin/f-oauth/pkg/db"
@@ -36,17 +36,15 @@ func forgotPasswordPost(ctx *gin.Context) {
 
 	genericResponse := gin.H{"status": "success", "message": "If that email is registered, you will receive a reset link shortly."}
 
+	if !ratelimit.ReserveRecipient(ctx, body.Email) {
+		if !ctx.IsAborted() {
+			ctx.JSON(http.StatusOK, genericResponse)
+		}
+		return
+	}
 	// Lookup userObj by email — always return generic response to avoid email enumeration
 	userObj, err := db.GetUserByEmail(body.Email)
 	if err != nil || userObj.ID == "" {
-		ctx.JSON(http.StatusOK, genericResponse)
-		return
-	}
-
-	// Rate limiting: max 3 reset requests per user per hour
-	oneHourAgo := time.Now().Add(-time.Hour)
-	count, err := db.CountRecentResetPasswordsByUserID(userObj.ID, oneHourAgo)
-	if err == nil && count >= 3 {
 		ctx.JSON(http.StatusOK, genericResponse)
 		return
 	}

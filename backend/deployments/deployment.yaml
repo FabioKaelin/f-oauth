@@ -79,3 +79,25 @@ spec:
         key: EMAIL_SMTP_PASSWORD
     - name: RESET_PASSWORD_TOKEN_EXPIRY
       value: "10800"
+    - name: RATELIMIT_MODE
+      value: observe
+    - name: RATELIMIT_NAMESPACE
+      value: "oauth"
+    - name: RATELIMIT_REDIS_ADDR
+      value: redis.rate-limiting.svc.cluster.local:6379
+    - name: RATELIMIT_KEY
+      fromSecret:
+        name: api-ratelimit
+        key: RATELIMIT_KEY
+    - name: RATELIMIT_REDIS_PASSWORD
+      fromSecret:
+        name: api-ratelimit
+        key: RATELIMIT_REDIS_PASSWORD
+    - name: RATELIMIT_EDGE_KEY
+      fromSecret:
+        name: api-ratelimit
+        key: RATELIMIT_EDGE_KEY
+    - name: RATELIMIT_SERVICE_KEY
+      fromSecret:
+        name: api-ratelimit
+        key: RATELIMIT_SERVICE_KEY

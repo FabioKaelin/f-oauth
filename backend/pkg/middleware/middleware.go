@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"github.com/fabiokaelin/fcommon/pkg/ratelimit"
 	"net/http"
 	"net/url"
 	"strings"
@@ -56,6 +57,9 @@ func SetUserToContext(renew ...bool) gin.HandlerFunc {
 			ctx.AbortWithStatus(401)
 			return
 		}
+		if !ratelimit.User(ctx, id) {
+			return
+		}
 		if doRenew {
 			session.SetCookie(ctx.Writer, token)
 		}
@@ -101,7 +105,10 @@ func IPMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		ip := c.ClientIP()
+		ip := c.GetString("ratelimit.ip")
+		if ip == "" {
+			ip = c.ClientIP()
+		}
 		userAgent := c.Request.UserAgent()
 		output := fmt.Sprintf("IP: '%s' - UserAgent: '%s'", ip, userAgent)
 		fmt.Println(output)
