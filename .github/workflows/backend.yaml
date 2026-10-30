@@ -59,6 +59,7 @@ jobs:
         id: component
         run: echo "version=$(jq -r .backend_version project-meta.jsonc)" >> "$GITHUB_OUTPUT"
       - name: Build and push
+        id: image
         uses: ./.github/actions/docker-build
         with:
           version: ${{ steps.component.outputs.version }}
@@ -76,14 +77,24 @@ jobs:
           kube_pwd: ${{ secrets.KUBE_PWD }}
 
       - name: deploy
+        env:
+          OAUTH_BACKEND_IMAGE: ghcr.io/fabiokaelin/oauth-backend@${{ steps.image.outputs.digest }}
         run: |
           export version=$(cat project-meta.jsonc | jq -r ."backend_version")
 
           cd backend
           kubectl create ns oauth || true
           kubectl config set-context --current --namespace oauth
-          sed -i -E "s/^(  tag:).*/\1 \"${version}\"/" deployments/deployment.yaml
-          kubectl apply -f deployments/deployment.yaml
+          python3 - <<'PYIMAGE'
+          import json,os,subprocess
+          from pathlib import Path
+          o=json.loads(subprocess.check_output(['kubectl','apply','--dry-run=client','-f','deployments/deployment.yaml','-o','json']))
+          for c in o['spec']['template']['spec']['containers']:
+              if c['name']=='oauth-backend':c['image']=os.environ['OAUTH_BACKEND_IMAGE']
+          Path('/tmp/oauth-backend.json').write_text(json.dumps(o))
+          PYIMAGE
+          python3 "$GITHUB_WORKSPACE/.github/scripts/prepare-k3s-manifest.py" /tmp/oauth-backend.json /tmp/target-manifest.json
+          kubectl apply -f /tmp/target-manifest.json
           kubectl rollout restart deployment oauth-backend
           kubectl rollout status deployment/oauth-backend --timeout=300s
           kubectl get pods
