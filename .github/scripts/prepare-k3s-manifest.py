@@ -50,7 +50,7 @@ def main():
  p=argparse.ArgumentParser();p.add_argument('manifest');p.add_argument('output');a=p.parse_args()
  def kube(*argv):return subprocess.check_output(['kubectl',*argv],text=True,timeout=30)
  raw=kube('-n','f-operator-system','get','configmap','k3s-workload-placement','--ignore-not-found','-o','json').strip()
- value=json.loads(kube('apply','--dry-run=client','-f',a.manifest,'-o','json'))
+ value=json.loads(kube('create','--dry-run=client','-f',a.manifest,'-o','json'))
  if raw:
   plan=json.loads(json.loads(raw)['data']['plan.json']);uid=json.loads(kube('get','namespace','kube-system','-o','json'))['metadata']['uid']
   if uid!=plan.get('destinationClusterUID') or uid==plan.get('sourceClusterUID'):raise RuntimeError('Placement plan is not for the destination cluster')
