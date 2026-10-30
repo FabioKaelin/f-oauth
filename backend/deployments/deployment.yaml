@@ -80,7 +80,7 @@ spec:
     - name: RESET_PASSWORD_TOKEN_EXPIRY
       value: "10800"
     - name: RATELIMIT_MODE
-      value: observe
+      value: enforce
     - name: RATELIMIT_NAMESPACE
       value: "oauth"
     - name: RATELIMIT_REDIS_ADDR

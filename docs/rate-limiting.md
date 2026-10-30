@@ -2,9 +2,10 @@
 
 Release1.4.0 uses fcommon1.3.0 and the shared private Redis service.
 The approved authenticated allowance is1,200 requests/minute per verified user,
-with burst120. Counters are shared across sessions and replicas. Ordinary API
-quotas start in observe mode; sensitive login, registration and password/OAuth
-quotas remain enforced. See fcommon/pkg/ratelimit and the infrastructure runbook
+with burst120. Counters are shared across sessions and replicas. Ordinary API quotas were observed first and are now enforced after live
+verification. Sensitive login, registration and password/OAuth quotas are enforced
+as well. Live checks covered two authenticated tabs (22 API reads), both production
+replicas sharing one identity bucket, and zero unintended429/5xx or Redis errors. See fcommon/pkg/ratelimit and the infrastructure runbook
 in minikube-monitoring/resources/rate-limiting for exact policies and provisioning.
 
 Provision the api-ratelimit Secret before deploying the source manifests.
