@@ -4,8 +4,7 @@
 
         <div v-if="!submitted">
             <span class="text">Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.</span>
-            <br />
-            <br />
+            <p class="reset-policy">Aus Sicherheitsgründen versenden wir pro E-Mail-Adresse höchstens einen Hinweis pro Minute und drei pro Stunde. Falls bereits ein gültiger Reset-Link vorliegt, verwende diesen.</p>
             <input v-model="email" class="textInput" type="email" placeholder="Email" :disabled="loading" />
             <br />
             <span v-if="error != ''" class="error">{{ error }}</span>
@@ -21,6 +20,7 @@
             <br />
             <br />
             <span class="text">Überprüfe deinen Posteingang und deinen Spam-Ordner.</span>
+            <p class="reset-policy">Aus Sicherheitsgründen versenden wir pro E-Mail-Adresse höchstens einen Hinweis pro Minute und drei pro Stunde. Falls bereits ein gültiger Reset-Link vorliegt, verwende diesen.</p>
         </div>
 
         <br />
@@ -77,6 +77,12 @@ export default defineComponent({
     background-color: var(--color);
     border-radius: 10px;
     padding: 5px;
+}
+
+.reset-policy {
+    color: var(--font-color);
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 .error {
