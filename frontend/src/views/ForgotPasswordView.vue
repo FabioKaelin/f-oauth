@@ -32,6 +32,7 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import axios from "axios"
+import { showRequestPause } from "../rateLimit"
 import { getAxiosConfigMethod } from "../func"
 
 export default defineComponent({
@@ -60,8 +61,8 @@ export default defineComponent({
                 .then(() => {
                     this.submitted = true
                 })
-                .catch(() => {
-                    this.error = "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+                .catch(error => {
+                    this.error = showRequestPause(error) || "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
                 })
                 .finally(() => {
                     this.loading = false

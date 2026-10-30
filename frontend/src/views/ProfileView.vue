@@ -93,6 +93,7 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import axios from "axios"
+import { showRequestPause } from "../rateLimit"
 import { User } from "../structs"
 import { getAxiosConfig, getAxiosConfigMethod } from "../func"
 
@@ -132,7 +133,7 @@ export default defineComponent({
                 }
             })
             .catch((error: any) => {
-                if (error.response.status == 401) {
+                if (error.response?.status == 401) {
                     let fromDirect = this.$route.query.from
                     if (fromDirect == undefined || fromDirect == null) {
                         fromDirect = window.location.href
@@ -161,7 +162,7 @@ export default defineComponent({
                 localStorage.removeItem("token")
                 window.location.assign("/login?from=" + encodeURIComponent(window.location.origin + "/profile"))
             } catch (error: any) {
-                this.passwordError = error?.response?.status === 400 ? "Aktuelles Passwort oder neue Passwortangabe prüfen." : "Passwort konnte nicht geändert werden. Bitte erneut versuchen."
+                this.passwordError = showRequestPause(error) || (error?.response?.status === 400 ? "Aktuelles Passwort oder neue Passwortangabe prüfen." : "Passwort konnte nicht geändert werden. Bitte erneut versuchen.")
             } finally { this.changingPassword = false }
         },
         openEditModal() {

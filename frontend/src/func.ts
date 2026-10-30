@@ -57,7 +57,7 @@ function loadUser(): Promise<any> {
             store.userLoaded = true
         })
         .catch(error => {
-            if (error.response.status == 401) {
+            if (error.response?.status == 401) {
                 console.debug("not logged in, (func.ts loadUser)")
                 store.user = {} as User
                 store.loggedIn = false

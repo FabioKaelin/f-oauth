@@ -198,19 +198,11 @@ export default defineComponent({
                 password: this.rpassword
             }
 
-            let data2 = JSON.stringify({
-                name: this.rname,
-                email: this.remail,
-                password: this.rpassword
-            })
-
-            console.log(data)
-            console.log(data2)
+            // Credentials must not be logged.
 
             axios
                 .request(getAxiosConfigMethod("/auth/register", "POST", data))
                 .then(res => {
-                    console.log(res)
                     if (res.status == 201) {
                         console.log("success")
                         this.email = this.remail
@@ -220,7 +212,7 @@ export default defineComponent({
                     }
                 })
                 .catch(err => {
-                    console.error(err.response.data)
+                    this.error = err.response?.data?.message || "Registrierung momentan nicht möglich."
                 })
         },
         login() {
@@ -232,24 +224,20 @@ export default defineComponent({
                     })
                 )
                 .then(res => {
-                    console.log(res.data)
                     if (res.status == 200) {
                         console.log("success")
                         document.location.href = this.from
                     } else {
                         console.log("failed")
-                        console.log(res.data)
-                    }
+                        }
                 })
                 .catch(err => {
-                    if (err.response.status == 401) {
+                    if (err.response?.status == 401) {
                         console.log("failed")
-                        console.log(err.response.data)
-                        this.error = err.response.data.message
+                        this.error = err.response?.data?.message || "Anmeldung vorübergehend nicht möglich. Bitte erneut versuchen."
                     } else {
-                        this.error = err.response.data.message
+                        this.error = err.response?.data?.message || "Anmeldung vorübergehend nicht möglich. Bitte erneut versuchen."
                         console.log("catch")
-                        console.log(err)
                     }
                 })
         }

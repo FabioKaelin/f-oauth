@@ -40,6 +40,7 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import axios from "axios"
+import { showRequestPause } from "../rateLimit"
 import { getAxiosConfigMethod } from "../func"
 
 export default defineComponent({
@@ -81,6 +82,7 @@ export default defineComponent({
                     this.success = true
                 })
                 .catch(err => {
+ const pause=showRequestPause(err); if(pause) {this.error=pause;return}
                     const msg: string = err?.response?.data?.message || ""
                     if (msg === "token expired") {
                         this.tokenError = "Dieser Reset-Link ist abgelaufen. Bitte fordere einen neuen an."

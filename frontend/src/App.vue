@@ -1,4 +1,5 @@
 <template>
+    <RequestPause />
     <Slide :close-on-navigation="false">
         <!-- <Slide class="plswork" :closeOnNavigation="true"> -->
         <span class="nav">
@@ -79,6 +80,7 @@ import { Slide } from "vue3-burger-menu" //   import the CSS transitions you wis
 import { getAxiosConfig, getAxiosConfigMethod, loadUser, getLocation } from "@/func"
 
 import { defineComponent } from "vue"
+import RequestPause from "./components/RequestPause.vue"
 import axios from "axios"
 import { store } from "@/store"
 import ThemeSelect from "./components/Select/ThemeSelect.vue"
@@ -86,6 +88,7 @@ import ThemeSelect from "./components/Select/ThemeSelect.vue"
 export default defineComponent({
     name: "App",
     components: {
+        RequestPause,
         Slide,
         ThemeSelect
     },

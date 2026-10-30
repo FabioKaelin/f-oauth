@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/fabiokaelin/fcommon/pkg/ratelimit"
 	"net/http"
 	"time"
 
@@ -51,6 +53,13 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
+	limiter, err := ratelimit.FromEnv("oauth")
+	if err != nil {
+		panic(err)
+	}
+	ratelimit.Default = limiter
+	go limiter.Report(context.Background())
+	router.Use(limiter.Before())
 	router.Use(gin.LoggerWithConfig(logger.LoggerConfig))
 	router.Use(middleware.IPMiddleware())
 	router.Use(middleware.CORSMiddleware())
