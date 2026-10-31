@@ -1,0 +1,22 @@
+[
+  {
+    "id": "backend",
+    "context": "backend",
+    "dockerfile": "backend/Dockerfile",
+    "image": "oauth-backend",
+    "namespace": "oauth",
+    "resource": "deployment",
+    "deployment": "oauth-backend",
+    "container": "oauth-backend"
+  },
+  {
+    "id": "frontend",
+    "context": "frontend",
+    "dockerfile": "frontend/Dockerfile",
+    "image": "oauth-frontend",
+    "namespace": "oauth",
+    "resource": "fdeployment",
+    "deployment": "oauth-frontend",
+    "container": "oauth-frontend"
+  }
+]

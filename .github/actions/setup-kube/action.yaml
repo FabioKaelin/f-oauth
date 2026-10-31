@@ -1,31 +1,7 @@
-name: Setup Kubernetes access
-description: Reuse existing cluster credentials without shell interpolation
-inputs:
-  kube_pwd:
-    description: Existing Kubernetes password
-    required: true
+name: Short-lived Kubernetes access
+description: Verify this approved GitHub job through OIDC; obtain application-scoped access
 runs:
   using: composite
   steps:
-    - uses: azure/setup-kubectl@v4
     - shell: bash
-      env:
-        KUBE_PASSWORD: ${{ inputs.kube_pwd }}
-      run: |
-        python3 - <<'PYCODE'
-        import json, os, pathlib
-        path = pathlib.Path.home() / '.kube' / 'config'
-        path.parent.mkdir(mode=0o700, exist_ok=True)
-        data = {'apiVersion':'v1','kind':'Config','clusters':[{'name':'minikube','cluster':{'server':'https://k8s.fabkli.ch'}}], 'contexts':[{'name':'minikube','context':{'cluster':'minikube','user':'minikube'}}], 'current-context':'minikube','users':[{'name':'minikube','user':{'username':'minikube','password':os.environ['KUBE_PASSWORD']}}]}
-        path.write_text(json.dumps(data)); path.chmod(0o600)
-        PYCODE
-    - shell: bash
-      run: |
-        kubectl get configmap pressure-state -n f-operator-system --ignore-not-found -o json > /tmp/pressure-state.json
-        python3 - <<'PYCODE'
-        import json,pathlib
-        raw=pathlib.Path('/tmp/pressure-state.json').read_text().strip()
-        state=json.loads(json.loads(raw)['data']['state.json']) if raw else {}
-        if state.get('active') or state.get('stopped'):
-            raise SystemExit('Pressure-managed workloads are suspended or recovering; deployment must wait.')
-        PYCODE
+      run: python3 "$GITHUB_WORKSPACE/.github/scripts/k3s-login.py"
