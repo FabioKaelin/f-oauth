@@ -1,97 +1,11 @@
-name: Frontend
-
-
-on:
-  # schedule:
-    # - cron: '25 19 * * *'
-  push:
-    branches:
-    - "main"
-    paths:
-    - "project-meta.jsonc"
-    - ".github/actions/**"
-    - "frontend/**"
-    - ".github/workflows/frontend.yaml"
-    # Publish semver tags as releases.
-    # tags: [ 'v*.*.*' ]
-  # pull_request:
-  #   branches: [ "main" ]
-  workflow_dispatch:
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: "oauth-frontend"
-
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
+name: 'Retired: frontend.yaml'
+'on':
+  workflow_dispatch: {}
+permissions:
+  contents: read
 jobs:
-  check:
+  notice:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-      - run: go test ./...
-        working-directory: backend
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci --no-fund --no-audit && npm run build
-        working-directory: frontend
-  build:
-    needs: check
-    #runs-on: self-hosted
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-
-
-      - name: Component version
-        id: component
-        run: echo "version=$(jq -r .frontend_version project-meta.jsonc)" >> "$GITHUB_OUTPUT"
-      - name: Frontend release version
-        env:
-          COMPONENT_VERSION: ${{ steps.component.outputs.version }}
-        run: echo "VITE_F_VERSION=$COMPONENT_VERSION" > frontend/.env
-      - name: Build and push
-        uses: ./.github/actions/docker-build
-        with:
-          version: ${{ steps.component.outputs.version }}
-          imageName: ${{ env.IMAGE_NAME }}
-          codePath: frontend
-          dockerPAT: ${{ secrets.CR_PAT }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - uses: actions/checkout@v6
-
-
-      - name: Setup Kubernetes access
-        uses: ./.github/actions/setup-kube
-        with:
-          kube_pwd: ${{ secrets.KUBE_PWD }}
-
-      - name: deploy
-        run: |
-          export version=$(cat project-meta.jsonc | jq -r ."frontend_version")
-
-          cd frontend
-          kubectl create ns oauth || true
-          kubectl config set-context --current --namespace oauth
-          sed -i -E "s/^(  tag:).*/\1 \"${version}\"/" resources/deployment.yaml
-          python3 "$GITHUB_WORKSPACE/.github/scripts/prepare-k3s-manifest.py" resources/deployment.yaml /tmp/target-manifest.json
-          kubectl apply -f /tmp/target-manifest.json
-          kubectl rollout restart deployment oauth-frontend
-          kubectl rollout status deployment/oauth-frontend --timeout=300s
-          kubectl get pods
-
+    - run: echo "Deployment is handled by k3s-deploy.yaml on main. This workflow is
+        retired."

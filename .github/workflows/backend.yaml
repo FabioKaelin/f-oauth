@@ -1,102 +1,11 @@
-name: Backend
-
-
-on:
-  # schedule:
-    # - cron: '25 19 * * *'
-  push:
-    branches:
-    - "main"
-    paths:
-    - "project-meta.jsonc"
-    - ".github/actions/**"
-    - "backend/**"
-    - ".github/workflows/backend.yaml"
-    # Publish semver tags as releases.
-    # tags: [ 'v*.*.*' ]
-  # pull_request:
-  #   branches: [ "main" ]
-  workflow_dispatch:
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: "oauth-backend"
-
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
+name: 'Retired: backend.yaml'
+'on':
+  workflow_dispatch: {}
+permissions:
+  contents: read
 jobs:
-  check:
+  notice:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - run: python3 .github/scripts/test-native-delivery.py
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-      - run: go test ./...
-        working-directory: backend
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci --no-fund --no-audit && npm run build
-        working-directory: frontend
-  build:
-    needs: check
-
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-
-
-      - name: Component version
-        id: component
-        run: echo "version=$(jq -r .backend_version project-meta.jsonc)" >> "$GITHUB_OUTPUT"
-      - name: Build and push
-        id: image
-        uses: ./.github/actions/docker-build
-        with:
-          version: ${{ steps.component.outputs.version }}
-          imageName: ${{ env.IMAGE_NAME }}
-          codePath: backend
-          dockerPAT: ${{ secrets.CR_PAT }}
-
-      # - uses: actions-hub/kubectl@master
-      #   name: connect to k8s-cluster
-      #   env:
-      #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      - name: Setup Kubernetes access
-        uses: ./.github/actions/setup-kube
-        with:
-          kube_pwd: ${{ secrets.KUBE_PWD }}
-
-      - name: deploy
-        env:
-          OAUTH_BACKEND_IMAGE: ghcr.io/fabiokaelin/oauth-backend@${{ steps.image.outputs.digest }}
-        run: |
-          export version=$(cat project-meta.jsonc | jq -r ."backend_version")
-
-          cd backend
-          kubectl create ns oauth || true
-          kubectl config set-context --current --namespace oauth
-          python3 - <<'PYIMAGE'
-          import json,os,subprocess
-          from pathlib import Path
-          o=json.loads(subprocess.check_output(['kubectl','create','--dry-run=client','-f','deployments/deployment.yaml','-o','json']))
-          for c in o['spec']['template']['spec']['containers']:
-              if c['name']=='oauth-backend':c['image']=os.environ['OAUTH_BACKEND_IMAGE']
-          Path('/tmp/oauth-backend.json').write_text(json.dumps(o))
-          PYIMAGE
-          python3 "$GITHUB_WORKSPACE/.github/scripts/prepare-k3s-manifest.py" /tmp/oauth-backend.json /tmp/target-manifest.json
-          kubectl apply -f /tmp/target-manifest.json
-          kubectl rollout restart deployment oauth-backend
-          kubectl rollout status deployment/oauth-backend --timeout=300s
-          kubectl get pods
-
+    - run: echo "Deployment is handled by k3s-deploy.yaml on main. This workflow is
+        retired."
