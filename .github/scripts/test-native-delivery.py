@@ -53,5 +53,20 @@ class NativeDeliveryTests(unittest.TestCase):
    with patch.object(sys,'argv',['prepare','input.yaml',str(output)]),patch.object(delivery.subprocess,'check_output',side_effect=kube):delivery.main()
    actual=json.loads(output.read_text())
    self.assertEqual(actual['spec']['template']['spec']['containers'][0]['image'],'new-image')
+ def test_multi_resource_create_output_is_parsed_without_losing_items(self):
+  config={'apiVersion':'v1','kind':'ConfigMap','metadata':{'name':'config'}}
+  result=delivery.parse_manifest_json(json.dumps(self.obj)+'\n'+json.dumps(config)+'\n')
+  self.assertEqual(result['kind'],'List');self.assertEqual(result['items'],[self.obj,config])
+  self.assertEqual(delivery.parse_manifest_json(json.dumps(result)),result)
+  with self.assertRaises(RuntimeError):delivery.parse_manifest_json('')
+ def test_application_bundle_cannot_replace_native_storage_bindings(self):
+  claim={'apiVersion':'v1','kind':'PersistentVolumeClaim','metadata':{'name':'state','namespace':'apps'},'spec':{'volumeName':'old-minikube-pv'}}
+  volume={'apiVersion':'v1','kind':'PersistentVolume','metadata':{'name':'old-minikube-pv'},'spec':{'hostPath':{'path':'/old'}}}
+  bundle={'kind':'List','items':[self.obj,claim,volume]}
+  def live(kind,*args):
+   return {'status':{'phase':'Bound'},'spec':{'storageClassName':'fabkli-local','volumeName':'k3s-native'}} if kind=='PersistentVolumeClaim'else self.live
+  result=delivery.patch_objects(bundle,self.plan,live=live)
+  self.assertEqual([o['kind']for o in result['items']],['Deployment'])
+  with self.assertRaises(RuntimeError):delivery.patch_objects({'kind':'List','items':[claim]},self.plan,live=lambda *args:{'status':{'phase':'Pending'},'spec':{}})
 
 if __name__=='__main__':unittest.main()

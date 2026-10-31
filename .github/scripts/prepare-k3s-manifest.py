@@ -6,8 +6,33 @@ from pathlib import Path
 WORKLOADS={'Fdeployment','Deployment','StatefulSet','DaemonSet'}
 POD_FIELDS=['nodeSelector','affinity','topologySpreadConstraints','tolerations','priorityClassName','volumes','initContainers','securityContext','serviceAccountName','automountServiceAccountToken','runtimeClassName','schedulerName']
 
+def parse_manifest_json(text):
+ # kubectl create prints one JSON document per List item, rather than one List.
+ decoder=json.JSONDecoder();objects=[];remaining=text.lstrip()
+ while remaining:
+  value,end=decoder.raw_decode(remaining);objects.append(value);remaining=remaining[end:].lstrip()
+ if not objects:raise RuntimeError('Manifest parser returned no objects')
+ if len(objects)==1:return objects[0]
+ items=[]
+ for obj in objects:items.extend(obj['items']if obj.get('kind')=='List'else[obj])
+ return {'apiVersion':'v1','kind':'List','items':items}
+
 def patch_objects(value,plan,namespace='default',live=None):
  objects=value['items'] if value.get('kind')=='List' else [value]
+ # The migration owns physical PV/PVC bindings. App delivery never changes them.
+ retained=[]
+ for obj in objects:
+  kind=obj.get('kind')
+  if kind=='PersistentVolume':continue
+  if kind=='PersistentVolumeClaim':
+   if live is None:raise RuntimeError('Native storage requires an existing verified claim')
+   md=obj['metadata'];ns=md.get('namespace',namespace);current=live(kind,ns,md['name'])
+   if current.get('status',{}).get('phase')!='Bound' or current['spec'].get('storageClassName')!='fabkli-local':raise RuntimeError('Application delivery cannot create or rebind native storage')
+   continue
+  retained.append(obj)
+ if value.get('kind')=='List':value['items']=retained
+ elif not retained:return {'apiVersion':'v1','kind':'List','items':[]}
+ objects=retained
  lookup={(t['namespace'],t['name']):t for t in plan['workloads']}
  for obj in objects:
   kind=obj.get('kind')
@@ -50,7 +75,7 @@ def main():
  p=argparse.ArgumentParser();p.add_argument('manifest');p.add_argument('output');a=p.parse_args()
  def kube(*argv):return subprocess.check_output(['kubectl',*argv],text=True,timeout=30)
  raw=kube('-n','f-operator-system','get','configmap','k3s-workload-placement','--ignore-not-found','-o','json').strip()
- value=json.loads(kube('create','--dry-run=client','-f',a.manifest,'-o','json'))
+ value=parse_manifest_json(kube('create','--dry-run=client','-f',a.manifest,'-o','json'))
  if raw:
   plan=json.loads(json.loads(raw)['data']['plan.json']);uid=json.loads(kube('get','namespace','kube-system','-o','json'))['metadata']['uid']
   if uid!=plan.get('destinationClusterUID') or uid==plan.get('sourceClusterUID'):raise RuntimeError('Placement plan is not for the destination cluster')
