@@ -1,4 +1,5 @@
-import copy,importlib.util,sys,unittest
+import copy,importlib.util,sys,unittest,json,tempfile
+from unittest.mock import patch
 from pathlib import Path
 spec=importlib.util.spec_from_file_location('delivery',Path(__file__).with_name('prepare-k3s-manifest.py'))
 delivery=importlib.util.module_from_spec(spec);spec.loader.exec_module(delivery)
@@ -35,5 +36,22 @@ class NativeDeliveryTests(unittest.TestCase):
   out=delivery.patch_objects(self.obj,self.plan)
   self.assertEqual(out['spec']['replicas'],2)
   self.assertEqual(out['spec']['placement']['spread'],'Required')
+ def test_cli_parses_incoming_image_instead_of_returning_live_apply_object(self):
+  self.plan.update({'destinationClusterUID':'destination','sourceClusterUID':'source'})
+  def kube(args,**kwargs):
+   if args[1]=='create':
+    self.assertIn('--dry-run=client',args)
+    return json.dumps(self.obj)
+   if 'apply'in args:raise AssertionError('apply dry-run can return the existing live image')
+   if 'configmap'in args:return json.dumps({'data':{'plan.json':json.dumps(self.plan)}})
+   if 'namespace'in args:return json.dumps({'metadata':{'uid':'destination'}})
+   if 'view'in args:return 'apps'
+   if 'Deployment'in args:return json.dumps(self.live)
+   raise AssertionError(args)
+  with tempfile.TemporaryDirectory()as directory:
+   output=Path(directory)/'output.json'
+   with patch.object(sys,'argv',['prepare','input.yaml',str(output)]),patch.object(delivery.subprocess,'check_output',side_effect=kube):delivery.main()
+   actual=json.loads(output.read_text())
+   self.assertEqual(actual['spec']['template']['spec']['containers'][0]['image'],'new-image')
 
 if __name__=='__main__':unittest.main()

@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - run: python3 .github/scripts/test-native-delivery.py
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
@@ -88,7 +89,7 @@ jobs:
           python3 - <<'PYIMAGE'
           import json,os,subprocess
           from pathlib import Path
-          o=json.loads(subprocess.check_output(['kubectl','apply','--dry-run=client','-f','deployments/deployment.yaml','-o','json']))
+          o=json.loads(subprocess.check_output(['kubectl','create','--dry-run=client','-f','deployments/deployment.yaml','-o','json']))
           for c in o['spec']['template']['spec']['containers']:
               if c['name']=='oauth-backend':c['image']=os.environ['OAUTH_BACKEND_IMAGE']
           Path('/tmp/oauth-backend.json').write_text(json.dumps(o))
