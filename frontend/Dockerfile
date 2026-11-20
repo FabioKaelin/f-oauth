@@ -17,7 +17,9 @@ RUN echo $TARGETOS $TARGETARCH
 
 # production stage
 FROM nginx:stable-alpine as production
-RUN apk upgrade --no-cache
+RUN sed -i -E '/^nginx([=-]|-module-)/s/=.*//' /etc/apk/world \
+    && echo "https://nginx.org/packages/alpine/v$(cut -d. -f1,2 /etc/alpine-release)/main" >> /etc/apk/repositories \
+    && apk upgrade --no-cache
 LABEL org.opencontainers.image.source="https://github.com/FabioKaelin/f-oauth"
 LABEL org.opencontainers.image.authors="FabioKaelin"
 LABEL org.opencontainers.image.title="F-OAuth-Frontend"
